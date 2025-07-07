@@ -1,3 +1,6 @@
+import { JwtPayload } from "jsonwebtoken"
+
+
 export interface RegisterProps {
     name: string
     email: string
@@ -16,4 +19,12 @@ interface Roles {
     User: number
     Editor?: number
     Admin?: number
+}
+
+export interface CustomJwtPayload extends JwtPayload {
+    UserInfo: {
+        name: string
+        email: string
+        roles: number[]
+    }
 }
