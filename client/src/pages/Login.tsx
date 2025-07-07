@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { axiosInstance } from '../api/axios'
 import axios from 'axios'
+import { useNavigate } from 'react-router'
 
 
 type LoginForm = {
@@ -25,6 +26,7 @@ export const Login: React.FC = () => {
     })
     const [isReadyToSubmit, setIsReadyToSubmit] = useState(false)
     const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false)
+    const navigate = useNavigate()
 
 
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -80,6 +82,10 @@ export const Login: React.FC = () => {
             console.log(response)
 
             setIsLoggedIn(true)
+
+            setTimeout(() => {
+                navigate('main')
+            }, 1500)
         } catch (error) {
             if (axios.isAxiosError(error)) {
                 if (!error.response) {

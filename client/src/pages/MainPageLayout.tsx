@@ -1,12 +1,14 @@
 import { useState } from "react"
-import { Users, Package, Factory, X } from "lucide-react"
+import { Users, Package, Factory, X, Coins, Wallet } from "lucide-react"
 
 import { ClientsRegistration } from "../components/ClientsRegistration"
 import { ProductsRegistration } from "../components/ProductRegistration"
 import { SuppliersRegistration } from "../components/SuppliersRegistration"
+import { ExpensesRegistration } from "../components/ExpensesRegistration"
+import { BankAccountsRegistration } from "../components/BankAccountRegistration"
 
 
-type SectionKey = "clients" | "products" | "suppliers"
+type SectionKey = "clients" | "products" | "suppliers" | "expenses" | "bankAccount"
 
 type SectionConfig = {
     section: SectionKey
@@ -33,18 +35,27 @@ const sections: SectionConfig[] = [
         label: "Fornecedores",
         icon: <Factory className="h-8 w-8 mb-2" />,
         component: <SuppliersRegistration />
+    },
+    {
+        section: "expenses",
+        label: "Despesas",
+        icon: <Coins className="h-8 w-8 mb-2" />,
+        component: <ExpensesRegistration />
+    },
+    {
+        section: "bankAccount",
+        label: "Conta Bancaria",
+        icon: <Wallet className="h-8 w-8 mb-2" />,
+        component: <BankAccountsRegistration />
     }
 ]
 
 
 export const MainPageLayout: React.FC = () => {
-    const [openSection, setOpenSection] = useState<Partial<Record<SectionKey, boolean>>>({})
+    const [openSection, setOpenSection] = useState<SectionKey | null>(null);
 
     function toggleSection(section: SectionKey) {
-        setOpenSection(prev => ({
-            ...prev,
-            [section]: !prev[section]
-        }))
+        setOpenSection(prev => (prev === section ? null : section));
     }
 
     return (
@@ -53,18 +64,18 @@ export const MainPageLayout: React.FC = () => {
             {/* Cards */}
             <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 mb-8">
                 {sections.map(({ section, label, icon }) => {
-                    const isOpen = openSection[section]
+                    const isOpen = openSection === section;
 
                     return (
                         <div
                             key={section}
                             onClick={() => toggleSection(section)}
-                            className={`cursor-pointer p-6 rounded-xl transition flex flex-col items-center text-center border relative
-                                ${isOpen
+                            className={`group cursor-pointer p-6 rounded-xl transition-all duration-300 ease-in-out flex flex-col items-center text-center border relative hover:-translate-y-1
+                ${isOpen
                                     ? "bg-emerald-50 border-emerald-100 ring-2 ring-emerald-200"
-                                    : "bg-white shadow hover:shadow-md border-gray-200"}`}
+                                    : "bg-white shadow hover:shadow-lg border-gray-200"}`}
                         >
-                            <div className={`transition ${isOpen ? "text-emerald-700" : "text-emerald-600"}`}>
+                            <div className={`${isOpen ? "text-emerald-700" : "text-emerald-600"}`}>
                                 {icon}
                             </div>
 
@@ -82,7 +93,7 @@ export const MainPageLayout: React.FC = () => {
 
             {/* Seções */}
             {sections.map(({ section, component }) => (
-                openSection[section] && (
+                openSection === section && (
                     <section
                         key={section}
                         id={`${section}-section`}
