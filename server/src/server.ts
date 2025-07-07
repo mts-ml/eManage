@@ -1,12 +1,14 @@
 import 'dotenv/config'
 import express from 'express'
 import cors from 'cors'
+import mongoose from 'mongoose'
+import cookieParser from 'cookie-parser'
 
-import login from './routes/login.js'
-import register from './routes/register.js'
 import { errorHandler } from './middleware/errorHandler.js'
 import { connectDB } from './config/dbConnection.js'
-import mongoose from 'mongoose'
+import login from './routes/login.js'
+import register from './routes/register.js'
+import refresh from './routes/refresh.js'
 
 
 const PORT = process.env.PORT || 3500
@@ -15,6 +17,7 @@ const app = express()
 connectDB()
 
 app.use(express.json())
+app.use(cookieParser())
 
 // CORS
 const allowedOrigins = process.env.NODE_ENV === "production" ?
@@ -28,6 +31,7 @@ app.use(cors({
 
 app.use("/login", login)
 app.use('/register', register)
+app.use('/refresh', refresh)
 
 // Tratamento de erros
 app.use(errorHandler)
