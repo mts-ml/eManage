@@ -23,7 +23,7 @@ export function loginValidation(req: Request<{}, {}, UserProps>, res: Response, 
         }
     }
 
-    if (Object.values(error).length > 0) {
+    if (Object.values(error).some(err => err !== "")) {
         res.status(400).json({
             message: error
         })
