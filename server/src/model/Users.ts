@@ -1,8 +1,8 @@
 import mongoose, { Schema } from "mongoose"
-import { RegisterProps } from "../types/types.js"
+import { UserProps } from "../types/types.js"
 
 
-const userSchema = new Schema<RegisterProps>({
+const userSchema = new Schema<UserProps>({
     name: {
         type: String,
         required: true
@@ -14,7 +14,16 @@ const userSchema = new Schema<RegisterProps>({
     password: {
         type: String,
         required: true
-    }    
+    },
+    roles: {
+        User: {
+            type: Number,
+            default: 1010
+        },
+        Editor: Number,
+        Admin: Number
+    },
+    refreshToken: String
 })
 
-export const User = mongoose.model<RegisterProps>("User", userSchema)
+export const User = mongoose.model<UserProps>("User", userSchema)
