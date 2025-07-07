@@ -22,7 +22,7 @@ export async function registerController(req: Request<{}, {}, RegisterProps>, re
             email,
             password: hasPassword
         })
-        console.log(`registerController - Useuário criado - ${newUser}`)   
+        console.log(`registerController - Usuário criado - ${newUser}`)   
         
         res.status(201).json({ message: `Usuário ${newUser.name} criado com sucesso` })
     } catch (error) {
