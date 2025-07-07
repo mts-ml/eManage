@@ -24,6 +24,7 @@ export const Login: React.FC = () => {
         geral: null
     })
     const [isReadyToSubmit, setIsReadyToSubmit] = useState(false)
+    const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false)
 
 
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -41,6 +42,8 @@ export const Login: React.FC = () => {
         const allFieldsFilled = Object.values(updatedForm).every(value => value.trim() !== "")
         const noError = Object.values(validateFields).every(error => !error || error.length === 0)
         setIsReadyToSubmit(allFieldsFilled && noError)
+
+        setIsLoggedIn(false)
     }
 
     function formValidation(form: LoginForm) {
@@ -75,6 +78,8 @@ export const Login: React.FC = () => {
         try {
             const response = await axiosInstance.post('/login', form)
             console.log(response)
+
+            setIsLoggedIn(true)
         } catch (error) {
             if (axios.isAxiosError(error)) {
                 if (!error.response) {
@@ -190,6 +195,12 @@ export const Login: React.FC = () => {
 
                     {errors.geral && (
                         <p className="text-red-600 font-medium text-sm">{errors.geral}</p>
+                    )}
+
+                    {isLoggedIn && (
+                        <p className="text-green-400 font-medium text-sm">
+                            Login efetuado com sucesso!
+                        </p>
                     )}
                 </form>
             </div>
