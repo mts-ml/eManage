@@ -7,6 +7,7 @@ import { Register } from "./pages/Register"
 import { MainPageLayout } from "./pages/MainPageLayout"
 import { RouteAuthentication } from "./components/RouteAuthentication"
 import { Unauthorized } from "./pages/Unauthorized"
+import { ROLES_LIST } from "./config/roles_list"
 
 
 function App() {
@@ -16,11 +17,11 @@ function App() {
         <Route index element={<Login />} />
         <Route path="register" element={<Register />} />
 
-        <Route element={<RouteAuthentication />}>
+        <Route element={<RouteAuthentication allowedRoles={[ROLES_LIST.Admin, ROLES_LIST.Editor, ROLES_LIST.User]} />}>
           <Route path="main" element={<MainPageLayout />} />
+          <Route path='unauthorized' element={<Unauthorized />} />
         </Route>
 
-        <Route path='unauthorized' element={<Unauthorized />} />
         <Route path="*" element={<ErrorPage />} />
       </Route>
     </Routes>
