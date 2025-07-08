@@ -58,6 +58,7 @@ export const MainPageLayout: React.FC = () => {
         setOpenSection(prev => (prev === section ? null : section));
     }
 
+
     return (
         <main className="p-6 max-w-4xl mx-auto">
 
