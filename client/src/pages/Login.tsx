@@ -1,7 +1,11 @@
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 import { axiosInstance } from '../api/axios'
 import axios from 'axios'
-import { useNavigate } from 'react-router'
+import { useNavigate } from 'react-router-dom'
+import { jwtDecode } from 'jwt-decode'
+
+import type { CustomJwtPayload } from '../types/types.js'
+import AuthContext from '../Context/AuthContext.js'
 
 
 type LoginForm = {
@@ -17,8 +21,11 @@ type LoginErrors = {
 
 
 export const Login: React.FC = () => {
-
-    const [form, setForm] = useState<LoginForm>({ email: "", password: "" })
+    const defaultValues = {
+        email: "",
+        password: ""
+    }
+    const [form, setForm] = useState<LoginForm>(defaultValues)
     const [errors, setErrors] = useState<LoginErrors>({
         email: null,
         password: null,
@@ -27,6 +34,7 @@ export const Login: React.FC = () => {
     const [isReadyToSubmit, setIsReadyToSubmit] = useState(false)
     const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false)
     const navigate = useNavigate()
+    const { setAuth } = useContext(AuthContext)
 
 
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -78,10 +86,22 @@ export const Login: React.FC = () => {
         if (!isReadyToSubmit) return
 
         try {
-            const response = await axiosInstance.post('/login', form)
+            const response = await axiosInstance.post('/login', form, { withCredentials: true })
             console.log(response)
 
+            // Getting access token, decoding it and saving info on global state
+            const accessToken = response.data.accessToken
+            const decodedToken: CustomJwtPayload = jwtDecode(accessToken)
+            const { name, email, roles } = decodedToken.UserInfo
+            setAuth({ name, email, roles, accessToken })
+            
             setIsLoggedIn(true)
+            setForm(defaultValues)
+            setErrors({
+                email: null,
+                password: null,
+                geral: null
+            })
 
             setTimeout(() => {
                 navigate('main')
