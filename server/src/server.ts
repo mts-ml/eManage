@@ -9,6 +9,7 @@ import { connectDB } from './config/dbConnection.js'
 import login from './routes/login.js'
 import register from './routes/register.js'
 import refresh from './routes/refresh.js'
+import logout from './routes/logout.js'
 
 
 const PORT = process.env.PORT || 3500
@@ -24,6 +25,7 @@ const allowedOrigins = process.env.NODE_ENV === "production" ?
     process.env.FRONTEND_PROD_URL
     :
     process.env.FRONTEND_DEV_URL
+    
 app.use(cors({
     origin: allowedOrigins,
     credentials: true
@@ -32,6 +34,7 @@ app.use(cors({
 app.use("/login", login)
 app.use('/register', register)
 app.use('/refresh', refresh)
+app.use('/logout', logout)
 
 // Tratamento de erros
 app.use(errorHandler)
