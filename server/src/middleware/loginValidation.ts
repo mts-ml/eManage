@@ -1,5 +1,5 @@
-import { NextFunction, Request, Response } from "express";
-import { UserProps } from "../types/types";
+import { NextFunction, Request, Response } from "express"
+import { UserProps } from "../types/types"
 
 
 export function loginValidation(req: Request<{}, {}, UserProps>, res: Response, next: NextFunction) {
