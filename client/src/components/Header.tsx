@@ -1,5 +1,6 @@
 import { NavLink } from "react-router-dom"
 
+
 export const Header: React.FC = () => {
     const navLinkClass = "relative after:content-[''] after:absolute after:left-0 after:bottom-[-7px] after:h-[1px] after:w-full after:bg-green-400 after:opacity-100 after:scale-x-100 after:transition-all after:duration-300 after:ease-in-out text-green-400 font-bold"
 
