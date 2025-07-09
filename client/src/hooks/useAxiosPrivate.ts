@@ -49,7 +49,7 @@ export function useAxiosPrivate() {
                         return Promise.reject(refreshError)
                     }
                 }
-                // Se não for erro 401, ou já tentou renovar, retorna erro normalmente
+                // Se não for erro 403, ou já tentou renovar, retorna erro normalmente
                 return Promise.reject(error)
             }
         )

@@ -1,7 +1,13 @@
 import { NavLink } from "react-router-dom"
+import { useContext } from "react"
+
+import { LogoutButton } from "./LogoutButton"
+import AuthContext from "../Context/AuthContext"
 
 
 export const Header: React.FC = () => {
+    const { auth } = useContext(AuthContext)
+
     const navLinkClass = "relative after:content-[''] after:absolute after:left-0 after:bottom-[-7px] after:h-[1px] after:w-full after:bg-green-400 after:opacity-100 after:scale-x-100 after:transition-all after:duration-300 after:ease-in-out text-green-400 font-bold"
 
 
@@ -32,16 +38,13 @@ export const Header: React.FC = () => {
                             >
                                 Registrar
                             </NavLink>
-                        </li>                      
-
-                        <li>
-                            <button
-                                type="button"
-                                className="bg-green-700 hover:bg-green-600 px-4 py-2 rounded-md text-white transition cursor-pointer"
-                            >
-                                Sair
-                            </button>
                         </li>
+
+                        {auth.email && (
+                            <li>
+                                <LogoutButton />
+                            </li>
+                        )}
                     </ul>
                 </nav>
             </div>
