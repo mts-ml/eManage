@@ -1,4 +1,5 @@
 import express from 'express'
+
 import { handleLogout } from '../controller/logoutController.js'
 
 
