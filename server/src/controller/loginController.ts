@@ -8,6 +8,7 @@ import { User } from "../model/Users.js"
 
 export async function loginController(req: Request<{}, {}, UserProps>, res: Response): Promise<void> {
     const { email, password } = req.body
+    console.log(req.body)    
 
     try {
         const foundUser = await User.findOne({ email })
