@@ -1,12 +1,12 @@
 import { useState } from "react"
 import { Users, Package, Factory, X, Coins, Wallet } from "lucide-react"
 
-import { ClientsRegistration } from "../components/ClientsRegistration"
 import { ProductsRegistration } from "../components/ProductRegistration"
 import { SuppliersRegistration } from "../components/SuppliersRegistration"
 import { ExpensesRegistration } from "../components/ExpensesRegistration"
 import { BankAccountsRegistration } from "../components/BankAccountRegistration"
 import { SalesRegistration } from "../components/SalesRegistration"
+import { ClientsRegistration } from "../components/ClientsRegistration"
 
 
 type SectionKey = "clients" | "products" | "suppliers" | "expenses" | "bankAccount" | "sales"

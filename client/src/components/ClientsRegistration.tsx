@@ -1,194 +1,317 @@
 import { useState } from "react"
-import { capitalizeWords, formatPhoneForDisplay, isValidCNPJ, isValidCPF } from "../utils/utils"
+import { FaTrash, FaEdit } from 'react-icons/fa'
 
+import type { Client } from "../types/types"
+import {
+    capitalizeWords,
+    isValidCPF,
+    isValidCNPJ,
+    formatPhoneForDisplay
+} from "../utils/utils"
 
-interface Client {
-    name: string
-    email: string
-    phone: string
-    cpfCnpj: string
-    address: string
-    district: string
-    city: string
-    notes?: string
-    id?: string
-}
 
 export const ClientsRegistration: React.FC = () => {
-    const defaultValues = {
+    const defaultClient: Client = {
         name: "",
         email: "",
         phone: "",
         cpfCnpj: "",
         address: "",
         district: "",
-        notes: "",
         city: "",
+        notes: ""
     }
 
-    const fields = [
-        { id: "name", label: "Nome", placeholder: "Ex: João da Silva", type: "text" },
-        { id: "email", label: "Email", placeholder: "ex: teste@email.com", type: "email" },
-        { id: "phone", label: "Telefone", placeholder: "ex: 11912345678", type: "tel" },
-        { id: "cpfCnpj", label: "CPF ou CNPJ", placeholder: "ex: 123.456.789-00 ou 12.345.678/0001-99", type: "text" },
-        { id: "address", label: "Endereço", placeholder: "Ex: Rua das Flores, 123", type: "text" },
-        { id: "district", label: "Bairro", placeholder: "Ex: Centro", type: "text" },
-        { id: "city", label: "Cidade", placeholder: "Ex: São Paulo", type: "text" }
-    ]
-
-
-    const [form, setForm] = useState<Client>(defaultValues)
-    const [errors, setErrors] = useState(defaultValues)
+    const [form, setForm] = useState<Client>(defaultClient)
+    const [formErrors, setFormErrors] = useState<Partial<Client>>({})
     const [clients, setClients] = useState<Client[]>([])
-    const [isReadyToSubmit, setIsReadyToSubmit] = useState<boolean>(false)
+    const [showForm, setShowForm] = useState(false)
+    const [isReadyToSubmit, setIsReadyToSubmit] = useState(false)
+    const [editingClientId, setEditingClientId] = useState<string | null>(null)
 
+    function formValidation(form: Client): Partial<Client> {
+        const errors: Partial<Client> = {}
 
-    function handleChange(event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
-        const { name, value } = event.currentTarget as {
+        if (!form.name.trim()) {
+            errors.name = "Campo obrigatório"
+        } else if (form.name.trim().length < 3) {
+            errors.name = "Nome deve ter pelo menos 3 caracteres"
+        }
+
+        if (!form.email.trim()) {
+            errors.email = "Campo obrigatório"
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+            errors.email = "Email inválido"
+        }
+
+        const phoneDigits = form.phone.replace(/\D/g, '')
+        if (!form.phone.trim()) {
+            errors.phone = "Campo obrigatório"
+        } else if (phoneDigits.length < 10 || phoneDigits.length > 11) {
+            errors.phone = "Telefone inválido"
+        }
+
+        if (!form.cpfCnpj.trim()) {
+            errors.cpfCnpj = "Campo obrigatório"
+        } else {
+            const cleaned = form.cpfCnpj.replace(/\D/g, '')
+            if (cleaned.length === 11) {
+                if (!isValidCPF(cleaned)) errors.cpfCnpj = "CPF inválido"
+            } else if (cleaned.length === 14) {
+                if (!isValidCNPJ(cleaned)) errors.cpfCnpj = "CNPJ inválido"
+            } else {
+                errors.cpfCnpj = "Documento inválido"
+            }
+        }
+
+        if (!form.address.trim()) {
+            errors.address = "Campo obrigatório"
+        } else if (form.address.trim().length < 5) {
+            errors.address = "Endereço muito curto"
+        }
+
+        if (!form.district.trim()) errors.district = "Campo obrigatório"
+        if (!form.city.trim()) errors.city = "Campo obrigatório"
+
+        return errors
+    }
+
+    function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
+        const { name, value } = e.currentTarget as {
             name: keyof Client,
             value: string
         }
 
+        let formattedValue = value
+
+        if (name === 'phone') {
+            const cleaned = value.replace(/\D/g, '')
+            formattedValue = cleaned
+                .replace(/^(.{0,2})(.{0,5})(.{0,4}).*/, (_, a, b, c) => `${a ? `(${a}` : ''}${b ? `) ${b}` : ''}${c ? `-${c}` : ''}`)
+        }
+
+        if (name === 'cpfCnpj') {
+            const cleaned = value.replace(/\D/g, '')
+            if (cleaned.length <= 11) {
+                formattedValue = cleaned
+                    .replace(/(\d{3})(\d)/, '$1.$2')
+                    .replace(/(\d{3})(\d)/, '$1.$2')
+                    .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
+            } else {
+                formattedValue = cleaned
+                    .replace(/(\d{2})(\d)/, '$1.$2')
+                    .replace(/(\d{3})(\d)/, '$1.$2')
+                    .replace(/(\d{3})(\d{4})(\d{2})$/, '$1/$2-$3')
+            }
+        }
+
         const updatedForm = {
             ...form,
-            [name]: ['name', 'address', 'city', 'district'].includes(name) ? capitalizeWords(value) : value
+            [name]: ['name', 'address', 'district', 'city'].includes(name) ? capitalizeWords(formattedValue) : formattedValue
         }
         setForm(updatedForm)
 
         const validateFields = formValidation(updatedForm)
-        setErrors(validateFields)
+        setFormErrors(prev => ({ ...prev, [name]: validateFields[name] }))
 
-        const allFieldsFilled = Object.values(updatedForm).every(field => field.trim() !== "")
-        const noErrors = Object.values(validateFields).every(error => error === "")
+        const requiredFields = { ...updatedForm }
+        delete requiredFields.notes
+
+        const allFieldsFilled = Object.values(requiredFields).every(val => val.trim() !== "")
+        const noErrors = Object.values(validateFields).every(error => !error || error === '')
         setIsReadyToSubmit(allFieldsFilled && noErrors)
     }
 
-
-    function formValidation(form: Client) {
-        const { name, email, phone, cpfCnpj, address, district, city } = form
-
-        const errors: Client = defaultValues
-
-        if (!name) errors.name = "Campo obrigatório"
-
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-        if (!email) {
-            errors.email = "Campo obrigatório"
-        } else if (!emailRegex.test(email)) {
-            errors.email = "Email inválido"
-        }
-
-        const phoneRegex = /^\d{2}9\d{8}$/
-        if (!phone) {
-            errors.phone = "Campo obrigatório"
-        } else if (!phoneRegex.test(phone)) {
-            errors.phone = "Formato inválido (somente números com DDD)"
-        }
-
-        if (!address) errors.address = "Campo obrigatório"
-        if (!district) errors.district = "Campo obrigatório"
-        if (!city) errors.city = "Campo obrigatório"
-
-        if (!cpfCnpj) {
-            errors.cpfCnpj = "Campo obrigatório"
-        } else {
-            // Remove tudo que não é número para fazer a contagem
-            const cleanedInput = cpfCnpj.replace(/\D/g, "")
-
-            if (cleanedInput.length === 11) {
-                if (!isValidCPF(cleanedInput)) {
-                    errors.cpfCnpj = "CPF inválido"
-                }
-            } else if (cleanedInput.length === 14) {
-                if (!isValidCNPJ(cleanedInput)) {
-                    errors.cpfCnpj = "CNPJ inválido"
-                }
-            } else {
-                errors.cpfCnpj = "CPF ou CNPJ inválido"
-            }
-        }
-
-        return errors as typeof defaultValues
+    function handleEdit(client: Client) {
+        setForm({ ...client })
+        setEditingClientId(client.id!)
+        setShowForm(true)
+        setFormErrors({})
     }
 
-    function handleSubmit(event: React.FormEvent) {
-        event.preventDefault()
+    function handleDelete(id: string) {
+        if (confirm("Tem certeza que deseja excluir este cliente?")) {
+            setClients(prev => prev.filter(client => client.id !== id))
+        }
+    }
 
+    function handleSubmit(e: React.FormEvent) {
+        e.preventDefault()
         if (!isReadyToSubmit) return
 
-        const newClient: Client = { ...form, id: String(Date.now()) }
-        setClients(prev => [...prev, newClient])
-        setForm(defaultValues)
-        setErrors(defaultValues)
-        setIsReadyToSubmit(false)
+        const normalizedClient: Client = {
+            ...form,
+            id: editingClientId || Date.now().toString(),
+            phone: form.phone.replace(/\D/g, ''),
+            cpfCnpj: form.cpfCnpj.replace(/\D/g, '')
+        }
+
+        if (editingClientId) {
+            setClients(prev => prev.map(client => client.id === editingClientId ? normalizedClient : client))
+        } else {
+            setClients(prev => [...prev, normalizedClient])
+        }
+
+        setForm(defaultClient)
+        setShowForm(false)
+        setEditingClientId(null)
+        setFormErrors({})
     }
 
-
     return (
-        <main className="p-6 max-w-xl mx-auto">
-            <h2 className="text-2xl font-bold mb-4">Cadastro de Clientes</h2>
+        <main className="p-6 max-w-6xl mx-auto">
+            <h2 className="text-2xl font-bold text-center mb-6">Cadastro de Clientes</h2>
 
-            <form onSubmit={handleSubmit} className="grid gap-4 mb-6">
-                {fields.map(({ id, label, placeholder, type }) => (
-                    <div key={id}>
-                        <label htmlFor={id} className="block text-sm font-medium text-gray-700">
-                            {label}
-                        </label>
-                        <input
-                            id={id}
-                            name={id}
-                            type={type}
-                            placeholder={placeholder}
-                            value={form[id as keyof Client]}
-                            onChange={handleChange}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-emerald-500 focus:border-emerald-500"
-                        />
-                        {errors[id as keyof typeof errors] && (
-                            <p className="text-red-600 text-sm mt-1">{errors[id as keyof typeof errors]}</p>
-                        )}
-                    </div>
-                ))}
-
-                {/* Observações */}
-                <div>
-                    <label htmlFor="notes" className="block text-sm font-medium text-gray-700">
-                        Observações
-                    </label>
-
-                    <textarea
-                        id="notes"
-                        name="notes"
-                        rows={3}
-                        placeholder="Observações adicionais..."
-                        value={form.notes}
-                        onChange={handleChange}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-emerald-500 focus:border-emerald-500"
-                    />
-                </div>
-
+            <div className="text-center mb-6">
                 <button
-                    type="submit"
-                    disabled={!isReadyToSubmit}
-                    className="bg-emerald-600 text-white py-2 px-4 rounded-md transition hover:bg-emerald-700 disabled:bg-gray-400 disabled:text-gray-200 disabled:cursor-not-allowed"
+                    onClick={() => {
+                        setForm(defaultClient)
+                        setEditingClientId(null)
+                        setShowForm(true)
+                        setFormErrors({})
+                    }}
+                    className="bg-emerald-600 cursor-pointer text-white px-4 py-2 rounded-md hover:bg-emerald-700"
                 >
-                    Salvar Cliente
+                    Novo Cliente
                 </button>
-            </form>
+            </div>
 
-            <h3 className="text-lg font-semibold mb-4">Lista de Clientes</h3>
+            {clients.length > 0 && (
+                <div className="overflow-auto border rounded-lg shadow-sm mb-10">
+                    <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-emerald-600 text-white">
+                            <tr>
+                                <th className="px-4 py-3 text-sm">Nome</th>
+                                <th className="px-4 py-3 text-sm">E-mail</th>
+                                <th className="px-4 py-3 text-sm">Telefone</th>
+                                <th className="px-4 py-3 text-sm">Documento</th>
+                                <th className="px-4 py-3 text-sm">Endereço</th>
+                                <th className="px-4 py-3 text-sm">Bairro</th>
+                                <th className="px-4 py-3 text-sm">Cidade</th>
+                                <th className="px-4 py-3 text-sm">Observações</th>
+                                <th className="px-4 py-3 text-sm">Ações</th>
+                            </tr>
+                        </thead>
 
-            <ul className="space-y-4 text-gray-800 text-sm">
-                {clients.map(client => (
-                    <li key={client.id} className="border p-3 rounded-md bg-white shadow-sm">
-                        <p><strong className="text-emerald-700">Nome:</strong> {client.name}</p>
-                        <p><strong className="text-emerald-700">Email:</strong> {client.email}</p>
-                        <p><strong className="text-emerald-700">Telefone:</strong> {formatPhoneForDisplay(client.phone)}</p>
-                        <p><strong className="text-emerald-700">CPF/CNPJ:</strong> {client.cpfCnpj}</p>
-                        <p><strong className="text-emerald-700">Endereço:</strong> {client.address}, {client.district}, {client.city}</p>
-                        {client.notes && <p><strong className="text-emerald-700">Observações:</strong> {client.notes}</p>}
-                    </li>
-                ))}
-            </ul>
+                        <tbody className="bg-white divide-y divide-gray-100">
+                            {clients.map(client => (
+                                <tr key={client.id}>
+                                    <td className="px-4 py-2 text-sm whitespace-nowrap">{client.name}</td>
+                                    <td className="px-4 py-2 text-sm break-words">{client.email}</td>
+                                    <td className="px-4 py-2 text-sm whitespace-nowrap">{formatPhoneForDisplay(client.phone)}</td>
+                                    <td className="px-4 py-2 text-sm whitespace-nowrap">
+                                        {client.cpfCnpj.length === 11
+                                            ? client.cpfCnpj.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4")
+                                            : client.cpfCnpj.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, "$1.$2.$3/$4-$5")}
+                                    </td>
+                                    <td className="px-4 py-2 text-sm">{client.address}</td>
+                                    <td className="px-4 py-2 text-sm">{client.district}</td>
+                                    <td className="px-4 py-2 text-sm">{client.city}</td>
+                                    <td className="px-4 py-2 text-sm max-w-[160px] truncate" title={client.notes}>{client.notes || "-"}</td>
+                                    <td className="px-4 py-2 text-sm space-x-1">
+                                        <button
+                                            onClick={() => handleEdit(client)}
+                                            className="text-emerald-600 cursor-pointer hover:underline"
+                                            aria-label="Editar cliente."
+                                        >
+                                            <FaEdit size={18} />
+                                        </button>
+
+                                        <button
+                                            onClick={() => handleDelete(client.id!)} className="text-red-700 cursor-pointer hover:underline"
+                                            aria-label="Excluir cliente"
+                                        >
+                                            <FaTrash size={18} />
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            )}
+
+            {showForm && (
+                <form onSubmit={handleSubmit} className="border rounded-lg p-6 bg-gray-50 shadow-sm">
+                    <h3 className="text-xl cursor-pointer font-semibold mb-4">
+                        {editingClientId ? "Editar Cliente" : "Novo Cliente"}
+                    </h3>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        {Object.entries({
+                            name: "Nome Completo",
+                            email: "E-mail",
+                            phone: "Telefone",
+                            cpfCnpj: "CPF/CNPJ",
+                            address: "Endereço",
+                            district: "Bairro",
+                            city: "Cidade"
+                        }).map(([key, value]) => {
+                            const fieldName = key as keyof Client
+
+                            return (
+                                <div key={key}>
+                                    <label htmlFor={key} className="block text-sm font-medium text-gray-700 mb-1">
+                                        {value} *
+                                    </label>
+
+                                    <input
+                                        type="text"
+                                        name={key}
+                                        id={key}
+                                        value={form[fieldName]}
+                                        onChange={handleChange}
+                                        onBlur={handleChange}
+                                        className="w-full rounded-md border-gray-300 shadow-sm focus:ring-emerald-500 focus:border-emerald-500"
+                                    />
+
+                                    {formErrors[fieldName] && (
+                                        <div className="text-red-600 text-sm mt-1">
+                                            {formErrors[key as keyof Client]}
+                                        </div>
+                                    )}
+                                </div>
+                            )
+                        })}
+
+                        <div className="md:col-span-2">
+                            <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-1">
+                                Observações
+                            </label>
+                            <textarea
+                                name="notes"
+                                id="notes"
+                                value={form.notes || ""}
+                                onChange={handleChange}
+                                rows={3}
+                                className="w-full rounded-md border-gray-300 shadow-sm focus:ring-emerald-500 focus:border-emerald-500"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="flex gap-4 justify-end">
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setForm(defaultClient)
+                                setShowForm(false)
+                                setEditingClientId(null)
+                                setFormErrors({})
+                            }}
+                            className="px-4 py-2 cursor-pointer border border-gray-300 rounded-md hover:bg-gray-100"
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={!isReadyToSubmit}
+                            className={`px-4 py-2 cursor-pointer rounded-md transition ${isReadyToSubmit ? "bg-emerald-600 text-white hover:bg-emerald-700" : "bg-gray-400 text-gray-200 cursor-not-allowed"}`}
+                        >
+                            {editingClientId ? "Atualizar" : "Salvar"} Cliente
+                        </button>
+                    </div>
+                </form>
+            )}
         </main>
     )
 }

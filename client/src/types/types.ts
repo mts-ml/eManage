@@ -8,3 +8,15 @@ export interface CustomJwtPayload extends JwtPayload {
         roles: number[]
     }
 }
+
+export interface Client {
+    name: string
+    email: string
+    phone: string
+    cpfCnpj: string
+    address: string
+    district: string
+    city: string
+    notes?: string
+    id?: string
+}
