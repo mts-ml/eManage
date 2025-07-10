@@ -87,7 +87,6 @@ export const Login: React.FC = () => {
 
         try {
             const response = await axiosInstance.post('/login', form, { withCredentials: true })
-            console.log(response)
 
             // Getting access token, decoding it and saving info on global state
             const accessToken = response.data.accessToken
