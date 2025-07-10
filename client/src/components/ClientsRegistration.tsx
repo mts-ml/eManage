@@ -64,8 +64,6 @@ export const ClientsRegistration: React.FC = () => {
     }
 
 
-
-
     function formValidation(form: Client) {
         const { name, email, phone, cpfCnpj, address, district, city } = form
 
@@ -178,6 +176,7 @@ export const ClientsRegistration: React.FC = () => {
             </form>
 
             <h3 className="text-lg font-semibold mb-4">Lista de Clientes</h3>
+
             <ul className="space-y-4 text-gray-800 text-sm">
                 {clients.map(client => (
                     <li key={client.id} className="border p-3 rounded-md bg-white shadow-sm">
@@ -190,8 +189,6 @@ export const ClientsRegistration: React.FC = () => {
                     </li>
                 ))}
             </ul>
-
-
         </main>
     )
 }

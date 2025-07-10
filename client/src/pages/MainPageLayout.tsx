@@ -6,47 +6,54 @@ import { ProductsRegistration } from "../components/ProductRegistration"
 import { SuppliersRegistration } from "../components/SuppliersRegistration"
 import { ExpensesRegistration } from "../components/ExpensesRegistration"
 import { BankAccountsRegistration } from "../components/BankAccountRegistration"
+import { SalesRegistration } from "../components/SalesRegistration"
 
 
-type SectionKey = "clients" | "products" | "suppliers" | "expenses" | "bankAccount"
+type SectionKey = "clients" | "products" | "suppliers" | "expenses" | "bankAccount" | "sales"
 
 type SectionConfig = {
     section: SectionKey
-    label: string
+    sectionName: string
     icon: React.ReactNode
     component: React.ReactNode
 }
 
-const sections: SectionConfig[] = [
+const sectionsArray: SectionConfig[] = [
     {
         section: "clients",
-        label: "Clientes",
+        sectionName: "Clientes",
         icon: <Users className="h-8 w-8 mb-2" />,
         component: <ClientsRegistration />
     },
     {
         section: "products",
-        label: "Produtos",
+        sectionName: "Produtos",
         icon: <Package className="h-8 w-8 mb-2" />,
         component: <ProductsRegistration />
     },
     {
         section: "suppliers",
-        label: "Fornecedores",
+        sectionName: "Fornecedores",
         icon: <Factory className="h-8 w-8 mb-2" />,
         component: <SuppliersRegistration />
     },
     {
         section: "expenses",
-        label: "Despesas",
+        sectionName: "Despesas",
         icon: <Coins className="h-8 w-8 mb-2" />,
         component: <ExpensesRegistration />
     },
     {
         section: "bankAccount",
-        label: "Conta Bancaria",
+        sectionName: "Conta Bancaria",
         icon: <Wallet className="h-8 w-8 mb-2" />,
         component: <BankAccountsRegistration />
+    },
+    {
+        section: "sales",
+        sectionName: "Vendas",
+        icon: <Wallet className="h-8 w-8 mb-2" />,
+        component: <SalesRegistration />
     }
 ]
 
@@ -55,7 +62,7 @@ export const MainPageLayout: React.FC = () => {
     const [openSection, setOpenSection] = useState<SectionKey | null>(null);
 
     function toggleSection(section: SectionKey) {
-        setOpenSection(prev => (prev === section ? null : section));
+        setOpenSection(prev => (prev === section ? null : section))
     }
 
 
@@ -64,15 +71,15 @@ export const MainPageLayout: React.FC = () => {
 
             {/* Cards */}
             <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 mb-8">
-                {sections.map(({ section, label, icon }) => {
-                    const isOpen = openSection === section;
+                {sectionsArray.map(({ section, sectionName, icon }) => {
+                    const isOpen = openSection === section
 
                     return (
                         <div
                             key={section}
                             onClick={() => toggleSection(section)}
                             className={`group cursor-pointer p-6 rounded-xl transition-all duration-300 ease-in-out flex flex-col items-center text-center border relative hover:-translate-y-1
-                ${isOpen
+                                    ${isOpen
                                     ? "bg-emerald-50 border-emerald-100 ring-2 ring-emerald-200"
                                     : "bg-white shadow hover:shadow-lg border-gray-200"}`}
                         >
@@ -81,7 +88,7 @@ export const MainPageLayout: React.FC = () => {
                             </div>
 
                             <p className={`text-lg font-semibold ${isOpen ? "text-emerald-800" : ""}`}>
-                                {label}
+                                {sectionName}
                             </p>
 
                             <span className="text-sm text-gray-500">
@@ -93,7 +100,7 @@ export const MainPageLayout: React.FC = () => {
             </div>
 
             {/* Seções */}
-            {sections.map(({ section, component }) => (
+            {sectionsArray.map(({ section, component }) => (
                 openSection === section && (
                     <section
                         key={section}
