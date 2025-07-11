@@ -6,10 +6,13 @@ import cookieParser from 'cookie-parser'
 
 import { errorHandler } from './middleware/errorHandler.js'
 import { connectDB } from './config/dbConnection.js'
+import { verifyJWT } from './middleware/verifyJWT.js'
+
 import login from './routes/login.js'
 import register from './routes/register.js'
 import refresh from './routes/refresh.js'
 import logout from './routes/logout.js'
+import clients from './routes/clients/clients.js'
 
 
 const PORT = process.env.PORT || 3500
@@ -33,8 +36,12 @@ app.use(cors({
 
 app.use("/login", login)
 app.use('/register', register)
+
+app.use(verifyJWT)
 app.use('/refresh', refresh)
 app.use('/logout', logout)
+app.use('/clients', clients)
+
 
 // Tratamento de erros
 app.use(errorHandler)
