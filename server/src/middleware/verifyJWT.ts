@@ -3,21 +3,13 @@ import jwt from 'jsonwebtoken'
 
 import { CustomJwtPayload } from "../types/types.js"
 
-interface CustomRequest extends Request {
-    name: string
-    email: string
-    roles: number[]
-}
 
-
-export function verifyJWT(req: CustomRequest, res: Response, next: NextFunction) {
+export function verifyJWT(req: Request, res: Response, next: NextFunction) {
     const authorizationHeader = req.headers['authorization']
     if (!authorizationHeader || !authorizationHeader.startsWith("Bearer ")) {
         res.status(401).json({ message: "Token inválido ou ausente." })
         return
     }
-
-    console.log(authorizationHeader)
 
     const token = authorizationHeader.split(" ")[1]
     try {
@@ -36,7 +28,7 @@ export function verifyJWT(req: CustomRequest, res: Response, next: NextFunction)
         req.roles = decodedToken.UserInfo.roles
         next()
     } catch (error) {
-        console.log(error)       
+        console.log(`verifyJWT - ${JSON.stringify(error)}`)
         res.status(401).json({ message: "Token expirado ou inválido." })
     } 
 }
