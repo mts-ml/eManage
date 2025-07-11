@@ -39,3 +39,5 @@ export interface ClientProps {
     city: string
     notes?: string
 }
+
+export type Errors = Partial<Record<keyof ClientProps, string[]>>

@@ -158,6 +158,8 @@ export const ClientsRegistration: React.FC = () => {
         setFormErrors({})
     }
 
+
+    
     return (
         <main className="p-6 max-w-6xl mx-auto">
             <h2 className="text-2xl font-bold text-center mb-6">Cadastro de Clientes</h2>

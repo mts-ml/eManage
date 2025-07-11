@@ -8,7 +8,6 @@ import { User } from "../model/Users.js"
 
 export async function loginController(req: Request<{}, {}, UserProps>, res: Response): Promise<void> {
     const { email, password } = req.body
-    console.log(req.body)    
 
     try {
         const foundUser = await User.findOne({ email })
@@ -34,7 +33,7 @@ export async function loginController(req: Request<{}, {}, UserProps>, res: Resp
                 },
             },
             process.env.ACCESS_TOKEN_SECRET!,
-            { expiresIn: '30s' }
+            { expiresIn: '500s' }
         )
 
         const refreshToken = jwt.sign(
