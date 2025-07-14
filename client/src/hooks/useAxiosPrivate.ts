@@ -32,7 +32,7 @@ export function useAxiosPrivate() {
                 const previousRequest = error?.config
 
                 // Se deu erro 401 (não autorizado) e ainda não tentamos renovar
-                if (error.response.status === 403 && !previousRequest.sent) {
+                if (error.response.status === 401 && !previousRequest.sent) {
                     console.debug("[Axios Interceptor] Token expired, attempting refresh...")
                     previousRequest.sent = true // Marca como enviado para não criar loop infinito
 
