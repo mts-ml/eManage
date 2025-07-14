@@ -92,7 +92,7 @@ export async function deleteClient(req: Request<{ id: string }>, res: Response, 
     try {
         const { id } = req.params
         if (!id || !mongoose.Types.ObjectId.isValid(id)) {
-            res.status(400).json({ message: "Id inválido ou asente." })
+            res.status(400).json({ message: "Id inválido ou ausente." })
             return
         }
 
