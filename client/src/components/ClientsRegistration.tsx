@@ -1,13 +1,14 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { FaTrash, FaEdit } from 'react-icons/fa'
 
-import type { Client } from "../types/types"
+import type { Client, ClientFromBackend } from "../types/types"
 import {
     capitalizeWords,
     isValidCPF,
     isValidCNPJ,
     formatPhoneForDisplay
 } from "../utils/utils"
+import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
 
 
 export const ClientsRegistration: React.FC = () => {
@@ -28,6 +29,8 @@ export const ClientsRegistration: React.FC = () => {
     const [showForm, setShowForm] = useState(false)
     const [isReadyToSubmit, setIsReadyToSubmit] = useState(false)
     const [editingClientId, setEditingClientId] = useState<string | null>(null)
+
+    const axiosPrivate = useAxiosPrivate()
 
     function formValidation(form: Client): Partial<Client> {
         const errors: Partial<Client> = {}
@@ -107,7 +110,7 @@ export const ClientsRegistration: React.FC = () => {
 
         const updatedForm = {
             ...form,
-            [name]: ['name', 'address', 'district', 'city'].includes(name) ? capitalizeWords(formattedValue) : formattedValue
+            [name]: formattedValue
         }
         setForm(updatedForm)
 
@@ -117,49 +120,101 @@ export const ClientsRegistration: React.FC = () => {
         const requiredFields = { ...updatedForm }
         delete requiredFields.notes
 
-        const allFieldsFilled = Object.values(requiredFields).every(val => val.trim() !== "")
+        const allFieldsFilled = Object.values(requiredFields).every(val => String(val).trim() !== "")
         const noErrors = Object.values(validateFields).every(error => !error || error === '')
         setIsReadyToSubmit(allFieldsFilled && noErrors)
     }
+
+    function handleBlur(e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) {
+        const { name, value } = e.currentTarget
+
+        if (['name', 'address', 'district', 'city'].includes(name)) {
+            setForm(prev => ({
+                ...prev,
+                [name]: capitalizeWords(value)
+            }))
+        }
+    }
+
 
     function handleEdit(client: Client) {
         setForm({ ...client })
         setEditingClientId(client.id!)
         setShowForm(true)
-        setFormErrors({})
+
+        const errors = formValidation(client)
+        setFormErrors(errors)
     }
 
-    function handleDelete(id: string) {
+    async function handleDelete(id: string) {
         if (confirm("Tem certeza que deseja excluir este cliente?")) {
+            await axiosPrivate.delete(`clients/${id}`)
             setClients(prev => prev.filter(client => client.id !== id))
         }
     }
 
-    function handleSubmit(e: React.FormEvent) {
+    async function handleSubmit(e: React.FormEvent) {
         e.preventDefault()
         if (!isReadyToSubmit) return
 
         const normalizedClient: Client = {
             ...form,
-            id: editingClientId || Date.now().toString(),
             phone: form.phone.replace(/\D/g, ''),
             cpfCnpj: form.cpfCnpj.replace(/\D/g, '')
         }
 
-        if (editingClientId) {
-            setClients(prev => prev.map(client => client.id === editingClientId ? normalizedClient : client))
-        } else {
-            setClients(prev => [...prev, normalizedClient])
-        }
+        try {
+            // Editar usuário
+            if (editingClientId) {
+                const response = await axiosPrivate.put(`/clients/${editingClientId}`, normalizedClient)
 
-        setForm(defaultClient)
-        setShowForm(false)
-        setEditingClientId(null)
-        setFormErrors({})
+                const updatedClient = { ...response.data, id: response.data._id }
+                setClients(prev => prev.map(client =>
+                    client.id === editingClientId ? updatedClient : client)
+                )
+            } else {
+                // Criar novo usuário
+                const response = await axiosPrivate.post('/clients', normalizedClient)
+
+                const newClient = { ...response.data, id: response.data._id }
+
+                setClients(prev => [...prev, newClient])
+            }
+
+            // Limpa os campos
+            setForm(defaultClient)
+            setShowForm(false)
+            setEditingClientId(null)
+            setFormErrors({})
+        } catch (error) {
+            console.log(error)
+        }
     }
 
+    useEffect(() => {
+        async function getClients() {
+            try {
+                const response = await axiosPrivate.get<ClientFromBackend[]>('/clients')
+                if (response.status === 204) {
+                    setClients([])
+                    return
+                }
 
-    
+                const normalizeClient = response.data.map(client => ({
+                    ...client,
+                    id: client._id
+                }))
+
+                console.log(normalizeClient)
+                setClients(normalizeClient)
+            } catch (error) {
+                console.error("Erro ao carregar clientes", error)
+            }
+        }
+        getClients()
+    }, [])
+
+
     return (
         <main className="p-6 max-w-6xl mx-auto">
             <h2 className="text-2xl font-bold text-center mb-6">Cadastro de Clientes</h2>
@@ -263,7 +318,7 @@ export const ClientsRegistration: React.FC = () => {
                                         id={key}
                                         value={form[fieldName]}
                                         onChange={handleChange}
-                                        onBlur={handleChange}
+                                        onBlur={handleBlur}
                                         className="w-full rounded-md border-gray-300 shadow-sm focus:ring-emerald-500 focus:border-emerald-500"
                                     />
 
