@@ -1,11 +1,13 @@
 import { useState } from "react"
+import { axiosPrivate } from "../api/axios"
 
 
 interface Product {
+    id?: number
     name: string
     description: string
     price: string
-    id?: number
+    stock: string
 }
 
 
@@ -13,13 +15,15 @@ export const ProductsRegistration: React.FC = () => {
     const defaultValues = {
         name: "",
         description: "",
-        price: ""
+        price: "",
+        stock: ""
     }
 
-    const [form, setForm] = useState<Omit<Product, "id">>(defaultValues)
-    const [errors, setErrors] = useState(defaultValues)
+    const [form, setForm] = useState<Product>(defaultValues)
+    const [errors, setErrors] = useState<Product>(defaultValues)
     const [products, setProducts] = useState<Product[]>([])
     const [isReadyToSubmit, setIsReadyToSubmit] = useState(false)
+    const [editingProductId, setEditingProductId] = useState<number | null>(null)
 
 
     function handleChange(event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
@@ -36,13 +40,13 @@ export const ProductsRegistration: React.FC = () => {
         const validateFields = formValidation(updatedForm)
         setErrors(validateFields)
 
-        const allFieldsFilled = Object.values(updatedForm).every(field => field.trim() !== "")
+        const allFieldsFilled = Object.values(updatedForm).every(field => String(field).trim() !== "")
         const noErrors = Object.values(validateFields).every(error => error === "")
         setIsReadyToSubmit(allFieldsFilled && noErrors)
     }
 
     function formValidation(form: Product) {
-        const errors: Product = { name: "", description: "", price: "" }
+        const errors: Product = defaultValues
 
         if (!form.name.trim()) errors.name = "Campo obrigatório"
         if (!form.description.trim()) errors.description = "Campo obrigatório"
@@ -52,20 +56,40 @@ export const ProductsRegistration: React.FC = () => {
         } else if (isNaN(Number(form.price)) || Number(form.price) <= 0) {
             errors.price = "Preço inválido"
         }
+        if (!form.stock.trim()) {
+            errors.stock = "Campo obrigatório"
+        } else if (!/^\d+$/.test(form.stock) || Number(form.stock) < 0) {
+            errors.stock = "Estoque inválido"
+        }
+
 
         return errors
     }
 
-    function handleSubmit(event: React.FormEvent) {
+    async function handleSubmit(event: React.FormEvent) {
         event.preventDefault()
 
         if (!isReadyToSubmit) return
 
-        const newProduct: Product = {
-            ...form,
-            id: Date.now()
+        try {
+            if (editingProductId) {
+                const response = await axiosPrivate.put(`/products/${editingProductId}`, form)
+                const updatedProduct: Product = { ...response.data, id: response.data._id }
+
+                setProducts(prev =>
+                    prev.map(product => product.id === editingProductId ? updatedProduct : product)
+                )
+                setEditingProductId(null)
+            } else {
+                const response = await axiosPrivate.post('/products', form)
+                const newProduct: Product = {...response.data, id: response.data._id}
+
+                setProducts(prev => [...prev, newProduct])
+            }
+        } catch (error) {
+            console.log(error)
         }
-        setProducts(prev => [...prev, newProduct])
+
         setForm(defaultValues)
         setErrors(defaultValues)
         setIsReadyToSubmit(false)
@@ -96,14 +120,13 @@ export const ProductsRegistration: React.FC = () => {
                     )}
                 </div>
 
-
                 {/* Descrição */}
                 <div>
                     <label htmlFor="description" className="block text-sm font-medium text-gray-700">Descrição</label>
                     <textarea
                         id="description"
                         name="description"
-                        placeholder="Descrição do produto"
+                        placeholder="Descrição do produto, g ou kg."
                         value={form.description}
                         onChange={handleChange}
                         aria-describedby="descriptionError"
@@ -136,6 +159,24 @@ export const ProductsRegistration: React.FC = () => {
                     )}
                 </div>
 
+                {/* Estoque */}
+                <div>
+                    <label htmlFor="stock" className="block text-sm font-medium text-gray-700">Estoque</label>
+                    <input
+                        type="text"
+                        id="stock"
+                        name="stock"
+                        placeholder="0.00"
+                        value={form.stock}
+                        onChange={handleChange}
+                        aria-describedby="stockError"
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-emerald-500 focus:border-emerald-500"
+                    />
+                    {errors.stock && (
+                        <div id="stockError" className="text-red-600 text-sm mt-1" aria-live="polite">{errors.stock}</div>
+                    )}
+                </div>
+
                 <button
                     type="submit"
                     disabled={!isReadyToSubmit}
@@ -147,16 +188,29 @@ export const ProductsRegistration: React.FC = () => {
 
             <h3 className="text-lg font-semibold mb-2">Lista de Produtos</h3>
 
-            <ul className="list-disc pl-6 text-gray-800 text-sm">
-                {products.map(product => (
-                    <li key={product.id} className="mb-1">
-                        <span className="font-semibold text-green-800">Nome:</span> {product.name} |{" "}
-                        <span className="font-semibold text-green-800">Descrição:</span> {product.description} |{" "}
-                        <span className="font-semibold text-green-800">Preço:</span> R${Number(product.price).toFixed(2).replace(".", ",")}
-                    </li>
-                ))}
-            </ul>
+            {products.length > 0 && (
+                <table className="w-full border-collapse border text-center border-gray-300 text-sm">
+                    <thead className="bg-emerald-600 text-white">
+                        <tr>
+                            <th className="p-2 border">Nome</th>
+                            <th className="p-2 border">Preço</th>
+                            <th className="p-2 border">Estoque</th>
+                            <th className="p-2 border">Descrição</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {products.map(product => (
+                            <tr key={product.id} className="odd:bg-white even:bg-gray-100">
+                                <td className="p-2 border">{product.name}</td>
+                                <td className="p-2 border">R${Number(product.price).toFixed(2).replace('.', ',')}</td>
+                                <td className="p-2 border">{product.stock}</td>
+                                <td className="p-2 border">{product.description}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            )}
         </main>
     )
 }
-
