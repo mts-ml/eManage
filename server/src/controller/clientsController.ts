@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from "express"
+import mongoose from "mongoose"
 
 import { Client } from "../model/Clients.js"
 import { ClientProps } from "../types/types.js"
@@ -83,6 +84,27 @@ export async function updateClient(req: Request<{ id: string }, {}, ClientProps>
         res.json(updatedClient)
     } catch (error) {
         console.error(`Erro ao editar cliente ${JSON.stringify(error)}`)
+        next(error)
+    }
+}
+
+export async function deleteClient(req: Request<{ id: string }>, res: Response, next: NextFunction) {
+    try {
+        const { id } = req.params
+        if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+            res.status(400).json({ message: "Id inválido ou asente." })
+            return
+        }
+
+        const deletedClient = await Client.findByIdAndDelete(id)
+        if (!deletedClient) {
+            res.status(404).json({ message: "Cliente não encontrado." })
+            return
+        }
+
+        res.json({ message: `Cliente ${deletedClient.name} deletado com sucesso.` })
+    } catch (error) {
+        console.error("Erro ao deletar cliente", error)
         next(error)
     }
 }
