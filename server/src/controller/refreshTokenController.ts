@@ -13,19 +13,14 @@ export async function handleRefreshToken(req: Request, res: Response) {
     }
 
     try {
-        const foundUser = await User.findOne({ refreshToken })
-        if (!foundUser) {
-            res.status(403).json({ message: "Usuário não autorizado." })
-            return
-        }
-
         const decodedToken = jwt.verify(
             refreshToken,
             process.env.REFRESH_TOKEN_SECRET!
         ) as CustomJwtPayload
 
-        if (decodedToken.UserInfo.email !== foundUser.email) {
-            res.status(403).json({ message: "Email do token inválido" })
+        const foundUser = await User.findOne({ email: decodedToken.UserInfo.email })
+        if (!foundUser || foundUser.refreshToken !== refreshToken) {
+            res.status(403).json({ message: "Usuário não autorizado." })
             return
         }
 
@@ -39,7 +34,7 @@ export async function handleRefreshToken(req: Request, res: Response) {
                 }
             },
             process.env.ACCESS_TOKEN_SECRET!,
-            { expiresIn: "30d" }
+            { expiresIn: "300s" }
         )
 
         res.json({ accessToken: newAccessToken })
