@@ -28,7 +28,7 @@ const allowedOrigins = process.env.NODE_ENV === "production" ?
     process.env.FRONTEND_PROD_URL
     :
     process.env.FRONTEND_DEV_URL
-    
+
 app.use(cors({
     origin: allowedOrigins,
     credentials: true
@@ -36,9 +36,9 @@ app.use(cors({
 
 app.use("/login", login)
 app.use('/register', register)
+app.use('/refresh', refresh)
 
 app.use(verifyJWT)
-app.use('/refresh', refresh)
 app.use('/logout', logout)
 app.use('/clients', clients)
 
