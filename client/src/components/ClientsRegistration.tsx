@@ -9,6 +9,7 @@ import {
     formatPhoneForDisplay
 } from "../utils/utils"
 import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
+import axios from "axios"
 
 
 export const ClientsRegistration: React.FC = () => {
@@ -29,6 +30,7 @@ export const ClientsRegistration: React.FC = () => {
     const [showForm, setShowForm] = useState(false)
     const [isReadyToSubmit, setIsReadyToSubmit] = useState(false)
     const [editingClientId, setEditingClientId] = useState<string | null>(null)
+    const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
     const axiosPrivate = useAxiosPrivate()
 
@@ -187,8 +189,23 @@ export const ClientsRegistration: React.FC = () => {
             setEditingClientId(null)
             setFormErrors({})
         } catch (error) {
-            console.log(error)
+            if (axios.isAxiosError(error)) {
+                const data = error.response?.data
+                if (error.response?.status === 409 && data) {
+                    const { field, message } = data
+                    setErrorMessage(message)
+
+                    if (field) {
+                        setFormErrors(prev => ({ ...prev, [field]: message }))
+                    }
+                } else {
+                    setErrorMessage("Erro inesperado. Tente novamente.")
+                }
+            } else {
+                setErrorMessage("Erro inesperado. Tente novamente.")
+            }
         }
+
     }
 
     useEffect(() => {
@@ -213,6 +230,16 @@ export const ClientsRegistration: React.FC = () => {
         }
         getClients()
     }, [])
+
+    const clientFields = [
+        { key: "name", label: "Nome Completo", placeholder: "Digite o nome completo" },
+        { key: "email", label: "E-mail", placeholder: "exemplo@email.com" },
+        { key: "phone", label: "Telefone", placeholder: "(11) 98765-4321" },
+        { key: "cpfCnpj", label: "CPF/CNPJ", placeholder: "000.000.000-00 ou 00.000.000/0000-00" },
+        { key: "address", label: "Endereço", placeholder: "Rua Exemplo, 123" },
+        { key: "district", label: "Bairro", placeholder: "Centro" },
+        { key: "city", label: "Cidade", placeholder: "São Paulo" }
+    ]
 
 
     return (
@@ -295,31 +322,24 @@ export const ClientsRegistration: React.FC = () => {
                     </h3>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                        {Object.entries({
-                            name: "Nome Completo",
-                            email: "E-mail",
-                            phone: "Telefone",
-                            cpfCnpj: "CPF/CNPJ",
-                            address: "Endereço",
-                            district: "Bairro",
-                            city: "Cidade"
-                        }).map(([key, value]) => {
+                        {clientFields.map(({ key, label, placeholder }) => {
                             const fieldName = key as keyof Client
 
                             return (
                                 <div key={key}>
                                     <label htmlFor={key} className="block text-sm font-medium text-gray-700 mb-1">
-                                        {value} *
+                                        {label} *
                                     </label>
 
                                     <input
                                         type="text"
                                         name={key}
                                         id={key}
+                                        placeholder={placeholder}
                                         value={form[fieldName]}
                                         onChange={handleChange}
                                         onBlur={handleBlur}
-                                        className="w-full rounded-md border-gray-300 shadow-sm focus:ring-emerald-500 focus:border-emerald-500"
+                                        className="w-full rounded-md border-gray-300 shadow-sm focus:ring-emerald-500 focus:border-emerald-500 px-2"
                                     />
 
                                     {formErrors[fieldName] && (
@@ -346,7 +366,7 @@ export const ClientsRegistration: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="flex gap-4 justify-end">
+                    <div className="flex gap-4 justify-center items-center">
                         <button
                             type="button"
                             onClick={() => {
@@ -359,14 +379,22 @@ export const ClientsRegistration: React.FC = () => {
                         >
                             Cancelar
                         </button>
+
                         <button
                             type="submit"
                             disabled={!isReadyToSubmit}
-                            className={`px-4 py-2 cursor-pointer rounded-md transition ${isReadyToSubmit ? "bg-emerald-600 text-white hover:bg-emerald-700" : "bg-gray-400 text-gray-200 cursor-not-allowed"}`}
+                            className={`px-4 py-2 rounded-md transition ${isReadyToSubmit ? "bg-emerald-600 text-white hover:bg-emerald-700 cursor-pointer" : "bg-gray-400 text-gray-200 cursor-not-allowed"}`}
                         >
                             {editingClientId ? "Atualizar" : "Salvar"} Cliente
                         </button>
                     </div>
+
+                    {errorMessage && (
+                        <div className="mb-4 p-3 mt-4 bg-red-100 text-red-700 rounded">
+                            {errorMessage}
+                        </div>
+                    )}
+
                 </form>
             )}
         </main>

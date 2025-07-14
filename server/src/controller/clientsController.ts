@@ -48,7 +48,7 @@ export async function createNewClient(req: Request<{}, {}, ClientProps>, res: Re
         }
 
         const createdClient = await Client.create(newClient)
-        res.status(201).json({ createdClient })
+        res.status(201).json(createdClient)
     } catch (error) {
         console.error(`createNewClient error: ${JSON.stringify(error)}`)
         next(error)
