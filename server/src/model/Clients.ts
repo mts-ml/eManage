@@ -10,7 +10,10 @@ const clientSchema = new Schema<ClientProps>({
     },
     email: {
         type: String,
-        required: true
+        required: true,
+        trim: true,
+        lowercase: true,
+        unique: true
     },
     phone: {
         type: String,
@@ -18,7 +21,9 @@ const clientSchema = new Schema<ClientProps>({
     },
     cpfCnpj: {
         type: String,
-        required: true
+        required: true,
+        trim: true,
+        unique: true
     },
     address: {
         type: String,
