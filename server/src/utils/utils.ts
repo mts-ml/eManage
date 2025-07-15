@@ -1,4 +1,4 @@
-import { ClientProps, Errors } from "../types/types.js"
+import { ClientProps, Errors, ProductErrors, ProductProps } from "../types/types.js"
 
 
 export function capitalizeWords(text: string): string {
@@ -69,6 +69,10 @@ export function formatPhoneForDisplay(phone: string): string {
 
 export function addError(errors: Errors, clientProps: keyof ClientProps, message: string): void {    
     errors[clientProps] = [...(errors[clientProps] || []), message]
+}
+
+export function addErrorProducts(errors: ProductErrors, productProps: keyof ProductProps, message: string): void {    
+    errors[productProps] = message
 }
 
 export function isMissing(value: unknown): boolean {
