@@ -116,6 +116,8 @@ export const ClientsRegistration: React.FC = () => {
         }
         setForm(updatedForm)
 
+        setErrorMessage(null)
+
         const validateFields = formValidation(updatedForm)
         setFormErrors(prev => ({ ...prev, [name]: validateFields[name] }))
 
@@ -188,6 +190,7 @@ export const ClientsRegistration: React.FC = () => {
             setShowForm(false)
             setEditingClientId(null)
             setFormErrors({})
+            setErrorMessage(null)
         } catch (error) {
             if (axios.isAxiosError(error)) {
                 const data = error.response?.data
@@ -221,8 +224,6 @@ export const ClientsRegistration: React.FC = () => {
                     ...client,
                     id: client._id
                 }))
-
-                console.log(normalizeClient)
                 setClients(normalizeClient)
             } catch (error) {
                 console.error("Erro ao carregar clientes", error)

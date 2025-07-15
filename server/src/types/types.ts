@@ -39,5 +39,13 @@ export interface ClientProps {
     city: string
     notes?: string
 }
-
 export type Errors = Partial<Record<keyof ClientProps, string[]>>
+
+
+export interface ProductProps {
+    name: string
+    description: string
+    price: string
+    stock: string
+}
+export type ProductErrors = Partial<Record<keyof ProductProps, string>>
