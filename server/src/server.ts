@@ -12,7 +12,8 @@ import login from './routes/login.js'
 import register from './routes/register.js'
 import refresh from './routes/refresh.js'
 import logout from './routes/logout.js'
-import clients from './routes/clients/clients.js'
+import clients from './routes/api/clients.js'
+import products from './routes/api/products.js'
 
 
 const PORT = process.env.PORT || 3500
@@ -41,6 +42,7 @@ app.use('/refresh', refresh)
 app.use(verifyJWT)
 app.use('/logout', logout)
 app.use('/clients', clients)
+app.use('/products', products)
 
 
 // Tratamento de erros
