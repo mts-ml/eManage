@@ -24,7 +24,8 @@ export async function createNewClient(req: Request<{}, {}, ClientProps>, res: Re
     try {
         const clientProps = req.body
 
-        const duplicateEmail = await Client.findOne({ email: clientProps.email })
+        const normalizedEmail = clientProps.email.trim().toLowerCase()
+        const duplicateEmail = await Client.findOne({ email: normalizedEmail })
         if (duplicateEmail) {
             res.status(409).json({ message: "Email já cadastrado." })
             return
@@ -50,6 +51,15 @@ export async function createNewClient(req: Request<{}, {}, ClientProps>, res: Re
         const createdClient = await Client.create(newClient)
         res.status(201).json(createdClient)
     } catch (error) {
+        if (
+            typeof error === 'object' &&
+            error !== null &&
+            'code' in error &&
+            (error as any).code === 11000
+        ) {
+            res.status(409).json({ message: "Registro já existe." })
+            return
+        }
         console.error(`createNewClient error: ${JSON.stringify(error)}`)
         next(error)
     }
@@ -60,8 +70,8 @@ export async function updateClient(req: Request<{ id: string }, {}, ClientProps>
         const { id } = req.params
         const clientProps = req.body
 
-        if (!id) {
-            res.status(400).json({ message: "Id do cliente é obrigatório." })
+        if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+            res.status(400).json({ message: "Id inválido ou ausente." })
             return
         }
         /*{
