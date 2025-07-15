@@ -1,14 +1,18 @@
-import { useState } from "react"
-import { axiosPrivate } from "../api/axios"
+import { useEffect, useState } from "react"
+import axios from "axios"
+
+import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
 
 
 interface Product {
-    id?: number
+    id?: string
     name: string
     description: string
     price: string
     stock: string
 }
+
+export type ProductFromBackend = Product & { _id: string }
 
 
 export const ProductsRegistration: React.FC = () => {
@@ -23,9 +27,10 @@ export const ProductsRegistration: React.FC = () => {
     const [errors, setErrors] = useState<Product>(defaultValues)
     const [products, setProducts] = useState<Product[]>([])
     const [isReadyToSubmit, setIsReadyToSubmit] = useState(false)
-    const [editingProductId, setEditingProductId] = useState<number | null>(null)
+    const [editingProductId, setEditingProductId] = useState<string | null>(null)
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
     const [showForm, setShowForm] = useState<boolean>(false)
+    const axiosPrivate = useAxiosPrivate()
 
 
     function handleChange(event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
@@ -38,6 +43,8 @@ export const ProductsRegistration: React.FC = () => {
 
         const updatedForm = { ...form, [name]: formattedValue }
         setForm(updatedForm)
+
+        setErrorMessage(null)
 
         const validateFields = formValidation(updatedForm)
         setErrors(validateFields)
@@ -64,7 +71,6 @@ export const ProductsRegistration: React.FC = () => {
             errors.stock = "Estoque inválido"
         }
 
-
         return errors
     }
 
@@ -81,7 +87,12 @@ export const ProductsRegistration: React.FC = () => {
                 setProducts(prev =>
                     prev.map(product => product.id === editingProductId ? updatedProduct : product)
                 )
+
                 setEditingProductId(null)
+                setForm(defaultValues)
+                setErrors(defaultValues)
+                setIsReadyToSubmit(false)
+                setErrorMessage(null)
             } else {
                 const response = await axiosPrivate.post('/products', form)
                 const newProduct: Product = { ...response.data, id: response.data._id }
@@ -89,14 +100,43 @@ export const ProductsRegistration: React.FC = () => {
                 setProducts(prev => [...prev, newProduct])
             }
         } catch (error) {
-            console.log(error)
-            setErrorMessage("Erro inesperado. Tente novamente mais tarde.")
-        }
+            if (axios.isAxiosError(error)) {
+                const data = error.response?.data
+                if (error.response?.status === 409 && data) {
+                    const { field, message } = data
+                    setErrorMessage(message)
 
-        setForm(defaultValues)
-        setErrors(defaultValues)
-        setIsReadyToSubmit(false)
+                    if (field) {
+                        setErrors(prev => ({ ...prev, [field]: message }))
+                    }
+                } else {
+                    setErrorMessage("Erro inesperado. Tente novamente.")
+                }
+            } else {
+                setErrorMessage("Erro inesperado. Tente novamente.")
+            }
+        }
     }
+
+    useEffect(() => {
+        async function getProducts() {
+            try {
+                const response = await axiosPrivate.get<ProductFromBackend[]>('/products')
+                if (response.status === 204) {
+                    setProducts([])
+                    return
+                }
+
+                const normalizeProductsId = response.data.map(product =>
+                    ({ ...product, id: product._id }))
+                setProducts(normalizeProductsId)
+            } catch (error) {
+                console.log(error)
+            }
+        }
+        getProducts()
+    }, [])
+
 
     return (
         <main className="p-6 max-w-xl mx-auto">
@@ -120,116 +160,113 @@ export const ProductsRegistration: React.FC = () => {
 
 
             {showForm && (
-                <section className="border rounded-lg p-6 bg-gray-50 shadow-sm">
-                    <form
-                        onSubmit={handleSubmit}
-                        className="grid gap-4 mb-6"
-                        aria-label="Formulário de cadastro de produtos"
-                    >
+                <form
+                    onSubmit={handleSubmit}
+                    className="grid gap-4 mb-6 border rounded-lg p-6 bg-gray-50 shadow-sm"
+                    aria-label="Formulário de cadastro de produtos"
+                >
 
-                        {/* Nome */}
-                        <div>
-                            <label htmlFor="name" className="block text-sm font-medium text-gray-700">Nome</label>
+                    {/* Nome */}
+                    <div>
+                        <label htmlFor="name" className="block text-sm font-medium text-gray-700">Nome</label>
 
-                            <input
-                                type="text"
-                                id="name"
-                                name="name"
-                                placeholder="Nome do produto"
-                                value={form.name}
-                                onChange={handleChange}
-                                aria-describedby="nameError"
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-emerald-500 focus:border-emerald-500"
-                            />
-                            {errors.name && (
-                                <div
-                                    id="nameError"
-                                    aria-live="polite"
-                                    className="text-red-600 text-sm mt-1"
-                                >
-                                    {errors.name}
-                                </div>
-                            )}
-                        </div>
+                        <input
+                            type="text"
+                            id="name"
+                            name="name"
+                            placeholder="Nome do produto"
+                            value={form.name}
+                            onChange={handleChange}
+                            aria-describedby="nameError"
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-emerald-500 focus:border-emerald-500"
+                        />
+                        {errors.name && (
+                            <div
+                                id="nameError"
+                                aria-live="polite"
+                                className="text-red-600 text-sm mt-1"
+                            >
+                                {errors.name}
+                            </div>
+                        )}
+                    </div>
 
-                        {/* Descrição */}
-                        <div>
-                            <label htmlFor="description" className="block text-sm font-medium text-gray-700">Descrição</label>
-                            <textarea
-                                id="description"
-                                name="description"
-                                placeholder="Descrição do produto, g ou kg."
-                                value={form.description}
-                                onChange={handleChange}
-                                aria-describedby="descriptionError"
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-emerald-500 focus:border-emerald-500"
-                                rows={3}
-                            />
+                    {/* Descrição */}
+                    <div>
+                        <label htmlFor="description" className="block text-sm font-medium text-gray-700">Descrição</label>
+                        <textarea
+                            id="description"
+                            name="description"
+                            placeholder="Descrição do produto, g ou kg."
+                            value={form.description}
+                            onChange={handleChange}
+                            aria-describedby="descriptionError"
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-emerald-500 focus:border-emerald-500"
+                            rows={3}
+                        />
 
-                            {errors.description && (
-                                <div
-                                    id="descriptionError"
-                                    aria-live="polite"
-                                    className="text-red-600 text-sm mt-1"
-                                >
-                                    {errors.description}
-                                </div>
-                            )}
-                        </div>
+                        {errors.description && (
+                            <div
+                                id="descriptionError"
+                                aria-live="polite"
+                                className="text-red-600 text-sm mt-1"
+                            >
+                                {errors.description}
+                            </div>
+                        )}
+                    </div>
 
-                        {/* Preço */}
-                        <div>
-                            <label htmlFor="price" className="block text-sm font-medium text-gray-700">Preço</label>
+                    {/* Preço */}
+                    <div>
+                        <label htmlFor="price" className="block text-sm font-medium text-gray-700">Preço</label>
 
-                            <input
-                                type="text"
-                                id="price"
-                                name="price"
-                                placeholder="0.00"
-                                value={form.price}
-                                onChange={handleChange}
-                                aria-describedby="priceError"
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-emerald-500 focus:border-emerald-500"
-                            />
+                        <input
+                            type="text"
+                            id="price"
+                            name="price"
+                            placeholder="0.00"
+                            value={form.price}
+                            onChange={handleChange}
+                            aria-describedby="priceError"
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-emerald-500 focus:border-emerald-500"
+                        />
 
-                            {errors.price && (
-                                <div
-                                    id="priceError"
-                                    aria-live="polite"
-                                    className="text-red-600 text-sm mt-1"
-                                >
-                                    {errors.price}
-                                </div>
-                            )}
-                        </div>
+                        {errors.price && (
+                            <div
+                                id="priceError"
+                                aria-live="polite"
+                                className="text-red-600 text-sm mt-1"
+                            >
+                                {errors.price}
+                            </div>
+                        )}
+                    </div>
 
-                        {/* Estoque */}
-                        <div>
-                            <label htmlFor="stock" className="block text-sm font-medium text-gray-700">Estoque</label>
-                            <input
-                                type="text"
-                                id="stock"
-                                name="stock"
-                                placeholder="0.00"
-                                value={form.stock}
-                                onChange={handleChange}
-                                aria-describedby="stockError"
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-emerald-500 focus:border-emerald-500"
-                            />
-                            {errors.stock && (
-                                <div
-                                    id="stockError"
-                                    className="text-red-600 text-sm mt-1"
-                                    aria-live="polite"
-                                >
-                                    {errors.stock}
-                                </div>
-                            )}
-                        </div>
-                    </form>
+                    {/* Estoque */}
+                    <div>
+                        <label htmlFor="stock" className="block text-sm font-medium text-gray-700">Estoque</label>
+                        <input
+                            type="text"
+                            id="stock"
+                            name="stock"
+                            placeholder="0.00"
+                            value={form.stock}
+                            onChange={handleChange}
+                            aria-describedby="stockError"
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-emerald-500 focus:border-emerald-500"
+                        />
+                        {errors.stock && (
+                            <div
+                                id="stockError"
+                                className="text-red-600 text-sm mt-1"
+                                aria-live="polite"
+                            >
+                                {errors.stock}
+                            </div>
+                        )}
+                    </div>
 
-
-                    <div className="flex gap-4 justify-center items-center mx-auto">
+                    <div className="flex justify-center items-center gap-4">
                         <button
                             type="button"
                             onClick={() => {
@@ -248,20 +285,20 @@ export const ProductsRegistration: React.FC = () => {
                             disabled={!isReadyToSubmit}
                             className={`px-4 py-2 rounded-md transition ${isReadyToSubmit ? "bg-emerald-600 text-white hover:bg-emerald-700 cursor-pointer" : "bg-gray-400 text-gray-200 cursor-not-allowed"}`}
                         >
-                            {editingProductId ? "Atualizar" : "Salvar"} Cliente
+                            {editingProductId ? "Atualizar" : "Salvar"} Produto
                         </button>
-
-                        {errorMessage && (
-                            <div
-                                id="stockError"
-                                className="text-red-600 text-sm mt-1"
-                                aria-live="polite"
-                            >
-                                {errorMessage}
-                            </div>
-                        )}
                     </div>
-                </section>
+
+                    {errorMessage && (
+                        <div
+                            id="stockError"
+                            className="text-red-600 text-sm mt-1 text-center"
+                            aria-live="polite"
+                        >
+                            {errorMessage}
+                        </div>
+                    )}
+                </form>
             )}
 
             {products.length > 0 && (
