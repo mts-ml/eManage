@@ -1,18 +1,10 @@
-import { useEffect, useState } from "react"
+import { useContext, useState } from "react"
 import axios from "axios"
 
+import { FaTrash, FaEdit } from 'react-icons/fa'
 import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
-
-
-interface Product {
-    id?: string
-    name: string
-    description: string
-    price: string
-    stock: string
-}
-
-export type ProductFromBackend = Product & { _id: string }
+import ProductsContext from "../Context/ProductsContext"
+import type { Product } from "../types/types"
 
 
 export const ProductsRegistration: React.FC = () => {
@@ -25,11 +17,11 @@ export const ProductsRegistration: React.FC = () => {
 
     const [form, setForm] = useState<Product>(defaultValues)
     const [errors, setErrors] = useState<Product>(defaultValues)
-    const [products, setProducts] = useState<Product[]>([])
     const [isReadyToSubmit, setIsReadyToSubmit] = useState(false)
     const [editingProductId, setEditingProductId] = useState<string | null>(null)
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
     const [showForm, setShowForm] = useState<boolean>(false)
+    const { products, setProducts } = useContext(ProductsContext)
     const axiosPrivate = useAxiosPrivate()
 
 
@@ -67,7 +59,7 @@ export const ProductsRegistration: React.FC = () => {
         }
         if (!form.stock.trim()) {
             errors.stock = "Campo obrigatório"
-        } else if (!/^\d+$/.test(form.stock) || Number(form.stock) < 0) {
+        } else if (!/^\d+$/.test(form.stock) || Number(form.stock) <= 0) {
             errors.stock = "Estoque inválido"
         }
 
@@ -87,18 +79,19 @@ export const ProductsRegistration: React.FC = () => {
                 setProducts(prev =>
                     prev.map(product => product.id === editingProductId ? updatedProduct : product)
                 )
-
-                setEditingProductId(null)
-                setForm(defaultValues)
-                setErrors(defaultValues)
-                setIsReadyToSubmit(false)
-                setErrorMessage(null)
             } else {
                 const response = await axiosPrivate.post('/products', form)
                 const newProduct: Product = { ...response.data, id: response.data._id }
 
                 setProducts(prev => [...prev, newProduct])
             }
+
+            setEditingProductId(null)
+            setForm(defaultValues)
+            setErrors(defaultValues)
+            setIsReadyToSubmit(false)
+            setErrorMessage(null)
+            setShowForm(false)
         } catch (error) {
             if (axios.isAxiosError(error)) {
                 const data = error.response?.data
@@ -118,25 +111,32 @@ export const ProductsRegistration: React.FC = () => {
         }
     }
 
-    useEffect(() => {
-        async function getProducts() {
-            try {
-                const response = await axiosPrivate.get<ProductFromBackend[]>('/products')
-                if (response.status === 204) {
-                    setProducts([])
-                    return
-                }
-
-                const normalizeProductsId = response.data.map(product =>
-                    ({ ...product, id: product._id }))
-                setProducts(normalizeProductsId)
-            } catch (error) {
-                console.log(error)
-            }
+    function handleEditProduct(product: Product) {
+        const convertedProduct = {
+            ...product,
+            price: String(product.price),
+            stock: String(product.stock)
         }
-        getProducts()
-    }, [])
 
+        setForm(convertedProduct)
+        setEditingProductId(product.id!)
+        setShowForm(true)
+
+        const errors = formValidation(convertedProduct)
+        setErrors(errors)
+    }
+
+    async function handleDeleteProduct(productId: string) {
+        try {
+            if (confirm("Tem certeza que deseja excluir este produto?")) {
+                await axiosPrivate.delete(`products/${productId}`)
+                setProducts(prev => prev.filter(product => product.id !== productId))
+            }
+
+        } catch (error) {
+            console.log(error)
+        }
+    }
 
     return (
         <main className="p-6 max-w-xl mx-auto">
@@ -157,7 +157,6 @@ export const ProductsRegistration: React.FC = () => {
                     </button>
                 </div>
             )}
-
 
             {showForm && (
                 <form
@@ -291,9 +290,7 @@ export const ProductsRegistration: React.FC = () => {
 
                     {errorMessage && (
                         <div
-                            id="stockError"
                             className="text-red-600 text-sm mt-1 text-center"
-                            aria-live="polite"
                         >
                             {errorMessage}
                         </div>
@@ -312,6 +309,7 @@ export const ProductsRegistration: React.FC = () => {
                                 <th className="p-2 border">Preço</th>
                                 <th className="p-2 border">Estoque</th>
                                 <th className="p-2 border">Descrição</th>
+                                <th className="p-2 border">Ações</th>
                             </tr>
                         </thead>
 
@@ -322,6 +320,25 @@ export const ProductsRegistration: React.FC = () => {
                                     <td className="p-2 border">R${Number(product.price).toFixed(2).replace('.', ',')}</td>
                                     <td className="p-2 border">{product.stock}</td>
                                     <td className="p-2 border">{product.description}</td>
+                                    <td className="p-2 border space-x-2">
+                                        <button
+                                            onClick={() => handleEditProduct(product)}
+                                            type="button"
+                                            aria-label="Editar produto."
+                                            className="text-emerald-600 cursor-pointer hover:text-emerald-700"
+                                        >
+                                            <FaEdit size={18} />
+                                        </button>
+
+                                        <button
+                                            onClick={() => handleDeleteProduct(product.id!)}
+                                            type="button"
+                                            aria-label="Excluir produto."
+                                            className="text-red-700 cursor-pointer hover:text-red-800"
+                                        >
+                                            <FaTrash size={18} />
+                                        </button>
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>
