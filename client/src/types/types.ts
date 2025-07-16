@@ -20,5 +20,14 @@ export interface Client {
     city: string
     notes?: string
 }
-
 export type ClientFromBackend = Client & { _id: string }
+
+
+export interface Product {
+    id?: string
+    name: string
+    description: string
+    price: string
+    stock: string
+}
+export type ProductFromBackend = Product & { _id: string }
