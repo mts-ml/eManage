@@ -9,7 +9,7 @@ import { SalesRegistration } from "../components/SalesRegistration"
 import { ClientsRegistration } from "../components/ClientsRegistration"
 
 
-type SectionKey = "clients" | "products" | "suppliers" | "expenses" | "bankAccount" | "sales"
+type SectionKey = "clients" | "sales" | "products" | "suppliers" | "expenses" | "bankAccount"
 
 type SectionConfig = {
     section: SectionKey
@@ -32,10 +32,10 @@ const sectionsArray: SectionConfig[] = [
         component: <ProductsRegistration />
     },
     {
-        section: "suppliers",
-        sectionName: "Fornecedores",
-        icon: <Factory className="h-8 w-8 mb-2" />,
-        component: <SuppliersRegistration />
+        section: "sales",
+        sectionName: "Vendas",
+        icon: <Wallet className="h-8 w-8 mb-2" />,
+        component: <SalesRegistration />
     },
     {
         section: "expenses",
@@ -50,11 +50,11 @@ const sectionsArray: SectionConfig[] = [
         component: <BankAccountsRegistration />
     },
     {
-        section: "sales",
-        sectionName: "Vendas",
-        icon: <Wallet className="h-8 w-8 mb-2" />,
-        component: <SalesRegistration />
-    }
+        section: "suppliers",
+        sectionName: "Fornecedores",
+        icon: <Factory className="h-8 w-8 mb-2" />,
+        component: <SuppliersRegistration />
+    },
 ]
 
 

@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react"
+import { useContext, useState } from "react"
 import { FaTrash, FaEdit } from 'react-icons/fa'
 
-import type { Client, ClientFromBackend } from "../types/types"
+import type { Client } from "../types/types"
 import {
     capitalizeWords,
     isValidCPF,
@@ -10,6 +10,7 @@ import {
 } from "../utils/utils"
 import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
 import axios from "axios"
+import ClientsContext from "../Context/ClientsContext"
 
 
 export const ClientsRegistration: React.FC = () => {
@@ -26,14 +27,14 @@ export const ClientsRegistration: React.FC = () => {
 
     const [form, setForm] = useState<Client>(defaultClient)
     const [formErrors, setFormErrors] = useState<Partial<Client>>({})
-    const [clients, setClients] = useState<Client[]>([])
     const [showForm, setShowForm] = useState(false)
     const [isReadyToSubmit, setIsReadyToSubmit] = useState(false)
     const [editingClientId, setEditingClientId] = useState<string | null>(null)
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
-
+    const { clients, setClients } = useContext(ClientsContext)
     const axiosPrivate = useAxiosPrivate()
 
+    
     function formValidation(form: Client): Partial<Client> {
         const errors: Partial<Client> = {}
 
@@ -211,27 +212,6 @@ export const ClientsRegistration: React.FC = () => {
 
     }
 
-    useEffect(() => {
-        async function getClients() {
-            try {
-                const response = await axiosPrivate.get<ClientFromBackend[]>('/clients')
-                if (response.status === 204) {
-                    setClients([])
-                    return
-                }
-
-                const normalizeClient = response.data.map(client => ({
-                    ...client,
-                    id: client._id
-                }))
-                setClients(normalizeClient)
-            } catch (error) {
-                console.error("Erro ao carregar clientes", error)
-            }
-        }
-        getClients()
-    }, [])
-
     const clientFields = [
         { key: "name", label: "Nome Completo", placeholder: "Digite o nome completo" },
         { key: "email", label: "E-mail", placeholder: "exemplo@email.com" },
@@ -395,7 +375,6 @@ export const ClientsRegistration: React.FC = () => {
                             {errorMessage}
                         </div>
                     )}
-
                 </form>
             )}
         </main>
