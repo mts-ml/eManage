@@ -2,15 +2,15 @@ import { useContext, useState } from "react"
 import { FaTrash, FaEdit } from 'react-icons/fa'
 
 import type { Client } from "../types/types"
+import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
+import axios from "axios"
+import ClientsContext from "../Context/ClientsContext"
 import {
     capitalizeWords,
     isValidCPF,
     isValidCNPJ,
     formatPhoneForDisplay
 } from "../utils/utils"
-import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
-import axios from "axios"
-import ClientsContext from "../Context/ClientsContext"
 
 
 export const ClientsRegistration: React.FC = () => {
@@ -34,7 +34,7 @@ export const ClientsRegistration: React.FC = () => {
     const { clients, setClients } = useContext(ClientsContext)
     const axiosPrivate = useAxiosPrivate()
 
-    
+
     function formValidation(form: Client): Partial<Client> {
         const errors: Partial<Client> = {}
 
