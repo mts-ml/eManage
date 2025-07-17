@@ -10,5 +10,5 @@ export function Loading() {
       aria-label="Loading Spinner"
       data-testid="loader"
     />
-  );
+  )
 }

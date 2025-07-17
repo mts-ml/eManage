@@ -4,7 +4,9 @@ import { X } from "lucide-react"
 
 import ProductsContext from "../Context/ProductsContext"
 import ClientsContext from "../Context/ClientsContext"
-import type { Product } from "../types/types"
+import type { Product, SalePayload } from "../types/types"
+import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
+
 
 interface CartItem extends Product {
     quantity: number
@@ -19,10 +21,12 @@ export const SalesRegistration: React.FC = () => {
     const [selectedClientId, setSelectedClientId] = useState<string>("")
     const [selectedProductId, setSelectedProductId] = useState<string>("")
     const [quantity, setQuantity] = useState<number>(1)
+    const axiosPrivate = useAxiosPrivate()
 
     const today = new Date().toLocaleDateString("pt-BR")
     const selectedProduct = products.find(p => p.id === selectedProductId)
     const selectedClient = clients.find(c => c.id === selectedClientId)
+
 
     function handleAddToCart(product: Product, quantity: number) {
         setCart(prev => {
@@ -60,6 +64,37 @@ export const SalesRegistration: React.FC = () => {
 
     function handleRemoveItem(id: string) {
         setCart(prev => prev.filter(item => item.id !== id))
+    }
+
+    async function submitSale() {
+        const salePayload: SalePayload = {
+            clientId: selectedClientId,
+            saleNumber,
+            date: today,
+            items: cart
+                .map(item => ({
+                    productId: item.id!,
+                    quantity: item.quantity,
+                    price: Number(item.price)
+                }),
+                ),
+            total
+        }
+
+        try {
+            const response = await axiosPrivate.post('/sales', salePayload)
+
+        } catch (error) {
+            console.error(error)
+            alert('Erro ao finalizar a venda.')
+        }
+
+        alert("Venda finalizada com sucesso")
+        setSaleNumber(prev => prev + 1)
+        setCart([])
+        setSelectedClientId("")
+        setSelectedProductId("")
+        setQuantity(1)
     }
 
     const total = cart.reduce((sum, item) => sum + Number(item.price) * item.quantity, 0)
@@ -212,7 +247,7 @@ export const SalesRegistration: React.FC = () => {
 
                                 <div className="flex items-center gap-2">
                                     <button
-                                        onClick={() => handleQuantityChange(item.id, -1)}
+                                        onClick={() => handleQuantityChange(item.id!, -1)}
                                         className="px-2 py-1 cursor-pointer border rounded hover:bg-black/30"
                                     >
                                         -
@@ -223,14 +258,14 @@ export const SalesRegistration: React.FC = () => {
                                     </span>
 
                                     <button
-                                        onClick={() => handleQuantityChange(item.id, 1)}
+                                        onClick={() => handleQuantityChange(item.id!, 1)}
                                         className="px-2 cursor-pointer py-1 border rounded hover:bg-black/30"
                                     >
                                         +
                                     </button>
 
                                     <button
-                                        onClick={() => handleRemoveItem(item.id)}
+                                        onClick={() => handleRemoveItem(item.id!)}
                                         className="ml-4 cursor-pointer text-red-600 hover:text-red-800"
                                     >
                                         Remover
@@ -239,25 +274,17 @@ export const SalesRegistration: React.FC = () => {
                             </div>
                         ))}
 
-                        <div className="text-right font-semibold mt-4">
+                        <p className="text-right font-semibold mt-4">
                             Total: R${total.toFixed(2).replace(".", ",")}
-                        </div>
+                        </p>
 
-                        <div className="text-center mt-6">
-                            <button
-                                className="bg-emerald-600 cursor-pointer text-white px-6 py-2 rounded hover:bg-emerald-700"
-                                onClick={() => {
-                                    alert("Venda finalizada")
-                                    setSaleNumber(prev => prev + 1)
-                                    setCart([])
-                                    setSelectedClientId("")
-                                    setSelectedProductId("")
-                                    setQuantity(1)
-                                }}
-                            >
-                                Finalizar Compra
-                            </button>
-                        </div>
+                        <button
+                            type="button"
+                            className="bg-emerald-600 block mx-auto mt-6 cursor-pointer text-white px-6 py-2 rounded hover:bg-emerald-700"
+                            onClick={() => submitSale()}
+                        >
+                            Finalizar Compra
+                        </button>
                     </div>
                 </>
             )}

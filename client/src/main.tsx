@@ -12,14 +12,14 @@ import './index.css'
 
 createRoot(document.getElementById('root')!).render(
   // <StrictMode>
-  <AuthProvider>
-    <ClientsProvider>
-      <ProductsProvider>
-        < BrowserRouter >
+  < BrowserRouter >
+    <AuthProvider>
+      <ClientsProvider>
+        <ProductsProvider>
           <App />
-        </BrowserRouter >
-      </ProductsProvider>
-    </ClientsProvider>
-  </AuthProvider >
+        </ProductsProvider>
+      </ClientsProvider>
+    </AuthProvider >
+  </BrowserRouter >
   // </StrictMode>
 )

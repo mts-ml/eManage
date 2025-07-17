@@ -31,3 +31,17 @@ export interface Product {
     stock: string
 }
 export type ProductFromBackend = Product & { _id: string }
+
+export interface SaleItem {
+    productId: string
+    quantity: number
+    price: number
+}
+
+export interface SalePayload {
+    clientId: string
+    saleNumber: number
+    date: string
+    items: SaleItem[]
+    total: number
+}
