@@ -1,10 +1,10 @@
 import { useContext, useState } from 'react'
-import { axiosInstance } from '../api/axios'
-import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
 import { jwtDecode } from 'jwt-decode'
 
+import axios from 'axios'
 import type { CustomJwtPayload } from '../types/types.js'
+import { axiosInstance } from '../api/axios'
 import AuthContext from '../Context/AuthContext.js'
 
 
