@@ -4,8 +4,8 @@ import { X } from "lucide-react"
 
 import ProductsContext from "../Context/ProductsContext"
 import ClientsContext from "../Context/ClientsContext"
-import type { Product, SalePayload } from "../types/types"
-import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
+import type { Product } from "../types/types"
+// import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
 
 
 interface CartItem extends Product {
@@ -17,11 +17,11 @@ export const SalesRegistration: React.FC = () => {
     const { products } = useContext(ProductsContext)
 
     const [cart, setCart] = useState<CartItem[]>([])
-    const [saleNumber, setSaleNumber] = useState<number>(1)
+    // const [saleNumber, setSaleNumber] = useState<number>(1)
     const [selectedClientId, setSelectedClientId] = useState<string>("")
     const [selectedProductId, setSelectedProductId] = useState<string>("")
     const [quantity, setQuantity] = useState<number>(1)
-    const axiosPrivate = useAxiosPrivate()
+    // const axiosPrivate = useAxiosPrivate()
 
     const today = new Date().toLocaleDateString("pt-BR")
     const selectedProduct = products.find(p => p.id === selectedProductId)
@@ -111,7 +111,7 @@ export const SalesRegistration: React.FC = () => {
             <section>
                 <div className="flex justify-between items-center mb-6">
                     <div className="text-lg font-medium">
-                        Venda Nº {saleNumber}
+                        {/* Venda Nº {saleNumber} */}
                     </div>
 
                     <div className="text-sm text-gray-600">
