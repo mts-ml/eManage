@@ -66,36 +66,36 @@ export const SalesRegistration: React.FC = () => {
         setCart(prev => prev.filter(item => item.id !== id))
     }
 
-    async function submitSale() {
-        const salePayload: SalePayload = {
-            clientId: selectedClientId,
-            saleNumber,
-            date: today,
-            items: cart
-                .map(item => ({
-                    productId: item.id!,
-                    quantity: item.quantity,
-                    price: Number(item.price)
-                }),
-                ),
-            total
-        }
+    // async function submitSale() {
+    //     const salePayload: SalePayload = {
+    //         clientId: selectedClientId,
+    //         saleNumber,
+    //         date: today,
+    //         items: cart
+    //             .map(item => ({
+    //                 productId: item.id!,
+    //                 quantity: item.quantity,
+    //                 price: Number(item.price)
+    //             }),
+    //             ),
+    //         total
+    //     }
 
-        try {
-            const response = await axiosPrivate.post('/sales', salePayload)
+    //     try {
+    //         const response = await axiosPrivate.post('/sales', salePayload)
 
-        } catch (error) {
-            console.error(error)
-            alert('Erro ao finalizar a venda.')
-        }
+    //     } catch (error) {
+    //         console.error(error)
+    //         alert('Erro ao finalizar a venda.')
+    //     }
 
-        alert("Venda finalizada com sucesso")
-        setSaleNumber(prev => prev + 1)
-        setCart([])
-        setSelectedClientId("")
-        setSelectedProductId("")
-        setQuantity(1)
-    }
+    //     alert("Venda finalizada com sucesso")
+    //     setSaleNumber(prev => prev + 1)
+    //     setCart([])
+    //     setSelectedClientId("")
+    //     setSelectedProductId("")
+    //     setQuantity(1)
+    // }
 
     const total = cart.reduce((sum, item) => sum + Number(item.price) * item.quantity, 0)
 
@@ -281,7 +281,7 @@ export const SalesRegistration: React.FC = () => {
                         <button
                             type="button"
                             className="bg-emerald-600 block mx-auto mt-6 cursor-pointer text-white px-6 py-2 rounded hover:bg-emerald-700"
-                            onClick={() => submitSale()}
+                            // onClick={() => submitSale()}
                         >
                             Finalizar Compra
                         </button>
