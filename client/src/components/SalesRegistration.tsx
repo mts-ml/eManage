@@ -4,8 +4,8 @@ import { X } from "lucide-react"
 
 import ProductsContext from "../Context/ProductsContext"
 import ClientsContext from "../Context/ClientsContext"
-import type { Product } from "../types/types"
-// import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
+import type { Product, SalePayload } from "../types/types"
+import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
 
 
 interface CartItem extends Product {
@@ -17,11 +17,11 @@ export const SalesRegistration: React.FC = () => {
     const { products } = useContext(ProductsContext)
 
     const [cart, setCart] = useState<CartItem[]>([])
-    // const [saleNumber, setSaleNumber] = useState<number>(1)
+    const [saleNumber, setSaleNumber] = useState<number>(1)
     const [selectedClientId, setSelectedClientId] = useState<string>("")
     const [selectedProductId, setSelectedProductId] = useState<string>("")
     const [quantity, setQuantity] = useState<number>(1)
-    // const axiosPrivate = useAxiosPrivate()
+    const axiosPrivate = useAxiosPrivate()
 
     const today = new Date().toLocaleDateString("pt-BR")
     const selectedProduct = products.find(p => p.id === selectedProductId)
@@ -66,36 +66,40 @@ export const SalesRegistration: React.FC = () => {
         setCart(prev => prev.filter(item => item.id !== id))
     }
 
-    // async function submitSale() {
-    //     const salePayload: SalePayload = {
-    //         clientId: selectedClientId,
-    //         saleNumber,
-    //         date: today,
-    //         items: cart
-    //             .map(item => ({
-    //                 productId: item.id!,
-    //                 quantity: item.quantity,
-    //                 price: Number(item.price)
-    //             }),
-    //             ),
-    //         total
-    //     }
+    async function submitSale() {
+        const salePayload: SalePayload = {
+            clientId: selectedClientId,
+            saleNumber,
+            date: today,
+            items: cart
+                .map(item => ({
+                    productId: item.id!,
+                    quantity: item.quantity,
+                    price: Number(item.price)
+                }),
+                ),
+            total
+        }
 
-    //     try {
-    //         const response = await axiosPrivate.post('/sales', salePayload)
+        if (!selectedClientId || cart.length === 0) {
+            alert("Selecione um cliente e adicione produtos ao carrinho.")
+            return
+        }
 
-    //     } catch (error) {
-    //         console.error(error)
-    //         alert('Erro ao finalizar a venda.')
-    //     }
+        try {
+            await axiosPrivate.post('/sales', salePayload)
+        } catch (error) {
+            console.error(error)
+            alert('Erro ao finalizar a venda.')
+        }
 
-    //     alert("Venda finalizada com sucesso")
-    //     setSaleNumber(prev => prev + 1)
-    //     setCart([])
-    //     setSelectedClientId("")
-    //     setSelectedProductId("")
-    //     setQuantity(1)
-    // }
+        alert("Venda finalizada com sucesso")
+        setSaleNumber(prev => prev + 1)
+        setCart([])
+        setSelectedClientId("")
+        setSelectedProductId("")
+        setQuantity(1)
+    }
 
     const total = cart.reduce((sum, item) => sum + Number(item.price) * item.quantity, 0)
 
@@ -111,7 +115,7 @@ export const SalesRegistration: React.FC = () => {
             <section>
                 <div className="flex justify-between items-center mb-6">
                     <div className="text-lg font-medium">
-                        {/* Venda Nº {saleNumber} */}
+                        Venda Nº {saleNumber}
                     </div>
 
                     <div className="text-sm text-gray-600">
@@ -281,7 +285,7 @@ export const SalesRegistration: React.FC = () => {
                         <button
                             type="button"
                             className="bg-emerald-600 block mx-auto mt-6 cursor-pointer text-white px-6 py-2 rounded hover:bg-emerald-700"
-                            // onClick={() => submitSale()}
+                            onClick={() => submitSale()}
                         >
                             Finalizar Compra
                         </button>
