@@ -1,3 +1,4 @@
+import { Sale } from "../model/Sales.js";
 import { ClientProps, Errors, ProductErrors, ProductProps } from "../types/types.js"
 
 
@@ -53,7 +54,6 @@ export function isValidCNPJ(cnpj: string): boolean {
 }
 
 // PHone validator
-
 export function formatPhoneForDisplay(phone: string): string {
     // Se o telefone tiver 11 dígitos (DD + 9 dígitos), formata assim
     if (phone.length === 11) {
@@ -77,4 +77,9 @@ export function addErrorProducts(errors: ProductErrors, productProps: keyof Prod
 
 export function isMissing(value: unknown): boolean {
     return typeof value !== 'string' || value.trim() === ""
+}
+
+export async function getNextSaleNumber(): Promise<number> {
+    const lastSale = await Sale.findOne().sort({ saleNumber: -1 }).limit(1)
+    return lastSale ? lastSale.saleNumber + 1 : 1
 }
