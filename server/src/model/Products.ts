@@ -8,7 +8,7 @@ const productsSchema = new Schema<ProductProps>({
         type: String,
         required: true,
         trim: true,
-        lowercase: true,
+        uppercase: true,
         unique: true
     },
     description: {
