@@ -1,4 +1,4 @@
-import { useContext, useState } from "react"
+import { useContext, useEffect, useState } from "react"
 import { X } from "lucide-react"
 import type { AxiosResponse } from "axios"
 
@@ -28,6 +28,19 @@ export const SalesRegistration: React.FC = () => {
     const selectedProduct = products.find(p => p.id === selectedProductId)
     const selectedClient = clients.find(c => c.id === selectedClientId)
 
+    useEffect(() => {
+        async function getLastSale() {
+            try {
+                const response = await axiosPrivate.get('/sales/last')
+                setLastSale(response.data.sale)
+            } catch (error) {
+                console.log("Erro ao buscar a última venda:", error)
+                return
+            }
+        }
+
+        getLastSale()
+    }, [])
 
     function handleAddToCart(product: Product, quantity: number) {
         setCart(prev => {
@@ -129,7 +142,7 @@ export const SalesRegistration: React.FC = () => {
             <section>
                 <div className="flex justify-between items-center mb-6">
                     <p className="text-lg font-medium">
-                        Venda Nº {lastSale?.saleNumber ?? '-'}
+                        Venda Nº {lastSale ? lastSale.saleNumber + 1 : '-'}
                     </p>
 
                     <div className="text-sm text-gray-600">
