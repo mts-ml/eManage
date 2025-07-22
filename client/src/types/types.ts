@@ -34,14 +34,20 @@ export type ProductFromBackend = Product & { _id: string }
 
 export interface SaleItem {
     productId: string
+    productName: string
     quantity: number
     price: number
 }
 
 export interface SalePayload {
     clientId: string
-    saleNumber: number
+    clientName: string
     date: string
     items: SaleItem[]
     total: number
+}
+
+export interface SaleResponse {
+    sale: SalePayload & { _id: string, saleNumber: number }
+    updatedProducts: Product[]
 }
