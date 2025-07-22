@@ -25,7 +25,7 @@ export async function createNewProduct(req: Request<{}, {}, ProductProps>, res: 
     try {
         const productProps = req.body
 
-        const normalizedName = productProps.name.trim().toLowerCase()
+        const normalizedName = productProps.name.trim().toUpperCase()
         const duplicateProductName = await Product.findOne({ name: normalizedName })
         if (duplicateProductName) {
             res.status(409).json({ message: "Produto já cadastrado." })
