@@ -1,10 +1,11 @@
 import { useContext, useState } from "react"
 import { X } from "lucide-react"
+import type { AxiosResponse } from "axios"
 
 
 import ProductsContext from "../Context/ProductsContext"
 import ClientsContext from "../Context/ClientsContext"
-import type { Product, SalePayload } from "../types/types"
+import type { Product, SalePayload, SaleResponse } from "../types/types"
 import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
 
 
@@ -14,10 +15,10 @@ interface CartItem extends Product {
 
 export const SalesRegistration: React.FC = () => {
     const { clients } = useContext(ClientsContext)
-    const { products } = useContext(ProductsContext)
+    const { products, setProducts } = useContext(ProductsContext)
 
     const [cart, setCart] = useState<CartItem[]>([])
-    const [saleNumber, setSaleNumber] = useState<number>(1)
+    const [lastSale, setLastSale] = useState<SaleResponse["sale"] | null>(null)
     const [selectedClientId, setSelectedClientId] = useState<string>("")
     const [selectedProductId, setSelectedProductId] = useState<string>("")
     const [quantity, setQuantity] = useState<number>(1)
@@ -69,16 +70,17 @@ export const SalesRegistration: React.FC = () => {
     async function submitSale() {
         const salePayload: SalePayload = {
             clientId: selectedClientId,
-            saleNumber,
+            clientName: selectedClient?.name || "Cliente Desconhecido",
             date: today,
             items: cart
                 .map(item => ({
                     productId: item.id!,
+                    productName: item.name,
                     quantity: item.quantity,
                     price: Number(item.price)
                 }),
                 ),
-            total
+            total,
         }
 
         if (!selectedClientId || cart.length === 0) {
@@ -87,14 +89,26 @@ export const SalesRegistration: React.FC = () => {
         }
 
         try {
-            await axiosPrivate.post('/sales', salePayload)
+            const response: AxiosResponse<SaleResponse> = await axiosPrivate.post('/sales', salePayload)
+
+            const { sale, updatedProducts } = response.data
+
+            setProducts((prev: Product[]) =>
+                prev.map(product => {
+                    const updatedProduct = updatedProducts.find(p => p.id === product.id)
+
+                    return updatedProduct ? { ...product, stock: updatedProduct.stock } : product
+                })
+            )
+
+            setLastSale(sale)
         } catch (error) {
             console.error(error)
             alert('Erro ao finalizar a venda.')
+            return
         }
 
         alert("Venda finalizada com sucesso")
-        setSaleNumber(prev => prev + 1)
         setCart([])
         setSelectedClientId("")
         setSelectedProductId("")
@@ -114,9 +128,9 @@ export const SalesRegistration: React.FC = () => {
             {/* Selecionar cliente e produto */}
             <section>
                 <div className="flex justify-between items-center mb-6">
-                    <div className="text-lg font-medium">
-                        Venda Nº {saleNumber}
-                    </div>
+                    <p className="text-lg font-medium">
+                        Venda Nº {lastSale?.saleNumber ?? '-'}
+                    </p>
 
                     <div className="text-sm text-gray-600">
                         Data: {today}
@@ -293,6 +307,24 @@ export const SalesRegistration: React.FC = () => {
                 </>
             )}
 
+            {lastSale && (
+                <div className="bg-green-100 border border-green-400 p-4 rounded mt-8">
+                    <h3 className="text-lg font-semibold text-green-800 mb-2">Venda Finalizada com Sucesso!</h3>
+                    <p><strong>Número da Venda:</strong> {lastSale.saleNumber}</p>
+                    <p><strong>Cliente:</strong> {lastSale.clientName}</p>
+                    <p><strong>Data:</strong> {lastSale.date}</p>
+
+                    <ul className="mt-2 list-disc list-inside">
+                        {lastSale.items.map((item, index) => (
+                            <li key={index}>
+                                {item.productName} - {item.quantity}x R${item.price.toFixed(2).replace(".", ",")}
+                            </li>
+                        ))}
+                    </ul>
+
+                    <p className="mt-2 font-semibold">Total: R${lastSale.total.toFixed(2).replace(".", ",")}</p>
+                </div>
+            )}
         </main>
     )
 }
