@@ -114,8 +114,8 @@ export const ProductsRegistration: React.FC = () => {
     function handleEditProduct(product: Product) {
         const convertedProduct = {
             ...product,
-            price: String(product.price),
-            stock: String(product.stock)
+            price: product.price,
+            stock: product.stock
         }
 
         setForm(convertedProduct)
