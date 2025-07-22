@@ -13,7 +13,7 @@ interface SaleData {
 const SaleContext = createContext<SaleData | undefined>(undefined)
 
 
-export const SalesProvider: React.FC<SaleProviderProps> = ({ children }) => {
+export const SaleProvider: React.FC<SaleProviderProps> = ({ children }) => {
     const [saleNumber, setSaleNumber] = useState<number>(1)
 
     function incrementSaleNumber(): void {

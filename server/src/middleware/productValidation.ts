@@ -12,15 +12,15 @@ export function handleProductValidation(req: Request<{}, {}, ProductProps>, res:
     if (isMissing(name)) addErrorProducts(errors, "name", "Campo obrigatório")
     if (isMissing(description)) addErrorProducts(errors, 'description', "Campo obrigatório")
 
-    if (!price || price === "") {
+    if (price === undefined || price === null) {
         addErrorProducts(errors, 'price', "Campo obrigatório")
-    } else if (isNaN(Number(price)) || Number(price) <= 0) {
+    } else if (isNaN(price) || price <= 0) {
         addErrorProducts(errors, 'price', "Preço inválido")
     }
 
-    if (!stock || stock.trim() === "") {
+    if (stock === undefined || stock === null) {
         addErrorProducts(errors, 'stock', "Campo obrigatório")
-    } else if (isNaN(Number(stock)) || Number(stock) < 0) {
+    } else if (isNaN(stock) || stock <= 0) {
         addErrorProducts(errors, 'stock', "Estoque inválido")
     }
 

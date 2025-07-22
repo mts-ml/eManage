@@ -14,6 +14,7 @@ import refresh from './routes/refresh.js'
 import logout from './routes/logout.js'
 import clients from './routes/api/clients.js'
 import products from './routes/api/products.js'
+import sales from './routes/api/sales.js'
 
 
 const PORT = process.env.PORT || 3500
@@ -47,6 +48,7 @@ app.use(verifyJWT)
 app.use('/logout', logout)
 app.use('/clients', clients)
 app.use('/products', products)
+app.use('/sales', sales)
 
 
 // Tratamento de erros
