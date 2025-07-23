@@ -1,15 +1,15 @@
 import { useState } from "react"
-import { Users, Package, Factory, X, Coins, Wallet } from "lucide-react"
+import { Users, Package, Wallet, X, ArrowDownCircle, ArrowUpCircle } from "lucide-react"
 
 import { ProductsRegistration } from "../components/ProductRegistration"
 import { SuppliersRegistration } from "../components/SuppliersRegistration"
-import { ExpensesRegistration } from "../components/ExpensesRegistration"
+import { Receivables } from "../components/Receivables"
 import { BankAccountsRegistration } from "../components/BankAccountRegistration"
 import { SalesRegistration } from "../components/SalesRegistration"
 import { ClientsRegistration } from "../components/ClientsRegistration"
 
 
-type SectionKey = "clients" | "sales" | "products" | "suppliers" | "expenses" | "bankAccount"
+type SectionKey = "clients" | "products" | "sales" | "receivables" | "payables" | "bankAccount"
 
 type SectionConfig = {
     section: SectionKey
@@ -38,23 +38,23 @@ const sectionsArray: SectionConfig[] = [
         component: <SalesRegistration />
     },
     {
-        section: "expenses",
-        sectionName: "Despesas",
-        icon: <Coins className="h-8 w-8 mb-2" />,
-        component: <ExpensesRegistration />
+        section: "receivables",
+        sectionName: "Contas a receber",
+        icon: <ArrowDownCircle className="h-8 w-8 mb-2" />,
+        component: <Receivables />
+    },
+    {
+        section: "payables",
+        sectionName: "Contas a pagar",
+        icon: <ArrowUpCircle className="h-8 w-8 mb-2" />,
+        component: <SuppliersRegistration />
     },
     {
         section: "bankAccount",
         sectionName: "Conta Bancaria",
         icon: <Wallet className="h-8 w-8 mb-2" />,
         component: <BankAccountsRegistration />
-    },
-    {
-        section: "suppliers",
-        sectionName: "Fornecedores",
-        icon: <Factory className="h-8 w-8 mb-2" />,
-        component: <SuppliersRegistration />
-    },
+    }
 ]
 
 
@@ -67,7 +67,7 @@ export const MainPageLayout: React.FC = () => {
 
 
     return (
-        <main className="p-6 max-w-4xl mx-auto">
+        <main className="p-6 max-w-[87.5rem] mx-auto">
 
             {/* Cards */}
             <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 mb-8">
