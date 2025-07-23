@@ -44,10 +44,19 @@ const saleSchema = new mongoose.Schema({
     total: {
         type: Number,
         required: true
+    },   
+    status: {
+        type: String,
+        enum: ["Em aberto", "Pago"],
+        default: "Em aberto"
     },
-    paid: {
-        type: Boolean,
-        default: false
+    paymentDate: {
+        type: Date,
+        default: null
+    },
+    bank: {
+        type: String,
+        default: ""
     }
 })
 

@@ -65,5 +65,8 @@ export interface SalePayload {
     items: SaleItem[]
     total: number
     paid?: boolean
+    status: "Em aberto" | "Pago"
+    paymentDate?: string | null
+    bank?: string
 }
 export type SaleErrors = Partial<Record<keyof SalePayload | string, string[]>>
