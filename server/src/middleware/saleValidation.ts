@@ -40,10 +40,6 @@ export function handleSaleValidation(req: Request<{}, {}, SalePayload>, res: Res
         })
     }
 
-    if ("paid" in sale && typeof sale.paid !== "boolean") {
-        errors.paid = ["Campo 'pago' deve ser booleano"]
-    }
-
     if (typeof sale.total !== "number" || !Number.isFinite(sale.total) || sale.total <= 0) {
         errors.total = ["Total inválido"]
     }
