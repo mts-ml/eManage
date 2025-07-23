@@ -35,6 +35,9 @@ export async function createNewSale(req: Request<{}, {}, Omit<SalePayload, "sale
             ...saleProps,
             saleNumber: await getNextSaleNumber(),
             clientName: client?.name || "Cliente Desconhecido",
+            status: "Em aberto",
+            paymenDate: null,
+            bank: "",
             items: saleProps.items.map(item => {
                 const product = products.find(p => p.id === item.productId)
                 return {

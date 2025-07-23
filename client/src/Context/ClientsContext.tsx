@@ -26,9 +26,11 @@ export const ClientsProvider: React.FC<ClientsProviderProps> = ({ children }) =>
     const { loading } = useContext(AuthContext)
     const [clients, setClients] = useState<Client[]>([])
     const axiosPrivate = useAxiosPrivate()
+    const { auth } = useContext(AuthContext)
 
     useEffect(() => {
-        if (loading) return 
+        console.log("Loading:", loading)
+        if (loading || !auth.accessToken) return
 
         async function getClients() {
             try {

@@ -25,9 +25,11 @@ export const ProductsProvider: React.FC<ProductsProviderProps> = ({ children }) 
     const { loading } = useContext(AuthContext)
     const [products, setProducts] = useState<Product[]>([])
     const axiosPrivate = useAxiosPrivate()
+    const { auth } = useContext(AuthContext)
 
     useEffect(() => {
-        if (loading) return 
+        console.log("Loading:", loading)
+        if (loading || !auth.accessToken) return
 
         async function getProducts() {
             try {

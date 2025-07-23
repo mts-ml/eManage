@@ -10,6 +10,7 @@ export function useAxiosPrivate() {
     const { auth } = useContext(AuthContext)
 
     useEffect(() => {
+        if (!auth?.accessToken) return
         // Interceptor de request → antes de enviar requisição
         const requestIntercept = axiosPrivate.interceptors.request.use(
             config => {
