@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express"
-import { Sale } from "../model/Sales"
+
+import { Sale } from "../model/Sales.js"
 
 
 export async function getSales(req: Request, res: Response, next: NextFunction) {
