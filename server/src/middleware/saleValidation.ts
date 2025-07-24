@@ -5,14 +5,27 @@ import { SalePayload, SaleItem, SaleErrors } from "../types/types.js"
 
 export function handleSaleValidation(req: Request<{}, {}, SalePayload>, res: Response, next: NextFunction) {
     const sale = req.body
-    const errors: SaleErrors = {}
-
     if (!sale) {
         res.status(400).json({ message: "Dados ausentes no corpo da requisição." })
         return
     }
 
-    if (!sale.clientName || typeof sale.clientName !== "string" || sale.clientName.trim().length === 0) {
+    if (sale.clientName && typeof sale.clientName === "string") {
+        sale.clientName = sale.clientName.trim()
+    }
+
+    if (Array.isArray(sale.items)) {
+        sale.items = sale.items.map(item => {
+            if (item.productName && typeof item.productName === "string") {
+                item.productName = item.productName.trim().toUpperCase()
+            }
+            return item
+        })
+    }
+
+    const errors: SaleErrors = {}
+
+    if (!sale.clientName || typeof sale.clientName !== "string" || sale.clientName.length === 0) {
         errors.clientName = ["Nome do cliente é obrigatório"]
     }
 
@@ -30,7 +43,7 @@ export function handleSaleValidation(req: Request<{}, {}, SalePayload>, res: Res
         sale.items.forEach((item: SaleItem, index: number) => {
             const itemErrors: string[] = []
 
-            if (!item.productName || typeof item.productName !== "string" || item.productName.trim().length === 0) {
+            if (!item.productName || typeof item.productName !== "string" || item.productName.length === 0) {
                 itemErrors.push("Nome do produto é obrigatório")
             }
             if (!item.productId || typeof item.productId !== "string") itemErrors.push("ID do produto obrigatório")
