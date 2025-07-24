@@ -46,7 +46,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
 
     useEffect(() => {
-        console.log("Loading:", loading)
         let isMounted = true
         //  Isso cria um "interruptor" que pode cancelar operações assíncronas.
         const controller = new AbortController()
