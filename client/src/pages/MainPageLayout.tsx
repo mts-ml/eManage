@@ -1,15 +1,17 @@
 import { useState } from "react"
-import { Users, Package, Wallet, X, ArrowDownCircle, ArrowUpCircle } from "lucide-react"
+import { Users, Package, Wallet, ShoppingCart, ShoppingBag, X, ArrowDownCircle, ArrowUpCircle } from "lucide-react"
 
-import { ProductsRegistration } from "../components/ProductRegistration"
-import { SuppliersRegistration } from "../components/SuppliersRegistration"
+import { Clients } from "../components/Clients"
+import { Products } from "../components/Products"
+import { Sales } from "../components/Sales"
+import { Purchases } from "../components/Purchases"
 import { Receivables } from "../components/Receivables"
+import { Expenses } from "../components/Expenses"
+import { Payables } from "../components/Payables"
 import { BankAccountsRegistration } from "../components/BankAccountRegistration"
-import { SalesRegistration } from "../components/SalesRegistration"
-import { ClientsRegistration } from "../components/ClientsRegistration"
 
 
-type SectionKey = "clients" | "products" | "sales" | "receivables" | "payables" | "bankAccount"
+type SectionKey = "clients" | "products" | "sales" | "purchases" | "receivables" | "payables" | "expenses" | "bankAccount"
 
 type SectionConfig = {
     section: SectionKey
@@ -23,19 +25,25 @@ const sectionsArray: SectionConfig[] = [
         section: "clients",
         sectionName: "Clientes",
         icon: <Users className="h-8 w-8 mb-2" />,
-        component: <ClientsRegistration />
+        component: <Clients />
     },
     {
         section: "products",
         sectionName: "Produtos",
         icon: <Package className="h-8 w-8 mb-2" />,
-        component: <ProductsRegistration />
+        component: <Products />
     },
     {
         section: "sales",
         sectionName: "Vendas",
-        icon: <Wallet className="h-8 w-8 mb-2" />,
-        component: <SalesRegistration />
+        icon: <ShoppingCart className="h-8 w-8 mb-2" />,
+        component: <Sales />
+    },
+    {
+        section: "purchases",
+        sectionName: "Compras",
+        icon: <ShoppingBag className="h-8 w-8 mb-2" />,
+        component: <Purchases />
     },
     {
         section: "receivables",
@@ -47,7 +55,13 @@ const sectionsArray: SectionConfig[] = [
         section: "payables",
         sectionName: "Contas a pagar",
         icon: <ArrowUpCircle className="h-8 w-8 mb-2" />,
-        component: <SuppliersRegistration />
+        component: <Payables />
+    },
+    {
+        section: "expenses",
+        sectionName: "Despesas",
+        icon: <ArrowUpCircle className="h-8 w-8 mb-2" />,
+        component: <Expenses />
     },
     {
         section: "bankAccount",
