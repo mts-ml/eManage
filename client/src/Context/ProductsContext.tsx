@@ -22,14 +22,12 @@ const defaultValues: ProductData = {
 const ProductsContext = createContext(defaultValues)
 
 export const ProductsProvider: React.FC<ProductsProviderProps> = ({ children }) => {
-    const { loading } = useContext(AuthContext)
     const [products, setProducts] = useState<Product[]>([])
     const axiosPrivate = useAxiosPrivate()
     const { auth } = useContext(AuthContext)
 
     useEffect(() => {
-        console.log("Loading:", loading)
-        if (loading || !auth.accessToken) return
+        if (!auth.accessToken) return
 
         async function getProducts() {
             try {
@@ -47,7 +45,7 @@ export const ProductsProvider: React.FC<ProductsProviderProps> = ({ children }) 
             }
         }
         getProducts()
-    }, [axiosPrivate, loading])
+    }, [auth.accessToken])
 
 
     return (
