@@ -22,32 +22,32 @@ export interface Client {
 }
 export type ClientFromBackend = Client & { _id: string }
 
-
 export interface Product {
     id?: string
     name: string
     description: string
     price: string
+    purchasePrice?: string
     stock: string
 }
 export type ProductFromBackend = Product & { _id: string }
 
-export interface SaleItem {
+export interface Item {
     productId: string
     productName: string
     quantity: number
     price: number
 }
 
-export interface SalePayload {
+export interface ItemPayload {
     clientId: string
     clientName: string
     date: string
-    items: SaleItem[]
+    items: Item[]
     total: number
 }
 
 export interface SaleResponse {
-    sale: SalePayload & { _id: string, saleNumber: number }
+    sale: ItemPayload & { _id: string, saleNumber: number }
     updatedProducts: Product[]
 }
