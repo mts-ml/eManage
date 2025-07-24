@@ -23,14 +23,12 @@ const ClientsContext = createContext(defaultValues)
 
 
 export const ClientsProvider: React.FC<ClientsProviderProps> = ({ children }) => {
-    const { loading } = useContext(AuthContext)
     const [clients, setClients] = useState<Client[]>([])
     const axiosPrivate = useAxiosPrivate()
     const { auth } = useContext(AuthContext)
 
     useEffect(() => {
-        console.log("Loading:", loading)
-        if (loading || !auth.accessToken) return
+        if (!auth.accessToken) return
 
         async function getClients() {
             try {
@@ -50,7 +48,7 @@ export const ClientsProvider: React.FC<ClientsProviderProps> = ({ children }) =>
             }
         }
         getClients()
-    }, [axiosPrivate, loading])
+    }, [auth.accessToken])
 
 
     return (
