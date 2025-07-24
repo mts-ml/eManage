@@ -5,7 +5,7 @@ import type { AxiosResponse } from "axios"
 
 import ProductsContext from "../Context/ProductsContext"
 import ClientsContext from "../Context/ClientsContext"
-import type { Product, SalePayload, SaleResponse } from "../types/types"
+import type { Product, ItemPayload, SaleResponse } from "../types/types"
 import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
 
 
@@ -13,7 +13,7 @@ interface CartItem extends Product {
     quantity: number
 }
 
-export const SalesRegistration: React.FC = () => {
+export const Sales: React.FC = () => {
     const { clients } = useContext(ClientsContext)
     const { products, setProducts } = useContext(ProductsContext)
 
@@ -75,7 +75,6 @@ export const SalesRegistration: React.FC = () => {
 
         })
 
-
         setQuantity(1)
     }
 
@@ -97,7 +96,7 @@ export const SalesRegistration: React.FC = () => {
     }
 
     async function submitSale() {
-        const salePayload: SalePayload = {
+        const salePayload: ItemPayload = {
             clientId: selectedClientId,
             clientName: selectedClient?.name || "Cliente Desconhecido",
             date: today,
@@ -179,7 +178,10 @@ export const SalesRegistration: React.FC = () => {
                     >
                         <option value="">Selecione um cliente</option>
                         {clients.map(client => (
-                            <option key={client.id} value={client.id}>
+                            <option
+                                key={client.id}
+                                value={client.id}
+                            >
                                 {client.name}
                             </option>
                         ))}
@@ -199,7 +201,10 @@ export const SalesRegistration: React.FC = () => {
                     >
                         <option value="">Selecione um produto</option>
                         {products.map(product => (
-                            <option key={product.id} value={product.id}>
+                            <option
+                                key={product.id}
+                                value={product.id}
+                            >
                                 {product.name}
                             </option>
                         ))}
@@ -288,25 +293,31 @@ export const SalesRegistration: React.FC = () => {
                                     </p>
 
                                     <p className="text-sm text-gray-500">
-                                        R${Number(item.price).toFixed(2).replace(".", ",")} x {item.quantity}
+                                        {Number(item.price).toLocaleString("pt-BR", {
+                                            style: "currency",
+                                            currency: "BRL"
+                                        })} x {Number(item.quantity).toLocaleString("pt-BR")}
                                     </p>
+
                                 </div>
 
                                 <div className="flex items-center gap-2">
                                     <button
                                         onClick={() => handleQuantityChange(item.id!, -1)}
                                         className="px-2 py-1 cursor-pointer border rounded hover:bg-black/30"
+                                        aria-label="Diminuir quantidade"
                                     >
                                         -
                                     </button>
 
                                     <span>
-                                        {item.quantity}
+                                        {Number(item.quantity).toLocaleString("pt-BR")}
                                     </span>
 
                                     <button
                                         onClick={() => handleQuantityChange(item.id!, 1)}
                                         className="px-2 cursor-pointer py-1 border rounded hover:bg-black/30"
+                                        aria-label="Aumentar quantidade"
                                     >
                                         +
                                     </button>
@@ -322,7 +333,7 @@ export const SalesRegistration: React.FC = () => {
                         ))}
 
                         <p className="text-right font-semibold mt-4">
-                            Total: R${total.toFixed(2).replace(".", ",")}
+                            Total: {Number(total).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
                         </p>
 
                         <button
@@ -336,7 +347,7 @@ export const SalesRegistration: React.FC = () => {
                 </>
             )}
 
-            {lastSale && (
+            {lastSale && !selectedClientId && (
                 <div className="bg-green-100 border border-green-400 p-4 rounded mt-8">
                     <h3 className="text-lg font-semibold text-green-800 mb-2">Venda Finalizada com Sucesso!</h3>
                     <p><strong>Número da Venda:</strong> {lastSale.saleNumber}</p>

@@ -7,7 +7,7 @@ import ProductsContext from "../Context/ProductsContext"
 import type { Product } from "../types/types"
 
 
-export const ProductsRegistration: React.FC = () => {
+export const Products: React.FC = () => {
     const defaultValues = {
         name: "",
         description: "",

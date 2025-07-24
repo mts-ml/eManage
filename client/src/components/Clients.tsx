@@ -13,7 +13,7 @@ import {
 } from "../utils/utils"
 
 
-export const ClientsRegistration: React.FC = () => {
+export const Clients: React.FC = () => {
     const defaultClient: Client = {
         name: "",
         email: "",

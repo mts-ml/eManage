@@ -2,10 +2,10 @@ import { useContext, useEffect, useState } from "react"
 
 import ProductsContext from "../Context/ProductsContext"
 import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
-import type { SalePayload } from "../types/types"
+import type { ItemPayload } from "../types/types"
 
 
-interface Receivable extends SalePayload {
+interface Receivable extends ItemPayload {
     _id: string
     saleNumber: number
     status: "Em aberto" | "Pago"

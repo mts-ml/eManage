@@ -9,7 +9,7 @@ interface Supplier {
 }
 
 
-export const SuppliersRegistration: React.FC = () => {
+export const Payables: React.FC = () => {
   const defaultValues = {
     name: "",
     company: "",
