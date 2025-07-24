@@ -21,7 +21,7 @@ export const SalesRegistration: React.FC = () => {
     const [lastSale, setLastSale] = useState<SaleResponse["sale"] | null>(null)
     const [selectedClientId, setSelectedClientId] = useState<string>("")
     const [selectedProductId, setSelectedProductId] = useState<string>("")
-    const [quantity, setQuantity] = useState<number>(1)
+    const [quantity, setQuantity] = useState<number>(0)
     const axiosPrivate = useAxiosPrivate()
 
     const today = new Date().toLocaleDateString("pt-BR")
@@ -45,21 +45,37 @@ export const SalesRegistration: React.FC = () => {
     function handleAddToCart(product: Product, quantity: number) {
         setCart(prev => {
             const existingProduct = prev.find(item => item.id === product.id)
+            const currentQuantity = existingProduct ? existingProduct.quantity : 0
+            const maxAddable = Number(product.stock) - currentQuantity
+
+            if (quantity > maxAddable) {
+                alert(`Quantidade excede o estoque disponível (${product.stock}).`)
+                return prev
+            }
+            if (quantity < 1) {
+                alert("A quantidade deve ser pelo menos 1.")
+                return prev
+            }
+            if (quantity <= maxAddable && quantity >= 1) {
+                setSelectedProductId("")
+            }
+
             if (existingProduct) {
                 return prev.map(item =>
                     item.id === product.id
                         ? {
                             ...item,
-                            quantity: Math.min(item.quantity + quantity, Number(product.stock))
+                            quantity: item.quantity + quantity
                         }
                         : item
                 )
             } else {
                 return [...prev, { ...product, quantity }]
             }
+
         })
 
-        setSelectedProductId("")
+
         setQuantity(1)
     }
 
@@ -231,11 +247,11 @@ export const SalesRegistration: React.FC = () => {
                         <input
                             id="quantity"
                             type="number"
+                            onChange={e => setQuantity(Number(e.currentTarget.value))}
                             value={quantity}
-                            onChange={e => setQuantity(Math.max(1, Math.min(Number(e.target.value), Number(selectedProduct.stock))))}
-                            className="w-24 border border-gray-300 rounded-md p-1"
                             min={1}
-                            max={Number(selectedProduct.stock)}
+                            max={selectedProduct.stock}
+                            className="w-24 border border-gray-300 rounded-md p-1"
                         />
 
                         <button

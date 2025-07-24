@@ -1,13 +1,27 @@
 import { NextFunction, Request, Response } from "express"
 
 import { ClientProps, Errors } from "../types/types.js"
-import { addError, isMissing, isValidCNPJ, isValidCPF } from "../utils/utils.js"
+import { addError, isMissing, isValidCNPJ, isValidCPF, validateStringFields } from "../utils/utils.js"
 
 
 export function handleClientValidation(req: Request<{}, {}, ClientProps>, res: Response, next: NextFunction) {
     const clientProps = req.body
     if (!clientProps) {
         res.status(400).json({ message: "Dados ausentes no corpo da requisição." })
+        return
+    }
+
+    const requiredStringFields = [
+        "name",
+        "email",
+        "phone",
+        "cpfCnpj",
+        "address",
+        "district",
+        "city",
+    ]
+
+    if (!validateStringFields(clientProps, requiredStringFields, res)) {
         return
     }
 

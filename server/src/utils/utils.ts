@@ -1,4 +1,6 @@
-import { Sale } from "../model/Sales.js";
+import { Response } from "express"
+
+import { Sale } from "../model/Sales.js"
 import { ClientProps, Errors, ProductErrors, ProductProps } from "../types/types.js"
 
 
@@ -67,11 +69,11 @@ export function formatPhoneForDisplay(phone: string): string {
     return phone;
 }
 
-export function addError(errors: Errors, clientProps: keyof ClientProps, message: string): void {    
+export function addError(errors: Errors, clientProps: keyof ClientProps, message: string): void {
     errors[clientProps] = [...(errors[clientProps] || []), message]
 }
 
-export function addErrorProducts(errors: ProductErrors, productProps: keyof ProductProps, message: string): void {    
+export function addErrorProducts(errors: ProductErrors, productProps: keyof ProductProps, message: string): void {
     errors[productProps] = message
 }
 
@@ -82,4 +84,18 @@ export function isMissing(value: unknown): boolean {
 export async function getNextSaleNumber(): Promise<number> {
     const lastSale = await Sale.findOne().sort({ saleNumber: -1 }).limit(1)
     return lastSale ? lastSale.saleNumber + 1 : 1
+}
+
+export function validateStringFields(obj: any, fields: string[], res: Response): boolean {
+    for (const field of fields) {
+        if (typeof obj[field] !== "string") {
+            res.status(400).json({
+                message: `Campo '${field}' deve ser uma string válida.`,
+            })
+            return false
+        }
+        
+        obj[field] = obj[field].trim()
+    }
+    return true
 }

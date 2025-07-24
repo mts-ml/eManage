@@ -1,11 +1,28 @@
 import { NextFunction, Request, Response } from "express"
 
 import { ProductErrors, ProductProps } from '../types/types.js'
-import { addErrorProducts, isMissing } from "../utils/utils.js"
+import { addErrorProducts, isMissing, validateStringFields } from "../utils/utils.js"
 
 
 export function handleProductValidation(req: Request<{}, {}, ProductProps>, res: Response, next: NextFunction) {
+    if (!req.body) {
+        res.status(400).json({ message: "Dados ausentes no corpo da requisição." })
+        return
+    }
+
+    const requiredStringFields = [
+        "name",
+        "description",
+        "price",
+        "stock",
+    ]
+    if (!validateStringFields(req.body, requiredStringFields, res)) {
+        return
+    }
+
+    req.body.name = req.body.name.toUpperCase()
     const { name, description, price, stock } = req.body
+
 
     const errors: ProductErrors = {}
 
