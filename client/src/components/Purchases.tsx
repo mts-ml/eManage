@@ -21,12 +21,13 @@ export const Purchases: React.FC = () => {
     const [lastPurchase, setLastPurchase] = useState<SaleResponse["sale"] | null>(null)
     const [selectedClientId, setSelectedClientId] = useState<string>("")
     const [selectedProductId, setSelectedProductId] = useState<string>("")
-    const [quantity, setQuantity] = useState<number>(0)
+    const [quantity, setQuantity] = useState<number>(1)
     const axiosPrivate = useAxiosPrivate()
 
     const today = new Date().toLocaleDateString("pt-BR")
     const selectedProduct = products.find(p => p.id === selectedProductId)
     const selectedClient = clients.find(c => c.id === selectedClientId)
+    const total = cart.reduce((sum, item) => sum + Number(item.purchasePrice) * item.quantity, 0)
 
     useEffect(() => {
         async function getLastPurchase() {
@@ -52,7 +53,7 @@ export const Purchases: React.FC = () => {
                         ? {
                             ...item,
                             quantity: item.quantity + quantity,
-                            price: item.price
+                            price: item.purchasePrice
                         }
                         : item
                 )
@@ -63,13 +64,13 @@ export const Purchases: React.FC = () => {
         })
     }
 
-    function handleQuantityChange(id: string, delta: number) {
+    function handleQuantityChange(id: string, change: number) {
         setCart(prev =>
             prev.map(item =>
                 item.id === id
                     ? {
                         ...item,
-                        quantity: Math.max(1, Math.min(item.quantity + delta, Number(item.stock)))
+                        quantity: Math.max(1, item.quantity + change)
                     }
                     : item
             )
@@ -90,7 +91,7 @@ export const Purchases: React.FC = () => {
                     productId: item.id!,
                     productName: item.name,
                     quantity: item.quantity,
-                    price: Number(item.price)
+                    price: Number(item.purchasePrice)
                 }),
                 ),
             total,
@@ -127,8 +128,6 @@ export const Purchases: React.FC = () => {
         setSelectedProductId("")
         setQuantity(1)
     }
-
-    const total = cart.reduce((sum, item) => sum + Number(item.price) * item.quantity, 0)
 
 
     return (
@@ -221,7 +220,7 @@ export const Purchases: React.FC = () => {
                         </p>
 
                         <p className="text-sm text-gray-600 mb-2">
-                            Preço: <strong>R${Number(selectedProduct.price).toFixed(2).replace(".", ",")}</strong>
+                            Preço: <strong>R${Number(selectedProduct.purchasePrice).toFixed(2).replace(".", ",")}</strong>
                         </p>
                     </div>
 
@@ -273,10 +272,10 @@ export const Purchases: React.FC = () => {
                                     </p>
 
                                     <p className="text-sm text-gray-500">
-                                        {Number(item.price).toLocaleString("pt-BR", {
+                                        {Number(item.purchasePrice).toLocaleString("pt-BR", {
                                             style: "currency",
                                             currency: "BRL"
-                                        })} x {Number(item.quantity).toLocaleString("pt-BR")}
+                                        })} - {Number(item.quantity).toLocaleString("pt-BR")}x
                                     </p>
 
                                 </div>
@@ -319,7 +318,7 @@ export const Purchases: React.FC = () => {
                         <button
                             type="button"
                             className="bg-emerald-600 block mx-auto mt-6 cursor-pointer text-white px-6 py-2 rounded hover:bg-emerald-700"
-                            onClick={() => submitSale()}
+                            onClick={submitSale}
                         >
                             Finalizar Compra
                         </button>
