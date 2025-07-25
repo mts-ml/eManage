@@ -15,7 +15,11 @@ const productsSchema = new Schema<ProductProps>({
         type: String,
         required: true
     },
-    price: {
+    salePrice: {
+        type: Number,
+        required: true
+    },
+    purchasePrice: {
         type: Number,
         required: true
     },
