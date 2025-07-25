@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express"
 import mongoose from "mongoose"
 
 import { Sale } from "../model/Sales.js"
-import { SalePayload } from "../types/types.js"
+import { ItemPayload } from "../types/types.js"
 import { getNextSaleNumber } from "../utils/utils.js"
 import { Client } from "../model/Clients.js"
 import { Product } from "../model/Products.js"
@@ -23,7 +23,7 @@ export async function getAllSales(req: Request, res: Response, next: NextFunctio
     }
 }
 
-export async function createNewSale(req: Request<{}, {}, Omit<SalePayload, "saleNumber">>, res: Response, next: NextFunction) {
+export async function createNewSale(req: Request<{}, {}, Omit<ItemPayload, "saleNumber">>, res: Response, next: NextFunction) {
     try {
         const saleProps = req.body
 
@@ -84,7 +84,7 @@ export async function createNewSale(req: Request<{}, {}, Omit<SalePayload, "sale
     }
 }
 
-export async function updateSale(req: Request<{ id: string }, {}, Omit<SalePayload, "SaleNumber">>, res: Response, next: NextFunction) {
+export async function updateSale(req: Request<{ id: string }, {}, Omit<ItemPayload, "SaleNumber">>, res: Response, next: NextFunction) {
     const { id } = req.params
     const saleProps = req.body
 
