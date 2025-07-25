@@ -1,8 +1,9 @@
 import { NextFunction, Request, Response } from "express"
+import mongoose from "mongoose"
+import { MongoServerError } from "mongodb"
 
 import { Product } from "../model/Products.js"
 import { ProductProps } from "../types/types.js"
-import mongoose from "mongoose"
 
 
 export async function getAllProducts(req: Request, res: Response, next: NextFunction) {
@@ -35,16 +36,14 @@ export async function createNewProduct(req: Request<{}, {}, ProductProps>, res: 
         res.status(201).json(createdProduct)
     } catch (error) {
         if (
-            typeof error === 'object' &&
-            error !== null &&
-            'code' in error &&
-            (error as any).code === 11000
+            error instanceof MongoServerError &&
+            error.code === 11000
         ) {
-            res.status(409).json({ message: "Registro já existe." })
+            res.status(409).json({ message: "Produto duplicado" })
             return
         }
 
-        console.error(`createNewProduct error: ${JSON.stringify(error)}`)
+        console.error(`Erro ao criar produto: ${JSON.stringify(error)}`)
         next(error)
     }
 }
@@ -77,6 +76,14 @@ export async function updateProduct(req: Request<{ id: string }, {}, ProductProp
 
         res.json(updatedProduct)
     } catch (error) {
+        if (
+            error instanceof MongoServerError &&
+            error.code === 11000
+        ) {
+            res.status(409).json({ message: "Produto duplicado (nome já existe)." })
+            return
+        }
+        
         console.error(`Erro ao editar produto ${JSON.stringify(error)}`)
         next(error)
     }
