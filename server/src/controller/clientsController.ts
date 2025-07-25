@@ -31,24 +31,14 @@ export async function createNewClient(req: Request<{}, {}, ClientProps>, res: Re
             return
         }
 
+        clientProps.cpfCnpj = clientProps.cpfCnpj.replace(/\D/g, '')
         const duplicatecpfCnpj = await Client.findOne({ cpfCnpj: clientProps.cpfCnpj })
         if (duplicatecpfCnpj) {
             res.status(409).json({ message: "CPF/CNPJ já cadastrado." })
             return
         }
 
-        const newClient = {
-            name: clientProps.name,
-            email: clientProps.email,
-            phone: clientProps.phone,
-            cpfCnpj: clientProps.cpfCnpj,
-            address: clientProps.address,
-            district: clientProps.district,
-            city: clientProps.city,
-            notes: clientProps.notes,
-        }
-
-        const createdClient = await Client.create(newClient)
+        const createdClient = await Client.create(clientProps)
         res.status(201).json(createdClient)
     } catch (error) {
         if (
@@ -74,6 +64,18 @@ export async function updateClient(req: Request<{ id: string }, {}, ClientProps>
             res.status(400).json({ message: "Id inválido ou ausente." })
             return
         }
+
+        if (clientProps.cpfCnpj) {
+            const cleanedCpfCnpj = clientProps.cpfCnpj.replace(/\D/g, '')
+            clientProps.cpfCnpj = cleanedCpfCnpj
+            const existingClient = await Client.findOne({ cpfCnpj: cleanedCpfCnpj })
+
+            if (existingClient && existingClient._id.toString() !== id) {
+                res.status(409).json({ message: "CPF/CNPJ já cadastrado." })
+                return
+            }
+        }
+
         /*{
         "_id": "abc123",
         "name": "João",
