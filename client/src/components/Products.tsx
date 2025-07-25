@@ -8,15 +8,16 @@ import type { Product } from "../types/types"
 
 
 export const Products: React.FC = () => {
-    const defaultValues = {
+    const defaultValues: Product = {
         name: "",
         description: "",
-        price: "",
+        salePrice: "",
+        purchasePrice: "",
         stock: ""
     }
 
     const [form, setForm] = useState<Product>(defaultValues)
-    const [errors, setErrors] = useState<Product>(defaultValues)
+    const [errors, setErrors] = useState<Partial<Product>>({})
     const [isReadyToSubmit, setIsReadyToSubmit] = useState(false)
     const [editingProductId, setEditingProductId] = useState<string | null>(null)
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -31,7 +32,7 @@ export const Products: React.FC = () => {
             value: string
         }
 
-        const formattedValue = name === "price" ? value.replace(',', '.') : value
+        const formattedValue = name === "salePrice" || name === "purchasePrice" ? value.replace(',', '.') : value
 
         const updatedForm = { ...form, [name]: formattedValue }
         setForm(updatedForm)
@@ -41,21 +42,26 @@ export const Products: React.FC = () => {
         const validateFields = formValidation(updatedForm)
         setErrors(validateFields)
 
-        const allFieldsFilled = Object.values(updatedForm).every(field => String(field).trim() !== "")
+        const allFieldsFilled = Object.values(updatedForm).every(field => field.trim() !== "")
         const noErrors = Object.values(validateFields).every(error => error === "")
         setIsReadyToSubmit(allFieldsFilled && noErrors)
     }
 
-    function formValidation(form: Product) {
-        const errors: Product = defaultValues
+    function formValidation(form: Product): Partial<Product> {
+        const errors: Partial<Product> = {}
 
         if (!form.name.trim()) errors.name = "Campo obrigatório"
         if (!form.description.trim()) errors.description = "Campo obrigatório"
 
-        if (!form.price.trim()) {
-            errors.price = "Campo obrigatório"
-        } else if (isNaN(Number(form.price)) || Number(form.price) <= 0) {
-            errors.price = "Preço inválido"
+        if (!form.salePrice.trim()) {
+            errors.salePrice = "Campo obrigatório"
+        } else if (isNaN(Number(form.salePrice)) || Number(form.salePrice) <= 0) {
+            errors.salePrice = "Preço inválido"
+        }
+        if (!form.purchasePrice.trim()) {
+            errors.purchasePrice = "Campo obrigatório"
+        } else if (isNaN(Number(form.purchasePrice)) || Number(form.purchasePrice) <= 0) {
+            errors.purchasePrice = "Preço inválido"
         }
         if (!form.stock.trim()) {
             errors.stock = "Campo obrigatório"
@@ -112,19 +118,19 @@ export const Products: React.FC = () => {
     }
 
     function handleEditProduct(product: Product) {
-        const convertedProduct = {
-            ...product,
-            price: product.price,
-            stock: product.stock
-        }
+        setEditingProductId(product.id || null)
 
-        setForm(convertedProduct)
-        setEditingProductId(product.id!)
+        setForm({
+            name: product.name,
+            description: product.description,
+            salePrice: String(product.salePrice ?? ""),
+            purchasePrice: String(product.purchasePrice ?? ""),
+            stock: String(product.stock ?? ""),
+        })
+
         setShowForm(true)
-
-        const errors = formValidation(convertedProduct)
-        setErrors(errors)
     }
+
 
     async function handleDeleteProduct(productId: string) {
         try {
@@ -190,53 +196,54 @@ export const Products: React.FC = () => {
                         )}
                     </div>
 
-                    {/* Descrição */}
+                    {/* Preço de Venda */}
                     <div>
-                        <label htmlFor="description" className="block text-sm font-medium text-gray-700">Descrição</label>
-                        <textarea
-                            id="description"
-                            name="description"
-                            placeholder="Descrição do produto, g ou kg."
-                            value={form.description}
+                        <label htmlFor="salePrice" className="block text-sm font-medium text-gray-700">Preço de Venda</label>
+
+                        <input
+                            type="text"
+                            id="salePrice"
+                            name="salePrice"
+                            placeholder="0.00"
+                            value={form.salePrice}
                             onChange={handleChange}
-                            aria-describedby="descriptionError"
+                            aria-describedby="salePriceError"
                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-emerald-500 focus:border-emerald-500"
-                            rows={3}
                         />
 
-                        {errors.description && (
+                        {errors.salePrice && (
                             <div
-                                id="descriptionError"
+                                id="salePriceError"
                                 aria-live="polite"
                                 className="text-red-600 text-sm mt-1"
                             >
-                                {errors.description}
+                                {errors.salePrice}
                             </div>
                         )}
                     </div>
 
-                    {/* Preço */}
+                    {/* Preço de Compra */}
                     <div>
-                        <label htmlFor="price" className="block text-sm font-medium text-gray-700">Preço</label>
+                        <label htmlFor="purchasePrice" className="block text-sm font-medium text-gray-700">Preço de Compra</label>
 
                         <input
                             type="text"
-                            id="price"
-                            name="price"
+                            id="purchasePrice"
+                            name="purchasePrice"
                             placeholder="0.00"
-                            value={form.price}
+                            value={form.purchasePrice}
                             onChange={handleChange}
-                            aria-describedby="priceError"
+                            aria-describedby="purchasePriceError"
                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-emerald-500 focus:border-emerald-500"
                         />
 
-                        {errors.price && (
+                        {errors.purchasePrice && (
                             <div
-                                id="priceError"
+                                id="purchasePrice"
                                 aria-live="polite"
                                 className="text-red-600 text-sm mt-1"
                             >
-                                {errors.price}
+                                {errors.purchasePrice}
                             </div>
                         )}
                     </div>
@@ -261,6 +268,31 @@ export const Products: React.FC = () => {
                                 aria-live="polite"
                             >
                                 {errors.stock}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Descrição */}
+                    <div>
+                        <label htmlFor="description" className="block text-sm font-medium text-gray-700">Descrição</label>
+                        <textarea
+                            id="description"
+                            name="description"
+                            placeholder="Descrição do produto, g ou kg."
+                            value={form.description}
+                            onChange={handleChange}
+                            aria-describedby="descriptionError"
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-emerald-500 focus:border-emerald-500"
+                            rows={3}
+                        />
+
+                        {errors.description && (
+                            <div
+                                id="descriptionError"
+                                aria-live="polite"
+                                className="text-red-600 text-sm mt-1"
+                            >
+                                {errors.description}
                             </div>
                         )}
                     </div>
@@ -306,7 +338,8 @@ export const Products: React.FC = () => {
                         <thead className="bg-emerald-600 text-white">
                             <tr>
                                 <th className="p-2 border">Nome</th>
-                                <th className="p-2 border">Preço</th>
+                                <th className="p-2 border">Preço de Venda</th>
+                                <th className="p-2 border">Preço de Compra</th>
                                 <th className="p-2 border">Estoque</th>
                                 <th className="p-2 border">Descrição</th>
                                 <th className="p-2 border">Ações</th>
@@ -317,27 +350,34 @@ export const Products: React.FC = () => {
                             {products.map(product => (
                                 <tr key={product.id} className="odd:bg-white even:bg-gray-100">
                                     <td className="p-2 border">{product.name}</td>
-                                    <td className="p-2 border">R${Number(product.price).toFixed(2).replace('.', ',')}</td>
+                                    <td className="p-2 border">
+                                        R${Number(product.salePrice).toFixed(2).replace('.', ',')}
+                                    </td>
+                                    <td className="p-2 border">
+                                        R${Number(product.purchasePrice).toFixed(2).replace('.', ',')}
+                                    </td>
                                     <td className="p-2 border">{product.stock}</td>
                                     <td className="p-2 border">{product.description}</td>
                                     <td className="p-2 border space-x-2">
-                                        <button
-                                            onClick={() => handleEditProduct(product)}
-                                            type="button"
-                                            aria-label="Editar produto."
-                                            className="text-emerald-600 cursor-pointer hover:text-emerald-700"
-                                        >
-                                            <FaEdit size={18} />
-                                        </button>
+                                        <div className="flex items-center justify-between">
+                                            <button
+                                                onClick={() => handleEditProduct(product)}
+                                                type="button"
+                                                aria-label="Editar produto."
+                                                className="text-emerald-600 cursor-pointer hover:text-emerald-700"
+                                            >
+                                                <FaEdit size={18} />
+                                            </button>
 
-                                        <button
-                                            onClick={() => handleDeleteProduct(product.id!)}
-                                            type="button"
-                                            aria-label="Excluir produto."
-                                            className="text-red-700 cursor-pointer hover:text-red-800"
-                                        >
-                                            <FaTrash size={18} />
-                                        </button>
+                                            <button
+                                                onClick={() => handleDeleteProduct(product.id!)}
+                                                type="button"
+                                                aria-label="Excluir produto."
+                                                className="text-red-700 cursor-pointer hover:text-red-800"
+                                            >
+                                                <FaTrash size={18} />
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
