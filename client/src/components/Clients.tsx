@@ -146,9 +146,6 @@ export const Clients: React.FC = () => {
         setForm({ ...client })
         setEditingClientId(client.id!)
         setShowForm(true)
-
-        const errors = formValidation(client)
-        setFormErrors(errors)
     }
 
     async function handleDelete(id: string) {
@@ -273,7 +270,7 @@ export const Clients: React.FC = () => {
                                     <td className="px-4 py-2 text-sm">{client.district}</td>
                                     <td className="px-4 py-2 text-sm">{client.city}</td>
                                     <td className="px-4 py-2 text-sm max-w-[160px] truncate" title={client.notes}>{client.notes || "-"}</td>
-                                    <td className="px-4 py-2 text-sm space-x-1">
+                                    <td className="px-4 py-2 text-sm space-x-1 flex justify-between">
                                         <button
                                             onClick={() => handleEdit(client)}
                                             className="text-emerald-600 cursor-pointer hover:underline"
@@ -283,7 +280,8 @@ export const Clients: React.FC = () => {
                                         </button>
 
                                         <button
-                                            onClick={() => handleDelete(client.id!)} className="text-red-700 cursor-pointer hover:underline"
+                                            onClick={() => handleDelete(client.id!)}
+                                            className="text-red-700 cursor-pointer hover:underline"
                                             aria-label="Excluir cliente"
                                         >
                                             <FaTrash size={18} />
