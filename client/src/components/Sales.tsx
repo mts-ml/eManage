@@ -27,6 +27,7 @@ export const Sales: React.FC = () => {
     const today = new Date().toLocaleDateString("pt-BR")
     const selectedProduct = products.find(p => p.id === selectedProductId)
     const selectedClient = clients.find(c => c.id === selectedClientId)
+    const total = cart.reduce((sum, item) => sum + Number(item.salePrice) * item.quantity, 0)
 
     useEffect(() => {
         async function getLastSale() {
@@ -142,8 +143,6 @@ export const Sales: React.FC = () => {
         setSelectedProductId("")
         setQuantity(1)
     }
-
-    const total = cart.reduce((sum, item) => sum + Number(item.salePrice) * item.quantity, 0)
 
 
     return (
@@ -339,7 +338,7 @@ export const Sales: React.FC = () => {
                         <button
                             type="button"
                             className="bg-emerald-600 block mx-auto mt-6 cursor-pointer text-white px-6 py-2 rounded hover:bg-emerald-700"
-                            onClick={() => submitSale()}
+                            onClick={submitSale}
                         >
                             Finalizar Compra
                         </button>

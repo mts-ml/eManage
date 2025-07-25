@@ -145,7 +145,7 @@ export const Products: React.FC = () => {
     }
 
     return (
-        <main className="p-6 max-w-xl mx-auto">
+        <main className="p-6 max-w-[87.5rem] mx-auto">
             <h2 className="text-2xl font-bold mb-8 text-center">Cadastro de Produtos</h2>
 
             {!showForm && (
@@ -349,17 +349,28 @@ export const Products: React.FC = () => {
                         <tbody>
                             {products.map(product => (
                                 <tr key={product.id} className="odd:bg-white even:bg-gray-100">
-                                    <td className="p-2 border">{product.name}</td>
+                                    <td className="p-2 border">
+                                        {product.name}
+                                    </td>
+
                                     <td className="p-2 border">
                                         R${Number(product.salePrice).toFixed(2).replace('.', ',')}
                                     </td>
+
                                     <td className="p-2 border">
                                         R${Number(product.purchasePrice).toFixed(2).replace('.', ',')}
                                     </td>
-                                    <td className="p-2 border">{product.stock}</td>
-                                    <td className="p-2 border">{product.description}</td>
+
+                                    <td className="p-2 border">
+                                        {product.stock}
+                                    </td>
+
+                                    <td className="p-2 border">
+                                        {product.description}
+                                    </td>
+
                                     <td className="p-2 border space-x-2">
-                                        <div className="flex items-center justify-between">
+                                        <div className="flex items-center justify-center gap-2">
                                             <button
                                                 onClick={() => handleEditProduct(product)}
                                                 type="button"
