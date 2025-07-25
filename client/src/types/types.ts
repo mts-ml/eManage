@@ -26,8 +26,8 @@ export interface Product {
     id?: string
     name: string
     description: string
-    price: string
-    purchasePrice?: string
+    salePrice: string
+    purchasePrice: string
     stock: string
 }
 export type ProductFromBackend = Product & { _id: string }

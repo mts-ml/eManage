@@ -45,28 +45,29 @@ export type Errors = Partial<Record<keyof ClientProps, string[]>>
 export interface ProductProps {
     name: string
     description: string
-    price: number
+    salePrice: number
+    purchasePrice: number
     stock: number
 }
 export type ProductErrors = Partial<Record<keyof ProductProps, string>>
 
-export interface SaleItem {
+export interface Item {
     productId: string
     productName: string
     quantity: number
     price: number
 }
 
-export interface SalePayload {
+export interface ItemPayload {
     clientId: string
     clientName: string
     saleNumber: number
     date: string
-    items: SaleItem[]
+    items: Item[]
     total: number
     paid?: boolean
     status: "Em aberto" | "Pago"
     paymentDate?: string | null
     bank?: string
 }
-export type SaleErrors = Partial<Record<keyof SalePayload | string, string[]>>
+export type SaleErrors = Partial<Record<keyof ItemPayload | string, string[]>>

@@ -110,7 +110,7 @@ export const Login: React.FC = () => {
                 if (!error.response) {
                     // Falha de rede, API fora do ar, timeout, etc.
                     console.error("Erro de rede ou servidor indisponível:", error.message)
-                    setErrors(prev => ({ ...prev, general: "Serviço indisponível. Tente novamente mais tarde." }))
+                    setErrors(prev => ({ ...prev, geral: "Serviço indisponível. Tente novamente mais tarde." }))
                 } else {
                     // API respondeu com erro
                     const status = error.response.status

@@ -1,6 +1,6 @@
 import mongoose from "mongoose"
 
-import { SalePayload } from "../types/types.js"
+import { ItemPayload } from "../types/types.js"
 
 
 const itemSchema = new mongoose.Schema({
@@ -61,4 +61,4 @@ const saleSchema = new mongoose.Schema({
 })
 
 
-export const Sale = mongoose.model<SalePayload>("Sale", saleSchema)
+export const Sale = mongoose.model<ItemPayload>("Sale", saleSchema)

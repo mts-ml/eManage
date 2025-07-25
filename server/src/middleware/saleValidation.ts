@@ -1,9 +1,9 @@
 import { NextFunction, Request, Response } from "express"
 
-import { SalePayload, SaleItem, SaleErrors } from "../types/types.js"
+import { ItemPayload, Item, SaleErrors } from "../types/types.js"
 
 
-export function handleSaleValidation(req: Request<{}, {}, SalePayload>, res: Response, next: NextFunction) {
+export function handleSaleValidation(req: Request<{}, {}, ItemPayload>, res: Response, next: NextFunction) {
     const sale = req.body
     if (!sale) {
         res.status(400).json({ message: "Dados ausentes no corpo da requisição." })
@@ -40,7 +40,7 @@ export function handleSaleValidation(req: Request<{}, {}, SalePayload>, res: Res
     if (!Array.isArray(sale.items) || sale.items.length === 0) {
         errors.items = ["Venda deve conter ao menos um item"]
     } else {
-        sale.items.forEach((item: SaleItem, index: number) => {
+        sale.items.forEach((item: Item, index: number) => {
             const itemErrors: string[] = []
 
             if (!item.productName || typeof item.productName !== "string" || item.productName.length === 0) {

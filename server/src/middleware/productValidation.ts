@@ -13,7 +13,8 @@ export function handleProductValidation(req: Request<{}, {}, ProductProps>, res:
     const requiredStringFields = [
         "name",
         "description",
-        "price",
+        "salePrice",
+        "purchasePrice",
         "stock",
     ]
     if (!validateStringFields(req.body, requiredStringFields, res)) {
@@ -21,7 +22,7 @@ export function handleProductValidation(req: Request<{}, {}, ProductProps>, res:
     }
 
     req.body.name = req.body.name.toUpperCase()
-    const { name, description, price, stock } = req.body
+    const { name, description, salePrice, purchasePrice, stock } = req.body
 
 
     const errors: ProductErrors = {}
@@ -29,15 +30,20 @@ export function handleProductValidation(req: Request<{}, {}, ProductProps>, res:
     if (isMissing(name)) addErrorProducts(errors, "name", "Campo obrigatório")
     if (isMissing(description)) addErrorProducts(errors, 'description', "Campo obrigatório")
 
-    if (price === undefined || price === null) {
-        addErrorProducts(errors, 'price', "Campo obrigatório")
-    } else if (isNaN(price) || price <= 0) {
-        addErrorProducts(errors, 'price', "Preço inválido")
+    if (salePrice == null) {
+        addErrorProducts(errors, 'salePrice', "Campo obrigatório")
+    } else if (isNaN(salePrice) || salePrice <= 0) {
+        addErrorProducts(errors, 'salePrice', "Preço inválido")
+    }
+    if (purchasePrice == null) {
+        addErrorProducts(errors, 'purchasePrice', "Campo obrigatório")
+    } else if (isNaN(purchasePrice) || purchasePrice <= 0) {
+        addErrorProducts(errors, 'purchasePrice', "Preço inválido")
     }
 
-    if (stock === undefined || stock === null) {
+    if (stock == null) {
         addErrorProducts(errors, 'stock', "Campo obrigatório")
-    } else if (isNaN(stock) || stock <= 0) {
+    } else if (isNaN(stock) || stock < 0) {
         addErrorProducts(errors, 'stock', "Estoque inválido")
     }
 

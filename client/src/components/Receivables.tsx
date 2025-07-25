@@ -57,7 +57,7 @@ export const Receivables: React.FC = () => {
         setReceivables(prev =>
             prev.map(sale => (sale._id === id ? { ...sale, bank } : sale))
         )
-        
+
         setModifiedId(id)
     }
 
@@ -77,7 +77,7 @@ export const Receivables: React.FC = () => {
         }
     }
 
-    
+
     return (
         <main className="p-6 overflow-x-auto">
             <h2 className="text-2xl font-bold mb-4 text-emerald-700">Contas a Receber</h2>
@@ -101,22 +101,29 @@ export const Receivables: React.FC = () => {
                     {receivables.map(sale => (
                         <tr key={sale._id} className="text-center text-gray-800">
                             <td className="p-2 border">{sale.date}</td>
+
                             <td className="p-2 border">{sale.saleNumber}</td>
+
                             <td className="p-2 border">{sale.clientName}</td>
+
                             <td className="p-2 border text-left">
-                                <ul className="list-disc list-inside space-y-1">
+                                <ul className="space-y-2">
                                     {sale.items.map(item => {
                                         const product = products.find(p => p.id === item.productId)
                                         return (
                                             <li key={item.productId}>
-                                                {item.productName} R${item.price} - {item.quantity}
+                                                {item.productName} - R${item.price} - {item.quantity}(x)
                                                 {product?.description ? ` - ${product.description}` : ""}
                                             </li>
                                         )
                                     })}
                                 </ul>
                             </td>
-                            <td className="p-2 border">R$ {sale.total.toFixed(2).replace(".", ",")}</td>
+
+                            <td className="p-2 border">
+                                {sale.total.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                            </td>
+
                             <td className="p-2 border">
                                 <select
                                     aria-label="Sale status"
@@ -129,9 +136,11 @@ export const Receivables: React.FC = () => {
                                     <option value="Pago">Pago</option>
                                 </select>
                             </td>
+
                             <td className="p-2 border">
                                 {sale.paymentDate ? new Date(sale.paymentDate).toLocaleDateString("pt-BR") : "--"}
                             </td>
+
                             <td className="p-2 border">
                                 <input
                                     type="text"
@@ -141,6 +150,7 @@ export const Receivables: React.FC = () => {
                                     className="border rounded p-1 w-full text-sm"
                                 />
                             </td>
+
                             <td className="p-2 border">
                                 {modifiedId === sale._id && (
                                     <button
