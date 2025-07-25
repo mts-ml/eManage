@@ -105,7 +105,7 @@ export const Sales: React.FC = () => {
                     productId: item.id!,
                     productName: item.name,
                     quantity: item.quantity,
-                    price: Number(item.price)
+                    price: Number(item.salePrice)
                 }),
                 ),
             total,
@@ -143,7 +143,7 @@ export const Sales: React.FC = () => {
         setQuantity(1)
     }
 
-    const total = cart.reduce((sum, item) => sum + Number(item.price) * item.quantity, 0)
+    const total = cart.reduce((sum, item) => sum + Number(item.salePrice) * item.quantity, 0)
 
 
     return (
@@ -236,12 +236,12 @@ export const Sales: React.FC = () => {
                         </p>
 
                         <p className="text-sm text-gray-600 mb-2">
-                            Preço: <strong>R${Number(selectedProduct.price).toFixed(2).replace(".", ",")}</strong>
+                            Preço: <strong>R${Number(selectedProduct.salePrice).toFixed(2).replace(".", ",")}</strong>
                         </p>
                     </div>
 
                     <p className="text-sm text-gray-600 mb-4">
-                        Estoque disponível: <strong>{selectedProduct.stock} {selectedProduct.description}</strong>
+                        Estoque disponível: <strong>{selectedProduct.stock}{selectedProduct.description}</strong>
                     </p>
 
                     <div className="flex gap-2 items-center">
@@ -293,7 +293,7 @@ export const Sales: React.FC = () => {
                                     </p>
 
                                     <p className="text-sm text-gray-500">
-                                        {Number(item.price).toLocaleString("pt-BR", {
+                                        {Number(item.salePrice).toLocaleString("pt-BR", {
                                             style: "currency",
                                             currency: "BRL"
                                         })} x {Number(item.quantity).toLocaleString("pt-BR")}
@@ -357,12 +357,12 @@ export const Sales: React.FC = () => {
                     <ul className="mt-2 list-disc list-inside">
                         {lastSale.items.map((item, index) => (
                             <li key={index}>
-                                {item.productName} - {item.quantity}x R${item.price.toFixed(2).replace(".", ",")}
+                                {item.productName} - {item.quantity.toLocaleString("pt-BR")}(x) - {Number(item.price).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
                             </li>
                         ))}
                     </ul>
 
-                    <p className="mt-2 font-semibold">Total: R${lastSale.total.toFixed(2).replace(".", ",")}</p>
+                    <p className="mt-2 font-semibold">Total: {lastSale.total.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</p>
                 </div>
             )}
         </main>
