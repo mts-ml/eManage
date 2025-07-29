@@ -18,6 +18,7 @@ import sales from './routes/api/sales/sales.js'
 import lastSale from './routes/api/sales/lastSale.js'
 import receivables from './routes/api/sales/receivables.js'
 import lastPurchase from './routes/api/purchases/lastPurchase.js'
+import purchases from './routes/api/purchases/purchases.js'
 
 
 const PORT = process.env.PORT || 3500
@@ -51,6 +52,7 @@ app.use('/sales/last', lastSale)
 app.use('/sales', sales)
 app.use('/receivables', receivables)
 app.use('/purchases/last', lastPurchase)
+app.use('/purchases', purchases)
 
 
 // Tratamento de erros
