@@ -5,7 +5,7 @@ import type { AxiosResponse } from "axios"
 
 import ProductsContext from "../Context/ProductsContext"
 import ClientsContext from "../Context/ClientsContext"
-import type { Product, ItemPayload, SaleResponse } from "../types/types"
+import type { Product, ItemPayload, PurchaseResponse } from "../types/types"
 import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
 
 
@@ -18,7 +18,7 @@ export const Purchases: React.FC = () => {
     const { products, setProducts } = useContext(ProductsContext)
 
     const [cart, setCart] = useState<CartItem[]>([])
-    const [lastPurchase, setLastPurchase] = useState<SaleResponse["sale"] | null>(null)
+    const [lastPurchase, setLastPurchase] = useState<PurchaseResponse["purchase"] | null>(null)
     const [selectedClientId, setSelectedClientId] = useState<string>("")
     const [selectedProductId, setSelectedProductId] = useState<string>("")
     const [quantity, setQuantity] = useState<number>(1)
@@ -81,8 +81,8 @@ export const Purchases: React.FC = () => {
         setCart(prev => prev.filter(item => item.id !== id))
     }
 
-    async function submitSale() {
-        const salePayload: ItemPayload = {
+    async function submitPurchase() {
+        const purchasePayload: ItemPayload = {
             clientId: selectedClientId,
             clientName: selectedClient?.name || "Cliente Desconhecido",
             date: today,
@@ -103,9 +103,9 @@ export const Purchases: React.FC = () => {
         }
 
         try {
-            const response: AxiosResponse<SaleResponse> = await axiosPrivate.post('/sales', salePayload)
+            const response: AxiosResponse<PurchaseResponse> = await axiosPrivate.post('/purchases', purchasePayload)
 
-            const { sale, updatedProducts } = response.data
+            const { purchase, updatedProducts } = response.data
 
             setProducts((prev: Product[]) =>
                 prev.map(product => {
@@ -115,10 +115,10 @@ export const Purchases: React.FC = () => {
                 })
             )
 
-            setLastPurchase(sale)
+            setLastPurchase(purchase)
         } catch (error) {
             console.error(error)
-            alert('Erro ao finalizar a venda.')
+            alert('Erro ao finalizar a compra.')
             return
         }
 
@@ -141,7 +141,7 @@ export const Purchases: React.FC = () => {
             <section>
                 <div className="flex justify-between items-center mb-6">
                     <p className="text-lg font-medium">
-                        Compra Nº {lastPurchase ? lastPurchase.saleNumber + 1 : '-'}
+                        Compra Nº {lastPurchase ? lastPurchase.purchaseNumber + 1 : '1'}
                     </p>
 
                     <div className="text-sm text-gray-600">
@@ -275,7 +275,7 @@ export const Purchases: React.FC = () => {
                                         {Number(item.purchasePrice).toLocaleString("pt-BR", {
                                             style: "currency",
                                             currency: "BRL"
-                                        })} - {Number(item.quantity).toLocaleString("pt-BR")}x
+                                        })} - {Number(item.quantity).toLocaleString("pt-BR")}(x) {item.description}
                                     </p>
 
                                 </div>
@@ -318,7 +318,7 @@ export const Purchases: React.FC = () => {
                         <button
                             type="button"
                             className="bg-emerald-600 block mx-auto mt-6 cursor-pointer text-white px-6 py-2 rounded hover:bg-emerald-700"
-                            onClick={submitSale}
+                            onClick={submitPurchase}
                         >
                             Finalizar Compra
                         </button>
@@ -328,8 +328,8 @@ export const Purchases: React.FC = () => {
 
             {lastPurchase && (
                 <div className="bg-green-100 border border-green-400 p-4 rounded mt-8">
-                    <h3 className="text-lg font-semibold text-green-800 mb-2">Venda Finalizada com Sucesso!</h3>
-                    <p><strong>Número da Venda:</strong> {lastPurchase.saleNumber}</p>
+                    <h3 className="text-lg font-semibold text-green-800 mb-2">Compra finalizada com Sucesso!</h3>
+                    <p><strong>Número da Compra:</strong> {lastPurchase.purchaseNumber}</p>
                     <p><strong>Cliente:</strong> {lastPurchase.clientName}</p>
                     <p><strong>Data:</strong> {lastPurchase.date}</p>
 
