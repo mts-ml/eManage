@@ -295,7 +295,7 @@ export const Sales: React.FC = () => {
                                         {Number(item.salePrice).toLocaleString("pt-BR", {
                                             style: "currency",
                                             currency: "BRL"
-                                        })} x {Number(item.quantity).toLocaleString("pt-BR")}
+                                        })} - {Number(item.quantity).toLocaleString("pt-BR")}(x){item.description}
                                     </p>
 
                                 </div>
