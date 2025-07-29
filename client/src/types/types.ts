@@ -56,3 +56,11 @@ export interface PurchaseResponse {
     purchase: ItemPayload & { _id: string, purchaseNumber: number }
     updatedProducts: Product[]
 }
+
+export interface Receivable extends ItemPayload {
+    _id: string
+    saleNumber: number
+    status: "Em aberto" | "Pago"
+    paymentDate: string | null
+    bank: string
+}
