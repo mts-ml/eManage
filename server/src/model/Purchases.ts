@@ -1,6 +1,6 @@
 import mongoose from "mongoose"
 
-import { SalePayload } from "../types/types.js"
+import { PurchasePayload } from "../types/types.js"
 
 
 const itemSchema = new mongoose.Schema({
@@ -22,8 +22,8 @@ const itemSchema = new mongoose.Schema({
     }
 })
 
-const saleSchema = new mongoose.Schema({
-    saleNumber: {
+const purchaseSchema = new mongoose.Schema({
+    purchaseNumber: {
         type: Number,
         required: true,
         unique: true
@@ -61,4 +61,4 @@ const saleSchema = new mongoose.Schema({
 })
 
 
-export const Sale = mongoose.model<SalePayload>("Sale", saleSchema)
+export const Purchase = mongoose.model<PurchasePayload>("Purchase", purchaseSchema)

@@ -1,6 +1,7 @@
 import { Response } from "express"
 
 import { Sale } from "../model/Sales.js"
+import { Purchase } from "../model/Purchases.js"
 import { ClientProps, Errors, ProductErrors, ProductProps } from "../types/types.js"
 
 
@@ -55,6 +56,7 @@ export function isValidCNPJ(cnpj: string): boolean {
     return digit1 === parseInt(cnpj[12]) && digit2 === parseInt(cnpj[13])
 }
 
+
 // Phone validator
 export function formatPhoneForDisplay(phone: string): string {
     // Se o telefone tiver 11 dígitos (DD + 9 dígitos), formata assim
@@ -69,22 +71,32 @@ export function formatPhoneForDisplay(phone: string): string {
     return phone;
 }
 
+
 export function addError(errors: Errors, clientProps: keyof ClientProps, message: string): void {
     errors[clientProps] = [...(errors[clientProps] || []), message]
 }
+
 
 export function addErrorProducts(errors: ProductErrors, productProps: keyof ProductProps, message: string): void {
     errors[productProps] = message
 }
 
+
 export function isMissing(value: unknown): boolean {
     return typeof value !== 'string' || value.trim() === ""
 }
+
 
 export async function getNextSaleNumber(): Promise<number> {
     const lastSale = await Sale.findOne().sort({ saleNumber: -1 }).limit(1)
     return lastSale ? lastSale.saleNumber + 1 : 1
 }
+
+export async function getNextPurchaseNumber(): Promise<number> {
+    const lastPurchase = await Purchase.findOne().sort({ purchaseNumber: -1 }).limit(1)
+    return lastPurchase ? lastPurchase.purchaseNumber + 1 : 1
+}
+
 
 export function validateStringFields(obj: any, fields: string[], res: Response): boolean {
     for (const field of fields) {

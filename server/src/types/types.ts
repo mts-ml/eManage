@@ -8,7 +8,7 @@ export interface RegisterProps {
 }
 
 export interface UserProps {
-    name: String
+    name: string
     email: string
     password: string
     refreshToken?: string
@@ -58,7 +58,7 @@ export interface Item {
     price: number
 }
 
-export interface ItemPayload {
+export interface SalePayload {
     clientId: string
     clientName: string
     saleNumber: number
@@ -70,4 +70,18 @@ export interface ItemPayload {
     paymentDate?: string | null
     bank?: string
 }
-export type SaleErrors = Partial<Record<keyof ItemPayload | string, string[]>>
+export type SaleErrors = Partial<Record<keyof SalePayload | string, string[]>>
+
+export interface PurchasePayload {
+    clientId: string
+    clientName: string
+    purchaseNumber: number
+    date: string
+    items: Item[]
+    total: number
+    paid?: boolean
+    status: "Em aberto" | "Pago"
+    paymentDate?: string | null
+    bank?: string
+}
+export type PurchaseErrors = Partial<Record<keyof PurchasePayload | string, string[]>>

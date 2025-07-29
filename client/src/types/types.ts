@@ -51,3 +51,8 @@ export interface SaleResponse {
     sale: ItemPayload & { _id: string, saleNumber: number }
     updatedProducts: Product[]
 }
+
+export interface PurchaseResponse {
+    purchase: ItemPayload & { _id: string, purchaseNumber: number }
+    updatedProducts: Product[]
+}

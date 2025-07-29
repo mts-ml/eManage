@@ -1,44 +1,44 @@
 import { NextFunction, Request, Response } from "express"
 import mongoose from "mongoose"
 
-import { Sale } from "../model/Sales.js"
-import { SalePayload } from "../types/types.js"
-import { getNextSaleNumber } from "../utils/utils.js"
+import { Purchase } from "../model/Purchases.js"
+import { PurchasePayload } from "../types/types.js"
+import { getNextPurchaseNumber } from "../utils/utils.js"
 import { Client } from "../model/Clients.js"
 import { Product } from "../model/Products.js"
 
 
-export async function getAllSales(req: Request, res: Response, next: NextFunction) {
+export async function getAllPurchases(req: Request, res: Response, next: NextFunction) {
     try {
-        const sales = await Sale.find()
-        if (sales.length === 0) {
+        const purchases = await Purchase.find()
+        if (purchases.length === 0) {
             res.sendStatus(204)
             return
         }
 
-        res.json(sales)
+        res.json(purchases)
     } catch (error) {
-        console.error(`saleController - ${JSON.stringify(error)}`)
+        console.error(`purchaseController - ${JSON.stringify(error)}`)
         next(error)
     }
 }
 
-export async function createNewSale(req: Request<{}, {}, Omit<SalePayload, "saleNumber">>, res: Response, next: NextFunction) {
+export async function createNewPurchase(req: Request<{}, {}, Omit<PurchasePayload, "purchaseNumber">>, res: Response, next: NextFunction) {
     try {
-        const saleProps = req.body
+        const purchaseProps = req.body
 
-        const client = await Client.findById(saleProps.clientId)
-        const productIds = saleProps.items.map(item => new mongoose.Types.ObjectId(item.productId))
+        const client = await Client.findById(purchaseProps.clientId)
+        const productIds = purchaseProps.items.map(item => new mongoose.Types.ObjectId(item.productId))
         const products = await Product.find({ _id: { $in: productIds } })
 
-        const newSale = {
-            ...saleProps,
-            saleNumber: await getNextSaleNumber(),
+        const newPurchase = {
+            ...purchaseProps,
+            purchaseNumber: await getNextPurchaseNumber(),
             clientName: client?.name || "Cliente Desconhecido",
             status: "Em aberto",
             paymentDate: null,
             bank: "",
-            items: saleProps.items.map(item => {
+            items: purchaseProps.items.map(item => {
                 const product = products.find(p => p.id === item.productId)
                 return {
                     ...item,
@@ -46,22 +46,22 @@ export async function createNewSale(req: Request<{}, {}, Omit<SalePayload, "sale
                 }
             })
         }
-        const createdSale = await Sale.create(newSale)
+        const createdPurchase = await Purchase.create(newPurchase)
 
         // Atualiza o estoque dos produtos
         await Promise.all(
-            saleProps.items.map(async item => {
+            purchaseProps.items.map(async item => {
                 const product = products.find(p => p.id === item.productId)
 
                 if (product) {
-                    product.stock -= item.quantity
+                    product.stock += item.quantity
                     await product.save()
                 }
             })
         )
 
         res.status(201).json({
-            sale: createdSale,
+            purchase: createdPurchase,
             updatedProducts: products.map(product => ({
                 id: product.id,
                 name: product.name,
@@ -85,9 +85,9 @@ export async function createNewSale(req: Request<{}, {}, Omit<SalePayload, "sale
     }
 }
 
-export async function updateSale(req: Request<{ id: string }, {}, Omit<SalePayload, "SaleNumber">>, res: Response, next: NextFunction) {
+export async function updatePurchase(req: Request<{ id: string }, {}, Omit<PurchasePayload, "purchaseNumber">>, res: Response, next: NextFunction) {
     const { id } = req.params
-    const saleProps = req.body
+    const purchaseProps = req.body
 
     if (!id || !mongoose.Types.ObjectId.isValid(id)) {
         res.status(400).json({ message: "Id inválido ou ausente." })
@@ -95,24 +95,24 @@ export async function updateSale(req: Request<{ id: string }, {}, Omit<SalePaylo
     }
 
     try {
-        const updatedSale = await Sale.findByIdAndUpdate(id, saleProps, {
+        const updatedPurchase = await Purchase.findByIdAndUpdate(id, purchaseProps, {
             new: true,
             runValidators: true
         })
 
-        if (!updatedSale) {
-            res.status(404).json({ message: "Venda não encontrada." })
+        if (!updatedPurchase) {
+            res.status(404).json({ message: "Compra não encontrada." })
             return
         }
 
-        res.json(updatedSale)
+        res.json(updatedPurchase)
     } catch (error) {
-        console.error(`Erro ao editar venda ${JSON.stringify(error)}`)
+        console.error(`Erro ao editar compra ${JSON.stringify(error)}`)
         next(error)
     }
 }
 
-export async function deleteSale(req: Request<{ id: string }>, res: Response, next: NextFunction) {
+export async function deletePurchase(req: Request<{ id: string }>, res: Response, next: NextFunction) {
     const { id } = req.params
     if (!id || !mongoose.Types.ObjectId.isValid(id)) {
         res.status(400).json({ message: "Id inválido ou ausente." })
@@ -120,14 +120,14 @@ export async function deleteSale(req: Request<{ id: string }>, res: Response, ne
     }
 
     try {
-        const deletedSale = await Sale.findByIdAndDelete(id)
-        if (!deletedSale) {
-            res.status(404).json({ message: "Venda não encontrada." })
+        const deletedPurchase = await Purchase.findByIdAndDelete(id)
+        if (!deletedPurchase) {
+            res.status(404).json({ message: "Compra não encontrada." })
             return
         }
-        res.json({ message: `Venda deletada com sucesso.` })
+        res.json({ message: `Compra deletada com sucesso.` })
     } catch (error) {
-        console.error("Erro ao deletar venda", error)
+        console.error("Erro ao deletar compra", error)
         next(error)
     }
 }
