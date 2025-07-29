@@ -85,3 +85,5 @@ export interface PurchasePayload {
     bank?: string
 }
 export type PurchaseErrors = Partial<Record<keyof PurchasePayload | string, string[]>>
+
+export type CommonTransactionPayload = Omit<SalePayload, "saleNumber"> & Omit<PurchasePayload, "purchaseNumber">
