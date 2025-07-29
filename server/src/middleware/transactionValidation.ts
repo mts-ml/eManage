@@ -1,21 +1,22 @@
 import { NextFunction, Request, Response } from "express"
 
-import { SalePayload, Item, SaleErrors } from "../types/types.js"
+import { Item, CommonTransactionPayload } from "../types/types.js"
 
 
-export function handleSaleValidation(req: Request<{}, {}, SalePayload>, res: Response, next: NextFunction) {
-    const sale = req.body
-    if (!sale) {
+export function handleTransactionValidation(req: Request<{}, {}, CommonTransactionPayload>, res: Response, next: NextFunction) {
+    const payload = req.body
+    if (!payload) {
         res.status(400).json({ message: "Dados ausentes no corpo da requisição." })
         return
     }
 
-    if (sale.clientName && typeof sale.clientName === "string") {
-        sale.clientName = sale.clientName.trim()
+    if (payload.clientName && typeof payload.clientName === "string") {
+        payload.clientName = payload.clientName.trim()
+
     }
 
-    if (Array.isArray(sale.items)) {
-        sale.items = sale.items.map(item => {
+    if (Array.isArray(payload.items)) {
+        payload.items = payload.items.map(item => {
             if (item.productName && typeof item.productName === "string") {
                 item.productName = item.productName.trim().toUpperCase()
             }
@@ -23,24 +24,24 @@ export function handleSaleValidation(req: Request<{}, {}, SalePayload>, res: Res
         })
     }
 
-    const errors: SaleErrors = {}
+    const errors: Record<string, string[]> = {}
 
-    if (!sale.clientName || typeof sale.clientName !== "string" || sale.clientName.length === 0) {
+    if (!payload.clientName || typeof payload.clientName !== "string" || payload.clientName.length === 0) {
         errors.clientName = ["Nome do cliente é obrigatório"]
     }
 
-    if (!sale.clientId || typeof sale.clientId !== "string" || sale.clientId.trim().length === 0) {
+    if (!payload.clientId || typeof payload.clientId !== "string" || payload.clientId.trim().length === 0) {
         errors.clientId = ["Campo obrigatório"]
     }
 
-    if (!sale.date || typeof sale.date !== "string" || sale.date.trim().length < 8) {
+    if (!payload.date || typeof payload.date !== "string" || payload.date.trim().length < 8) {
         errors.date = ["Data inválida"]
     }
 
-    if (!Array.isArray(sale.items) || sale.items.length === 0) {
+    if (!Array.isArray(payload.items) || payload.items.length === 0) {
         errors.items = ["Venda deve conter ao menos um item"]
     } else {
-        sale.items.forEach((item: Item, index: number) => {
+        payload.items.forEach((item: Item, index: number) => {
             const itemErrors: string[] = []
 
             if (!item.productName || typeof item.productName !== "string" || item.productName.length === 0) {
@@ -53,7 +54,7 @@ export function handleSaleValidation(req: Request<{}, {}, SalePayload>, res: Res
         })
     }
 
-    if (typeof sale.total !== "number" || !Number.isFinite(sale.total) || sale.total <= 0) {
+    if (typeof payload.total !== "number" || !Number.isFinite(payload.total) || payload.total <= 0) {
         errors.total = ["Total inválido"]
     }
 
