@@ -1,9 +1,9 @@
 import { NextFunction, Request, Response } from "express"
 
-import { ItemPayload, Item, SaleErrors } from "../types/types.js"
+import { SalePayload, Item, SaleErrors } from "../types/types.js"
 
 
-export function handleSaleValidation(req: Request<{}, {}, ItemPayload>, res: Response, next: NextFunction) {
+export function handleSaleValidation(req: Request<{}, {}, SalePayload>, res: Response, next: NextFunction) {
     const sale = req.body
     if (!sale) {
         res.status(400).json({ message: "Dados ausentes no corpo da requisição." })
