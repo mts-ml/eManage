@@ -1,6 +1,6 @@
 import express from 'express'
 
-import { handleSaleValidation } from '../../../middleware/saleValidation.js'
+import { handleTransactionValidation } from '../../../middleware/transactionValidation.js'
 import { createNewSale, deleteSale, getAllSales, updateSale } from '../../../controller/saleController.js'
 
 const router = express.Router()
@@ -8,8 +8,8 @@ const router = express.Router()
 
 router.route('/')
     .get(getAllSales)
-    .post(handleSaleValidation, createNewSale)
-router.put('/:id', handleSaleValidation, updateSale)
-router.delete('/:id', handleSaleValidation, deleteSale)
+    .post(handleTransactionValidation, createNewSale)
+router.put('/:id', handleTransactionValidation, updateSale)
+router.delete('/:id', handleTransactionValidation, deleteSale)
 
 export default router
