@@ -6,7 +6,9 @@ import { ClientProps } from "../types/types.js"
 const clientSchema = new Schema<ClientProps>({
     name: {
         type: String,
-        required: true
+        required: true,
+        uppercase: true,
+        trim: true
     },
     email: {
         type: String,
