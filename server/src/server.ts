@@ -13,12 +13,14 @@ import register from './routes/register.js'
 import refresh from './routes/refresh.js'
 import logout from './routes/logout.js'
 import clients from './routes/api/clients.js'
+import suppliers from './routes/api/suppliers.js'
 import products from './routes/api/products.js'
 import sales from './routes/api/sales/sales.js'
 import lastSale from './routes/api/sales/lastSale.js'
 import receivables from './routes/api/sales/receivables.js'
 import lastPurchase from './routes/api/purchases/lastPurchase.js'
 import purchases from './routes/api/purchases/purchases.js'
+import payables from './routes/api/purchases/payables.js'
 
 
 const PORT = process.env.PORT || 3500
@@ -47,12 +49,14 @@ app.use('/refresh', refresh)
 app.use(verifyJWT)
 app.use('/logout', logout)
 app.use('/clients', clients)
+app.use('/suppliers', suppliers)
 app.use('/products', products)
 app.use('/sales/last', lastSale)
 app.use('/sales', sales)
 app.use('/receivables', receivables)
 app.use('/purchases/last', lastPurchase)
 app.use('/purchases', purchases)
+app.use('/payables', payables)
 
 
 // Tratamento de erros
