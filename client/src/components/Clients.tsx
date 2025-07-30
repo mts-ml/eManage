@@ -1,10 +1,10 @@
 import { useContext, useState } from "react"
 import { FaTrash, FaEdit } from 'react-icons/fa'
 
-import type { Client } from "../types/types"
+import type { Client, ClientErrors, ClientFromBackend } from "../types/types"
 import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
 import axios from "axios"
-import ClientsContext from "../Context/ClientsContext"
+import ClientContext from "../Context/ClientContext"
 import {
     capitalizeWords,
     isValidCPF,
@@ -26,17 +26,17 @@ export const Clients: React.FC = () => {
     }
 
     const [form, setForm] = useState<Client>(defaultClient)
-    const [formErrors, setFormErrors] = useState<Partial<Client>>({})
+    const [formErrors, setFormErrors] = useState<ClientErrors>({})
     const [showForm, setShowForm] = useState(false)
     const [isReadyToSubmit, setIsReadyToSubmit] = useState(false)
     const [editingClientId, setEditingClientId] = useState<string | null>(null)
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
-    const { clients, setClients } = useContext(ClientsContext)
+    const { clients, setClients } = useContext(ClientContext)
     const axiosPrivate = useAxiosPrivate()
 
 
-    function formValidation(form: Client): Partial<Client> {
-        const errors: Partial<Client> = {}
+    function formValidation(form: Client): ClientErrors {
+        const errors: ClientErrors = {}
 
         if (!form.name.trim()) {
             errors.name = "Campo obrigatório"
@@ -168,7 +168,7 @@ export const Clients: React.FC = () => {
         try {
             // Editar usuário
             if (editingClientId) {
-                const response = await axiosPrivate.put(`/clients/${editingClientId}`, normalizedClient)
+                const response = await axiosPrivate.put<ClientFromBackend>(`/clients/${editingClientId}`, normalizedClient)
 
                 const updatedClient = { ...response.data, id: response.data._id }
                 setClients(prev => prev.map(client =>
@@ -176,7 +176,7 @@ export const Clients: React.FC = () => {
                 )
             } else {
                 // Criar novo usuário
-                const response = await axiosPrivate.post('/clients', normalizedClient)
+                const response = await axiosPrivate.post<ClientFromBackend>('/clients', normalizedClient)
 
                 const newClient = { ...response.data, id: response.data._id }
 
@@ -259,17 +259,27 @@ export const Clients: React.FC = () => {
                             {clients.map(client => (
                                 <tr key={client.id}>
                                     <td className="px-4 py-2 text-sm whitespace-nowrap">{client.name}</td>
+
                                     <td className="px-4 py-2 text-sm break-words">{client.email}</td>
+
                                     <td className="px-4 py-2 text-sm whitespace-nowrap">{formatPhoneForDisplay(client.phone)}</td>
+
                                     <td className="px-4 py-2 text-sm whitespace-nowrap">
                                         {client.cpfCnpj.length === 11
                                             ? client.cpfCnpj.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4")
                                             : client.cpfCnpj.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, "$1.$2.$3/$4-$5")}
                                     </td>
+
                                     <td className="px-4 py-2 text-sm">{client.address}</td>
+
                                     <td className="px-4 py-2 text-sm">{client.district}</td>
+
                                     <td className="px-4 py-2 text-sm">{client.city}</td>
-                                    <td className="px-4 py-2 text-sm max-w-[160px] truncate" title={client.notes}>{client.notes || "-"}</td>
+
+                                    <td className="px-4 py-2 text-sm max-w-[160px] truncate" title={client.notes}>
+                                        {client.notes || "-"}
+                                    </td>
+
                                     <td className="px-4 py-2 text-sm space-x-1 flex justify-between">
                                         <button
                                             onClick={() => handleEdit(client)}
