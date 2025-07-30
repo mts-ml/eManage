@@ -1,17 +1,16 @@
-import { Request, Response, NextFunction } from 'express'
+import { Request, Response } from 'express'
 
-import { ReceivableProps } from '../types/types.js'
 import { Sale } from '../model/Sales.js'
+import { TransactionUpdatePayload } from '../types/types.js'
 
 
-export async function receivableController(
-    req: Request<{ id: string }, {}, ReceivableProps>, res: Response) {
+export async function receivableController(req: Request<{ id: string }, {}, TransactionUpdatePayload>, res: Response) {
     try {
         const { id } = req.params
         const { status, paymentDate, bank } = req.body
 
         // Monta objeto para atualizar somente os campos que vieram (inclusive null para limpar)
-        const updateFields: Partial<ReceivableProps> = {}
+        const updateFields: Partial<TransactionUpdatePayload> = {}
 
         if ('status' in req.body) updateFields.status = status
         if ('paymentDate' in req.body) updateFields.paymentDate = paymentDate
