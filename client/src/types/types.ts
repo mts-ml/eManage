@@ -9,6 +9,7 @@ export interface CustomJwtPayload extends JwtPayload {
     }
 }
 
+
 export interface Client {
     id?: string
     name: string
@@ -21,6 +22,24 @@ export interface Client {
     notes?: string
 }
 export type ClientFromBackend = Client & { _id: string }
+export type ClientErrors = Partial<Record<keyof Client, string>>
+
+
+export interface Supplier {
+    id?: string
+    name: string
+    email: string
+    phone: string
+    cpfCnpj: string
+    address: string
+    district: string
+    city: string
+    notes?: string
+}
+export type SupplierFromBackend = Supplier & { _id: string }
+export type SupplierErrors = Partial<Record<keyof Supplier, string>>
+
+
 
 export interface Product {
     id?: string
@@ -32,12 +51,14 @@ export interface Product {
 }
 export type ProductFromBackend = Product & { _id: string }
 
+
 export interface Item {
     productId: string
     productName: string
     quantity: number
     price: number
 }
+
 
 export interface ItemPayload {
     clientId: string
@@ -47,15 +68,18 @@ export interface ItemPayload {
     total: number
 }
 
+
 export interface SaleResponse {
     sale: ItemPayload & { _id: string, saleNumber: number }
     updatedProducts: Product[]
 }
 
+
 export interface PurchaseResponse {
     purchase: ItemPayload & { _id: string, purchaseNumber: number }
     updatedProducts: Product[]
 }
+
 
 export interface Receivable extends ItemPayload {
     _id: string
