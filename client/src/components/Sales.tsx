@@ -4,7 +4,7 @@ import type { AxiosResponse } from "axios"
 
 
 import ProductsContext from "../Context/ProductsContext"
-import ClientsContext from "../Context/ClientsContext"
+import ClientContext from "../Context/ClientContext"
 import type { Product, ItemPayload, SaleResponse } from "../types/types"
 import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
 
@@ -14,7 +14,7 @@ interface CartItem extends Product {
 }
 
 export const Sales: React.FC = () => {
-    const { clients } = useContext(ClientsContext)
+    const { clients } = useContext(ClientContext)
     const { products, setProducts } = useContext(ProductsContext)
 
     const [cart, setCart] = useState<CartItem[]>([])

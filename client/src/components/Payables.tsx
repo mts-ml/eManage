@@ -6,16 +6,17 @@ import type { ItemPayload } from "../types/types"
 
 
 interface Payable extends ItemPayload {
-    _id: string
-    purchaseNumber: number
-    status: "Em aberto" | "Pago"
-    paymentDate: string | null
-    bank: string
+  _id: string
+  purchaseNumber: number
+  status: "Em aberto" | "Pago"
+  paymentDate: string | null
+  bank: string
 }
 
 
 export const Payables: React.FC = () => {
   const [payables, setPayables] = useState<Payable[]>([])
+  const [errors, setErrors] = useState<Partial<Record<string, string>>>({})
   const [modifiedId, setModifiedId] = useState<string | null>(null)
   const { products } = useContext(ProductsContext)
   const axiosPrivate = useAxiosPrivate()
@@ -62,32 +63,45 @@ export const Payables: React.FC = () => {
   }
 
   async function handleSave(id: string) {
-    const saleToSave = payables.find(sale => sale._id === id)
-    if (!saleToSave) return
+    const purchaseToSave = payables.find(sale => sale._id === id)
+    if (!purchaseToSave) return
+
+    if (purchaseToSave.status === "Pago" && !purchaseToSave.bank.trim()) {
+      setErrors(prev => ({ ...prev, [id]: "Informe o banco." }))
+      return
+    }
 
     try {
       await axiosPrivate.patch(`/payables/${id}`, {
-        status: saleToSave.status,
-        paymentDate: saleToSave.paymentDate,
-        bank: saleToSave.bank
+        status: purchaseToSave.status,
+        paymentDate: purchaseToSave.paymentDate,
+        bank: purchaseToSave.bank
       })
+
+      setErrors(prev => {
+        const copy = { ...prev }
+        delete copy[id]
+        return copy
+      })
+
       setModifiedId(null)
     } catch (error) {
-      console.error("Erro ao atualizar recebível:", error)
+      setErrors(prev => ({ ...prev, [id]: "Erro ao atualizar pagável" }))
+      console.error("Erro ao atualizar pagável:", error)
     }
   }
 
 
   return (
     <main className="p-6 overflow-x-auto">
-      <h2 className="text-2xl font-bold mb-4 text-emerald-700">Contas a Receber</h2>
+      <h2 className="text-2xl font-bold mb-4 text-emerald-700">Contas a pagar</h2>
 
       <table className="min-w-full bg-white border border-emerald-300 text-sm">
         <thead className="bg-emerald-50 text-emerald-700">
           <tr>
             <th className="p-2 border">Data da Compra</th>
-            <th className="p-2 border">Nº Venda</th>
-            <th className="p-2 border">Cliente</th>
+            <th className="p-2 border">Nº Compra</th>
+            <th className="p-2 border">Fornecedor</th>
             <th className="p-2 border">Produto(s)</th>
             <th className="p-2 border">Valor Total</th>
             <th className="p-2 border">Status</th>
@@ -126,7 +140,7 @@ export const Payables: React.FC = () => {
 
               <td className="p-2 border">
                 <select
-                  aria-label="Sale status"
+                  aria-label="Purchase status"
                   className={`border rounded p-1 text-sm cursor-pointer ${purchase.status === "Pago" ? "bg-green-100 text-green-700 border-green-400" : ""
                     }`}
                   value={purchase.status}
@@ -149,6 +163,10 @@ export const Payables: React.FC = () => {
                   placeholder="Banco"
                   className="border rounded p-1 w-full text-sm"
                 />
+
+                {errors[purchase._id] && (
+                  <p className="text-red-600 text-xs mt-1">{errors[purchase._id]}</p>
+                )}
               </td>
 
               <td className="p-2 border">

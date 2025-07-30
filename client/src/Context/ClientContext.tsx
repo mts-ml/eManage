@@ -19,7 +19,7 @@ const defaultValues: ClientsData = {
     setClients: () => { }
 }
 
-const ClientsContext = createContext(defaultValues)
+const ClientContext = createContext(defaultValues)
 
 
 export const ClientsProvider: React.FC<ClientsProviderProps> = ({ children }) => {
@@ -52,13 +52,13 @@ export const ClientsProvider: React.FC<ClientsProviderProps> = ({ children }) =>
 
 
     return (
-        <ClientsContext.Provider value={{
+        <ClientContext.Provider value={{
             clients,
             setClients
         }}>
             {children}
-        </ClientsContext.Provider>
+        </ClientContext.Provider>
     )
 }
 
-export default ClientsContext
+export default ClientContext

@@ -1,11 +1,11 @@
 import express from 'express'
 
 import { handleTransactionUpdateValidation } from '../../../middleware/transactionUpdateValidation.js'
-import { receivableController } from '../../../controller/receivableController.js'
+import { payableController } from '../../../controller/payableController.js'
 
 
 const router = express.Router()
 
-router.patch('/:id', handleTransactionUpdateValidation, receivableController)
+router.patch('/:id', handleTransactionUpdateValidation, payableController)
 
 export default router

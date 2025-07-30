@@ -3,7 +3,7 @@ import { NextFunction, Request, Response } from 'express'
 import { SalePayload } from '../types/types.js'
 
 
-export async function handleReceivableValidation(req: Request<{}, {}, SalePayload>, res: Response, next: NextFunction) {
+export async function handleTransactionUpdateValidation(req: Request<{}, {}, SalePayload>, res: Response, next: NextFunction) {
     const { status, paymentDate, bank } = req.body
 
     if (status === undefined && paymentDate === undefined && bank === undefined) {

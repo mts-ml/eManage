@@ -1,10 +1,10 @@
 import { Request, Response } from 'express'
 
-import { Sale } from '../model/Sales.js'
 import { TransactionUpdatePayload } from '../types/types.js'
+import { Purchase } from '../model/Purchases.js'
 
 
-export async function receivableController(req: Request<{ id: string }, {}, TransactionUpdatePayload>, res: Response) {
+export async function payableController(req: Request<{ id: string }, {}, TransactionUpdatePayload>, res: Response) {
     try {
         const { id } = req.params
         const { status, paymentDate, bank } = req.body
@@ -17,16 +17,16 @@ export async function receivableController(req: Request<{ id: string }, {}, Tran
         if ('bank' in req.body) updateFields.bank = bank
 
         // Atualiza e retorna novo documento (new: true)
-        const updatedSale = await Sale.findByIdAndUpdate(id, updateFields, { new: true })
+        const updatePurchase = await Purchase.findByIdAndUpdate(id, updateFields, { new: true })
 
-        if (!updatedSale) {
-            res.status(404).json({ message: 'Venda não encontrada' })
+        if (!updatePurchase) {
+            res.status(404).json({ message: 'Compra não encontrada' })
             return
         }
 
-        res.json(updatedSale)
+        res.json(updatePurchase)
     } catch (error) {
-        console.error('Erro ao atualizar receivable:', error)
+        console.error('Erro ao atualizar payable:', error)
         res.status(500).json({ message: 'Erro interno do servidor' })
     }
 }

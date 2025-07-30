@@ -1,20 +1,20 @@
 import { useContext, useState } from "react"
 import { FaTrash, FaEdit } from 'react-icons/fa'
 
-import type { Client, ClientErrors, ClientFromBackend } from "../types/types"
+import type { Supplier, SupplierErrors, SupplierFromBackend } from "../types/types"
 import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
 import axios from "axios"
-import ClientContext from "../Context/ClientContext"
 import {
     capitalizeWords,
     isValidCPF,
     isValidCNPJ,
     formatPhoneForDisplay
 } from "../utils/utils"
+import SupplierContext from "../Context/SupplierContext"
 
 
-export const Clients: React.FC = () => {
-    const defaultClient: Client = {
+export const Suppliers: React.FC = () => {
+    const defaultSupplier: Supplier = {
         name: "",
         email: "",
         phone: "",
@@ -25,18 +25,18 @@ export const Clients: React.FC = () => {
         notes: ""
     }
 
-    const [form, setForm] = useState<Client>(defaultClient)
-    const [formErrors, setFormErrors] = useState<ClientErrors>({})
+    const [form, setForm] = useState<Supplier>(defaultSupplier)
+    const [formErrors, setFormErrors] = useState<SupplierErrors>({})
     const [showForm, setShowForm] = useState(false)
     const [isReadyToSubmit, setIsReadyToSubmit] = useState(false)
-    const [editingClientId, setEditingClientId] = useState<string | null>(null)
+    const [editingSupplierId, setEditingSupplierId] = useState<string | null>(null)
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
-    const { clients, setClients } = useContext(ClientContext)
+    const { suppliers, setSuppliers } = useContext(SupplierContext)
     const axiosPrivate = useAxiosPrivate()
 
 
-    function formValidation(form: Client): ClientErrors {
-        const errors: ClientErrors = {}
+    function formValidation(form: Supplier): SupplierErrors {
+        const errors: SupplierErrors = {}
 
         if (!form.name.trim()) {
             errors.name = "Campo obrigatório"
@@ -84,7 +84,7 @@ export const Clients: React.FC = () => {
 
     function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
         const { name, value } = e.currentTarget as {
-            name: keyof Client,
+            name: keyof Supplier,
             value: string
         }
 
@@ -142,16 +142,16 @@ export const Clients: React.FC = () => {
     }
 
 
-    function handleEdit(client: Client) {
-        setForm({ ...client })
-        setEditingClientId(client.id!)
+    function handleEdit(supplier: Supplier) {
+        setForm({ ...supplier })
+        setEditingSupplierId(supplier.id!)
         setShowForm(true)
     }
 
     async function handleDelete(id: string) {
-        if (confirm("Tem certeza que deseja excluir este cliente?")) {
-            await axiosPrivate.delete(`clients/${id}`)
-            setClients(prev => prev.filter(client => client.id !== id))
+        if (confirm("Tem certeza que deseja excluir este fornecedor?")) {
+            await axiosPrivate.delete(`suppliers/${id}`)
+            setSuppliers(prev => prev.filter(supplier => supplier.id !== id))
         }
     }
 
@@ -159,34 +159,34 @@ export const Clients: React.FC = () => {
         e.preventDefault()
         if (!isReadyToSubmit) return
 
-        const normalizedClient: Client = {
+        const normalizedSupplier: Supplier = {
             ...form,
             phone: form.phone.replace(/\D/g, ''),
             cpfCnpj: form.cpfCnpj.replace(/\D/g, '')
         }
 
         try {
-            // Editar usuário
-            if (editingClientId) {
-                const response = await axiosPrivate.put<ClientFromBackend>(`/clients/${editingClientId}`, normalizedClient)
+            // Editar fornecedor
+            if (editingSupplierId) {
+                const response = await axiosPrivate.put<SupplierFromBackend>(`/suppliers/${editingSupplierId}`, normalizedSupplier)
 
-                const updatedClient = { ...response.data, id: response.data._id }
-                setClients(prev => prev.map(client =>
-                    client.id === editingClientId ? updatedClient : client)
+                const updatedSupplier = { ...response.data, id: response.data._id }
+                setSuppliers(prev => prev.map(supplier =>
+                    supplier.id === editingSupplierId ? updatedSupplier : supplier)
                 )
             } else {
                 // Criar novo usuário
-                const response = await axiosPrivate.post<ClientFromBackend>('/clients', normalizedClient)
+                const response = await axiosPrivate.post<SupplierFromBackend>('/suppliers', normalizedSupplier)
 
-                const newClient = { ...response.data, id: response.data._id }
+                const newSupplier = { ...response.data, id: response.data._id }
 
-                setClients(prev => [...prev, newClient])
+                setSuppliers(prev => [...prev, newSupplier])
             }
 
             // Limpa os campos
-            setForm(defaultClient)
+            setForm(defaultSupplier)
             setShowForm(false)
-            setEditingClientId(null)
+            setEditingSupplierId(null)
             setFormErrors({})
             setErrorMessage(null)
         } catch (error) {
@@ -209,7 +209,7 @@ export const Clients: React.FC = () => {
 
     }
 
-    const clientFields = [
+    const supplierFields = [
         { key: "name", label: "Nome Completo", placeholder: "Digite o nome completo" },
         { key: "email", label: "E-mail", placeholder: "exemplo@email.com" },
         { key: "phone", label: "Telefone", placeholder: "(11) 98765-4321" },
@@ -222,97 +222,31 @@ export const Clients: React.FC = () => {
 
     return (
         <main className="p-6 max-w-6xl mx-auto">
-            <h2 className="text-2xl font-bold text-center mb-6">Cadastro de Clientes</h2>
+            <h2 className="text-2xl font-bold text-center mb-6">Cadastro de Fornecedores</h2>
 
             <div className="text-center mb-6">
                 <button
                     onClick={() => {
-                        setForm(defaultClient)
-                        setEditingClientId(null)
+                        setForm(defaultSupplier)
+                        setEditingSupplierId(null)
                         setShowForm(true)
                         setFormErrors({})
                     }}
                     className="bg-emerald-600 cursor-pointer text-white px-4 py-2 rounded-md hover:bg-emerald-700"
                 >
-                    Novo Cliente
+                    Novo fornecedor
                 </button>
             </div>
-
-            {clients.length > 0 && (
-                <div className="overflow-auto border rounded-lg shadow-sm mb-10">
-                    <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-emerald-600 text-white">
-                            <tr>
-                                <th className="px-4 py-3 text-sm">Nome</th>
-                                <th className="px-4 py-3 text-sm">E-mail</th>
-                                <th className="px-4 py-3 text-sm">Telefone</th>
-                                <th className="px-4 py-3 text-sm">Documento</th>
-                                <th className="px-4 py-3 text-sm">Endereço</th>
-                                <th className="px-4 py-3 text-sm">Bairro</th>
-                                <th className="px-4 py-3 text-sm">Cidade</th>
-                                <th className="px-4 py-3 text-sm">Observações</th>
-                                <th className="px-4 py-3 text-sm">Ações</th>
-                            </tr>
-                        </thead>
-
-                        <tbody className="bg-white divide-y divide-gray-100">
-                            {clients.map(client => (
-                                <tr key={client.id}>
-                                    <td className="px-4 py-2 text-sm whitespace-nowrap">{client.name}</td>
-
-                                    <td className="px-4 py-2 text-sm break-words">{client.email}</td>
-
-                                    <td className="px-4 py-2 text-sm whitespace-nowrap">{formatPhoneForDisplay(client.phone)}</td>
-
-                                    <td className="px-4 py-2 text-sm whitespace-nowrap">
-                                        {client.cpfCnpj.length === 11
-                                            ? client.cpfCnpj.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4")
-                                            : client.cpfCnpj.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, "$1.$2.$3/$4-$5")}
-                                    </td>
-
-                                    <td className="px-4 py-2 text-sm">{client.address}</td>
-
-                                    <td className="px-4 py-2 text-sm">{client.district}</td>
-
-                                    <td className="px-4 py-2 text-sm">{client.city}</td>
-
-                                    <td className="px-4 py-2 text-sm max-w-[160px] truncate" title={client.notes}>
-                                        {client.notes || "-"}
-                                    </td>
-
-                                    <td className="px-4 py-2 text-sm space-x-1 flex justify-between">
-                                        <button
-                                            onClick={() => handleEdit(client)}
-                                            className="text-emerald-600 cursor-pointer hover:underline"
-                                            aria-label="Editar cliente."
-                                        >
-                                            <FaEdit size={18} />
-                                        </button>
-
-                                        <button
-                                            onClick={() => handleDelete(client.id!)}
-                                            className="text-red-700 cursor-pointer hover:underline"
-                                            aria-label="Excluir cliente"
-                                        >
-                                            <FaTrash size={18} />
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            )}
 
             {showForm && (
                 <form onSubmit={handleSubmit} className="border rounded-lg p-6 bg-gray-50 shadow-sm">
                     <h3 className="text-xl cursor-pointer font-semibold mb-4">
-                        {editingClientId ? "Editar Cliente" : "Novo Cliente"}
+                        {editingSupplierId ? "Editar fornecedor" : "Novo fornecedor"}
                     </h3>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                        {clientFields.map(({ key, label, placeholder }) => {
-                            const fieldName = key as keyof Client
+                        {supplierFields.map(({ key, label, placeholder }) => {
+                            const fieldName = key as keyof Supplier
 
                             return (
                                 <div key={key}>
@@ -333,7 +267,7 @@ export const Clients: React.FC = () => {
 
                                     {formErrors[fieldName] && (
                                         <div className="text-red-600 text-sm mt-1">
-                                            {formErrors[key as keyof Client]}
+                                            {formErrors[key as keyof Supplier]}
                                         </div>
                                     )}
                                 </div>
@@ -359,9 +293,9 @@ export const Clients: React.FC = () => {
                         <button
                             type="button"
                             onClick={() => {
-                                setForm(defaultClient)
+                                setForm(defaultSupplier)
                                 setShowForm(false)
-                                setEditingClientId(null)
+                                setEditingSupplierId(null)
                                 setFormErrors({})
                             }}
                             className="px-4 py-2 cursor-pointer border border-gray-300 rounded-md hover:bg-gray-100"
@@ -374,7 +308,7 @@ export const Clients: React.FC = () => {
                             disabled={!isReadyToSubmit}
                             className={`px-4 py-2 rounded-md transition ${isReadyToSubmit ? "bg-emerald-600 text-white hover:bg-emerald-700 cursor-pointer" : "bg-gray-400 text-gray-200 cursor-not-allowed"}`}
                         >
-                            {editingClientId ? "Atualizar" : "Salvar"} Cliente
+                            {editingSupplierId ? "Atualizar" : "Salvar"} fornecedor
                         </button>
                     </div>
 
@@ -384,6 +318,72 @@ export const Clients: React.FC = () => {
                         </div>
                     )}
                 </form>
+            )}
+
+            {suppliers.length > 0 && (
+                <div className="overflow-auto border rounded-lg shadow-sm mb-10">
+                    <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-emerald-600 text-white">
+                            <tr>
+                                <th className="px-4 py-3 text-sm">Nome</th>
+                                <th className="px-4 py-3 text-sm">E-mail</th>
+                                <th className="px-4 py-3 text-sm">Telefone</th>
+                                <th className="px-4 py-3 text-sm">Documento</th>
+                                <th className="px-4 py-3 text-sm">Endereço</th>
+                                <th className="px-4 py-3 text-sm">Bairro</th>
+                                <th className="px-4 py-3 text-sm">Cidade</th>
+                                <th className="px-4 py-3 text-sm">Observações</th>
+                                <th className="px-4 py-3 text-sm">Ações</th>
+                            </tr>
+                        </thead>
+
+                        <tbody className="bg-white divide-y divide-gray-100">
+                            {suppliers.map(supplier => (
+                                <tr key={supplier.id}>
+                                    <td className="px-4 py-2 text-sm whitespace-nowrap">{supplier.name}</td>
+
+                                    <td className="px-4 py-2 text-sm break-words">{supplier.email}</td>
+
+                                    <td className="px-4 py-2 text-sm whitespace-nowrap">{formatPhoneForDisplay(supplier.phone)}</td>
+
+                                    <td className="px-4 py-2 text-sm whitespace-nowrap">
+                                        {supplier.cpfCnpj.length === 11
+                                            ? supplier.cpfCnpj.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4")
+                                            : supplier.cpfCnpj.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, "$1.$2.$3/$4-$5")}
+                                    </td>
+
+                                    <td className="px-4 py-2 text-sm">{supplier.address}</td>
+
+                                    <td className="px-4 py-2 text-sm">{supplier.district}</td>
+
+                                    <td className="px-4 py-2 text-sm">{supplier.city}</td>
+
+                                    <td className="px-4 py-2 text-sm max-w-[160px] truncate" title={supplier.notes}>
+                                        {supplier.notes || "-"}
+                                    </td>
+
+                                    <td className="px-4 py-2 text-sm space-x-1 flex justify-between">
+                                        <button
+                                            onClick={() => handleEdit(supplier)}
+                                            className="text-emerald-600 cursor-pointer hover:underline"
+                                            aria-label="Editar fornecedor."
+                                        >
+                                            <FaEdit size={18} />
+                                        </button>
+
+                                        <button
+                                            onClick={() => handleDelete(supplier.id!)}
+                                            className="text-red-700 cursor-pointer hover:underline"
+                                            aria-label="Excluir fornecedor."
+                                        >
+                                            <FaTrash size={18} />
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             )}
         </main>
     )

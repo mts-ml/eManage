@@ -1,12 +1,12 @@
 import { NextFunction, Request, Response } from "express"
 
-import { ClientProps, ClientErrors } from "../types/types.js"
+import { ClientProps as SupllierProps, ClientErrors as SupplierErrors } from "../types/types.js"
 import { addError, isMissing, isValidCNPJ, isValidCPF, validateStringFields } from "../utils/utils.js"
 
 
-export function handleClientValidation(req: Request<{}, {}, ClientProps>, res: Response, next: NextFunction) {
-    const clientProps = req.body
-    if (!clientProps) {
+export function handleSupplierValidation(req: Request<{}, {}, SupllierProps>, res: Response, next: NextFunction) {
+    const supplierProps = req.body
+    if (!supplierProps) {
         res.status(400).json({ message: "Dados ausentes no corpo da requisição." })
         return
     }
@@ -21,37 +21,35 @@ export function handleClientValidation(req: Request<{}, {}, ClientProps>, res: R
         "city",
     ]
 
-    if (!validateStringFields(clientProps, requiredStringFields, res)) {
-        return
-    }
+    if (!validateStringFields(supplierProps, requiredStringFields, res)) return
 
-    const errors: ClientErrors = {}
+    const errors: SupplierErrors = {}
 
-    if (isMissing(clientProps.name)) {
+    if (isMissing(supplierProps.name)) {
         addError(errors, 'name', "Campo obrigatório")
-    } else if (clientProps.name.trim().length < 3) {
+    } else if (supplierProps.name.trim().length < 3) {
         addError(errors, 'name', "Nome deve ter pelo menos 3 caracteres")
     }
 
-    if (isMissing(clientProps.email)) {
+    if (isMissing(supplierProps.email)) {
         addError(errors, 'email', "Campo obrigatório")
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clientProps.email)) {
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(supplierProps.email)) {
         addError(errors, 'email', "Email inválido")
     }
 
-    if (isMissing(clientProps.phone)) {
+    if (isMissing(supplierProps.phone)) {
         addError(errors, 'phone', "Campo obrigatório")
     } else {
-        const phoneDigits = clientProps.phone.replace(/\D/g, '')
+        const phoneDigits = supplierProps.phone.replace(/\D/g, '')
         if (phoneDigits.length < 10 || phoneDigits.length > 11) {
             addError(errors, 'phone', "Telefone inválido")
         }
     }
 
-    if (isMissing(clientProps.cpfCnpj)) {
+    if (isMissing(supplierProps.cpfCnpj)) {
         addError(errors, 'cpfCnpj', "Campo obrigatório")
     } else {
-        const cleaned = clientProps.cpfCnpj.replace(/\D/g, '')
+        const cleaned = supplierProps.cpfCnpj.replace(/\D/g, '')
         if (cleaned.length === 11) {
             if (!isValidCPF(cleaned)) addError(errors, 'cpfCnpj', "CPF inválido")
         } else if (cleaned.length === 14) {
@@ -61,14 +59,14 @@ export function handleClientValidation(req: Request<{}, {}, ClientProps>, res: R
         }
     }
 
-    if (isMissing(clientProps.address)) {
+    if (isMissing(supplierProps.address)) {
         addError(errors, 'address', "Campo obrigatório")
-    } else if (clientProps.address.trim().length < 5) {
+    } else if (supplierProps.address.trim().length < 5) {
         addError(errors, 'address', "Endereço muito curto")
     }
 
-    if (isMissing(clientProps.district)) addError(errors, 'district', "Campo obrigatório")
-    if (isMissing(clientProps.city)) addError(errors, 'city', "Campo obrigatório")
+    if (isMissing(supplierProps.district)) addError(errors, 'district', "Campo obrigatório")
+    if (isMissing(supplierProps.city)) addError(errors, 'city', "Campo obrigatório")
 
     const hasErrors = Object.values(errors).length > 0
     if (hasErrors) {

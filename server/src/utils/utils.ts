@@ -2,7 +2,7 @@ import { Response } from "express"
 
 import { Sale } from "../model/Sales.js"
 import { Purchase } from "../model/Purchases.js"
-import { ClientProps, Errors, ProductErrors, ProductProps } from "../types/types.js"
+import { ClientProps, ClientErrors, ProductErrors, ProductProps } from "../types/types.js"
 
 
 export function capitalizeWords(text: string): string {
@@ -72,7 +72,7 @@ export function formatPhoneForDisplay(phone: string): string {
 }
 
 
-export function addError(errors: Errors, clientProps: keyof ClientProps, message: string): void {
+export function addError(errors: ClientErrors, clientProps: keyof ClientProps, message: string): void {
     errors[clientProps] = [...(errors[clientProps] || []), message]
 }
 

@@ -1,9 +1,9 @@
 import mongoose, { Schema } from "mongoose"
 
-import { ClientProps } from "../types/types.js"
+import { SupplierProps } from "../types/types.js"
 
 
-const clientSchema = new Schema<ClientProps>({
+const supplierSchema = new Schema<SupplierProps>({
     name: {
         type: String,
         required: true,
@@ -42,4 +42,4 @@ const clientSchema = new Schema<ClientProps>({
     notes: String
 })
 
-export const Client = mongoose.model<ClientProps>("Client", clientSchema)
+export const Supplier = mongoose.model<SupplierProps>("Supplier", supplierSchema)
