@@ -16,6 +16,7 @@ interface Receivable extends ItemPayload {
 
 export const Receivables: React.FC = () => {
     const [receivables, setReceivables] = useState<Receivable[]>([])
+    const [errors, setErrors] = useState<Partial<Record<string, string>>>({})
     const [modifiedId, setModifiedId] = useState<string | null>(null)
     const { products } = useContext(ProductsContext)
     const axiosPrivate = useAxiosPrivate()
@@ -65,14 +66,27 @@ export const Receivables: React.FC = () => {
         const saleToSave = receivables.find(sale => sale._id === id)
         if (!saleToSave) return
 
+        if (saleToSave.status === "Pago" && !saleToSave.bank.trim()) {
+            setErrors(prev => ({ ...prev, [id]: "Informe o banco." }))
+            return
+        }
+
         try {
             await axiosPrivate.patch(`/receivables/${id}`, {
                 status: saleToSave.status,
                 paymentDate: saleToSave.paymentDate,
                 bank: saleToSave.bank
             })
+
+            setErrors(prev => {
+                const copy = { ...prev }
+                delete copy[id]
+                return copy
+            })
+
             setModifiedId(null)
         } catch (error) {
+            setErrors(prev => ({ ...prev, [id]: "Erro ao atualizar recebível" }))
             console.error("Erro ao atualizar recebível:", error)
         }
     }
@@ -149,6 +163,10 @@ export const Receivables: React.FC = () => {
                                     placeholder="Banco"
                                     className="border rounded p-1 w-full text-sm"
                                 />
+
+                                {errors[sale._id] && (
+                                    <p className="text-red-600 text-xs mt-1">{errors[sale._id]}</p>
+                                )}
                             </td>
 
                             <td className="p-2 border">
