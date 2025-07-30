@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express"
 
-import { ClientProps, Errors } from "../types/types.js"
+import { ClientProps, ClientErrors } from "../types/types.js"
 import { addError, isMissing, isValidCNPJ, isValidCPF, validateStringFields } from "../utils/utils.js"
 
 
@@ -25,7 +25,7 @@ export function handleClientValidation(req: Request<{}, {}, ClientProps>, res: R
         return
     }
 
-    const errors: Errors = {}
+    const errors: ClientErrors = {}
 
     if (isMissing(clientProps.name)) {
         addError(errors, 'name', "Campo obrigatório")
