@@ -1,7 +1,8 @@
 import { useState } from "react"
-import { Users, Package, Wallet, ShoppingCart, ShoppingBag, X, ArrowDownCircle, ArrowUpCircle } from "lucide-react"
+import { Users, Truck, Package, Wallet, ShoppingCart, ShoppingBag, X, ArrowDownCircle, ArrowUpCircle } from "lucide-react"
 
 import { Clients } from "../components/Clients"
+import { Suppliers } from "../components/Suppliers"
 import { Products } from "../components/Products"
 import { Sales } from "../components/Sales"
 import { Purchases } from "../components/Purchases"
@@ -11,7 +12,7 @@ import { Payables } from "../components/Payables"
 import { BankAccountsRegistration } from "../components/BankAccountRegistration"
 
 
-type SectionKey = "clients" | "products" | "sales" | "purchases" | "receivables" | "payables" | "expenses" | "bankAccount"
+type SectionKey = "clients" | "suppliers" | "products" | "sales" | "purchases" | "receivables" | "payables" | "expenses" | "bankAccount"
 
 type SectionConfig = {
     section: SectionKey
@@ -26,6 +27,12 @@ const sectionsArray: SectionConfig[] = [
         sectionName: "Clientes",
         icon: <Users className="h-8 w-8 mb-2" />,
         component: <Clients />
+    },
+    {
+        section: "suppliers",
+        sectionName: "Fornecedores",
+        icon: <Truck className="h-8 w-8 mb-2" />,
+        component: <Suppliers />
     },
     {
         section: "products",
@@ -82,9 +89,8 @@ export const MainPageLayout: React.FC = () => {
 
     return (
         <main className="p-6 max-w-[87.5rem] mx-auto">
-
             {/* Cards */}
-            <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+            <section className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 mb-8">
                 {sectionsArray.map(({ section, sectionName, icon }) => {
                     const isOpen = openSection === section
 
@@ -111,7 +117,7 @@ export const MainPageLayout: React.FC = () => {
                         </div>
                     )
                 })}
-            </div>
+            </section>
 
             {/* Seções */}
             {sectionsArray.map(({ section, component }) => (
