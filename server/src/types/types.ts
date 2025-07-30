@@ -7,6 +7,7 @@ export interface RegisterProps {
     password: string
 }
 
+
 export interface UserProps {
     name: string
     email: string
@@ -15,11 +16,13 @@ export interface UserProps {
     roles: Roles
 }
 
+
 interface Roles {
     User: number
     Editor?: number
     Admin?: number
 }
+
 
 export interface CustomJwtPayload extends JwtPayload {
     UserInfo: {
@@ -28,6 +31,7 @@ export interface CustomJwtPayload extends JwtPayload {
         roles: number[]
     }
 }
+
 
 export interface ClientProps {
     name: string
@@ -39,7 +43,20 @@ export interface ClientProps {
     city: string
     notes?: string
 }
-export type Errors = Partial<Record<keyof ClientProps, string[]>>
+export type ClientErrors = Partial<Record<keyof ClientProps, string[]>>
+
+
+export interface SupplierProps {
+    name: string
+    email: string
+    phone: string
+    cpfCnpj: string
+    address: string
+    district: string
+    city: string
+    notes?: string
+}
+export type SupplierErrors = Partial<Record<keyof SupplierProps, string[]>>
 
 
 export interface ProductProps {
@@ -51,12 +68,14 @@ export interface ProductProps {
 }
 export type ProductErrors = Partial<Record<keyof ProductProps, string>>
 
+
 export interface Item {
     productId: string
     productName: string
     quantity: number
     price: number
 }
+
 
 export interface SalePayload {
     clientId: string
@@ -72,6 +91,7 @@ export interface SalePayload {
 }
 export type SaleErrors = Partial<Record<keyof SalePayload | string, string[]>>
 
+
 export interface PurchasePayload {
     clientId: string
     clientName: string
@@ -86,4 +106,12 @@ export interface PurchasePayload {
 }
 export type PurchaseErrors = Partial<Record<keyof PurchasePayload | string, string[]>>
 
+
 export type CommonTransactionPayload = Omit<SalePayload, "saleNumber"> & Omit<PurchasePayload, "purchaseNumber">
+
+
+export interface TransactionUpdatePayload {
+    status?: "Em aberto" | "Pago"
+    paymentDate?: string | null
+    bank?: string
+}
