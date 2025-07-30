@@ -4,7 +4,7 @@ import type { AxiosResponse } from "axios"
 
 
 import ProductsContext from "../Context/ProductsContext"
-import ClientsContext from "../Context/ClientsContext"
+import SupplierContext from "../Context/SupplierContext"
 import type { Product, ItemPayload, PurchaseResponse } from "../types/types"
 import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
 
@@ -14,19 +14,19 @@ interface CartItem extends Product {
 }
 
 export const Purchases: React.FC = () => {
-    const { clients } = useContext(ClientsContext)
+    const { suppliers } = useContext(SupplierContext)
     const { products, setProducts } = useContext(ProductsContext)
 
     const [cart, setCart] = useState<CartItem[]>([])
     const [lastPurchase, setLastPurchase] = useState<PurchaseResponse["purchase"] | null>(null)
-    const [selectedClientId, setSelectedClientId] = useState<string>("")
+    const [selectedSupplierId, setSelectedSupplierId] = useState<string>("")
     const [selectedProductId, setSelectedProductId] = useState<string>("")
     const [quantity, setQuantity] = useState<number>(1)
     const axiosPrivate = useAxiosPrivate()
 
     const today = new Date().toLocaleDateString("pt-BR")
     const selectedProduct = products.find(p => p.id === selectedProductId)
-    const selectedClient = clients.find(c => c.id === selectedClientId)
+    const selectedSupplier = suppliers.find(sup => sup.id === selectedSupplierId)
     const total = cart.reduce((sum, item) => sum + Number(item.purchasePrice) * item.quantity, 0)
 
     useEffect(() => {
@@ -83,8 +83,8 @@ export const Purchases: React.FC = () => {
 
     async function submitPurchase() {
         const purchasePayload: ItemPayload = {
-            clientId: selectedClientId,
-            clientName: selectedClient?.name || "Cliente Desconhecido",
+            clientId: selectedSupplierId,
+            clientName: selectedSupplier?.name || "Fornecedor Desconhecido",
             date: today,
             items: cart
                 .map(item => ({
@@ -97,8 +97,8 @@ export const Purchases: React.FC = () => {
             total,
         }
 
-        if (!selectedClientId || cart.length === 0) {
-            alert("Selecione um cliente e adicione produtos ao carrinho.")
+        if (!selectedSupplierId || cart.length === 0) {
+            alert("Selecione um fornecedor e adicione produtos ao carrinho.")
             return
         }
 
@@ -124,7 +124,7 @@ export const Purchases: React.FC = () => {
 
         alert("Compra finalizada com sucesso")
         setCart([])
-        setSelectedClientId("")
+        setSelectedSupplierId("")
         setSelectedProductId("")
         setQuantity(1)
     }
@@ -137,7 +137,7 @@ export const Purchases: React.FC = () => {
                 Compras
             </h2>
 
-            {/* Selecionar cliente e produto */}
+            {/* Selecionar fornecedor e produto */}
             <section>
                 <div className="flex justify-between items-center mb-6">
                     <p className="text-lg font-medium">
@@ -151,22 +151,22 @@ export const Purchases: React.FC = () => {
 
                 <div className="mb-6">
                     <label htmlFor="client" className="block text-sm font-medium mb-1">
-                        Cliente
+                        Fornecedor
                     </label>
 
                     <select
                         id="client"
-                        value={selectedClientId}
-                        onChange={e => setSelectedClientId(e.target.value)}
+                        value={selectedSupplierId}
+                        onChange={e => setSelectedSupplierId(e.target.value)}
                         className="w-full border cursor-pointer border-gray-300 rounded-md p-2"
                     >
-                        <option value="">Selecione um cliente</option>
-                        {clients.map(client => (
+                        <option value="">Selecione um fornecedor</option>
+                        {suppliers.map(supplier => (
                             <option
-                                key={client.id}
-                                value={client.id}
+                                key={supplier.id}
+                                value={supplier.id}
                             >
-                                {client.name}
+                                {supplier.name}
                             </option>
                         ))}
                     </select>
@@ -196,11 +196,11 @@ export const Purchases: React.FC = () => {
                 </div>
             </section>
 
-            {selectedProduct && selectedClient && (
+            {selectedProduct && selectedSupplier && (
                 <section className="mb-8 border rounded-md p-4 bg-gray-50">
                     <div>
                         <div className="flex items-center justify-between">
-                            <p className="mb-2">Cliente: <strong>{selectedClient.name}</strong></p>
+                            <p className="mb-2">Fornecedor: <strong>{selectedSupplier.name}</strong></p>
 
                             <button
                                 type="button"
@@ -209,7 +209,7 @@ export const Purchases: React.FC = () => {
                                 <X
                                     onClick={() => {
                                         setSelectedProductId("")
-                                        setSelectedClientId("")
+                                        setSelectedSupplierId("")
                                     }}
                                     className="w-5 h-5 text-gray-500 hover:cursor-pointer hover:text-black" />
                             </button>
@@ -250,14 +250,14 @@ export const Purchases: React.FC = () => {
             )}
 
 
-            {selectedClientId && cart.length > 0 && (
+            {selectedSupplierId && cart.length > 0 && (
                 <>
                     <h3 className="text-lg font-semibold mb-2">
                         Carrinho
                     </h3>
 
                     <p className="text-sm text-gray-600 mb-4">
-                        Cliente: <span className="font-medium">{selectedClient?.name}</span>
+                        Fornecedor: <span className="font-medium">{selectedSupplier?.name}</span>
                     </p>
 
                     <div className="mb-6">
@@ -330,7 +330,7 @@ export const Purchases: React.FC = () => {
                 <div className="bg-green-100 border border-green-400 p-4 rounded mt-8">
                     <h3 className="text-lg font-semibold text-green-800 mb-2">Compra finalizada com Sucesso!</h3>
                     <p><strong>Número da Compra:</strong> {lastPurchase.purchaseNumber}</p>
-                    <p><strong>Cliente:</strong> {lastPurchase.clientName}</p>
+                    <p><strong>Fornecedor:</strong> {lastPurchase.clientName}</p>
                     <p><strong>Data:</strong> {lastPurchase.date}</p>
 
                     <ul className="mt-2 list-disc list-inside">
