@@ -1,10 +1,10 @@
 import { NextFunction, Request, Response } from "express"
 
-import { ClientProps as SupllierProps, ClientErrors as SupplierErrors } from "../types/types.js"
-import { addError, isMissing, isValidCNPJ, isValidCPF, validateStringFields } from "../utils/utils.js"
+import { SupplierProps, SupplierErrors } from "../types/types.js"
+import { addError, isMissing, isValidCNPJ, isValidCPF, rejectExtraFields, validateStringFields } from "../utils/utils.js"
 
 
-export function handleSupplierValidation(req: Request<{}, {}, SupllierProps>, res: Response, next: NextFunction) {
+export function handleSupplierValidation(req: Request<{}, {}, SupplierProps>, res: Response, next: NextFunction) {
     const supplierProps = req.body
     if (!supplierProps) {
         res.status(400).json({ message: "Dados ausentes no corpo da requisição." })
@@ -22,6 +22,9 @@ export function handleSupplierValidation(req: Request<{}, {}, SupllierProps>, re
     ]
 
     if (!validateStringFields(supplierProps, requiredStringFields, res)) return
+
+    const allowedFields = ["name", "email", "phone", "cpfCnpj", "address", "district", "city", "notes"]
+    if (rejectExtraFields(req.body, allowedFields, res)) return
 
     const errors: SupplierErrors = {}
 

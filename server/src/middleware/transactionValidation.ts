@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express"
 
 import { Item, CommonTransactionPayload } from "../types/types.js"
+import { rejectExtraFields } from "../utils/utils.js"
 
 
 export function handleTransactionValidation(req: Request<{}, {}, CommonTransactionPayload>, res: Response, next: NextFunction) {
@@ -10,9 +11,21 @@ export function handleTransactionValidation(req: Request<{}, {}, CommonTransacti
         return
     }
 
+    const allowedFields = [
+        "clientId",
+        "clientName",
+        "date",
+        "items",
+        "total",
+        "paid",
+        "status",
+        "paymentDate",
+        "bank"
+    ]
+    if (rejectExtraFields(req.body, allowedFields, res)) return
+
     if (payload.clientName && typeof payload.clientName === "string") {
         payload.clientName = payload.clientName.trim()
-
     }
 
     if (Array.isArray(payload.items)) {
