@@ -7,9 +7,10 @@ import { AuthProvider } from './Context/AuthContext'
 import { ClientsProvider } from './Context/ClientContext'
 import { ProductsProvider } from './Context/ProductsContext'
 import { SaleProvider } from './Context/SaleContext'
+import { SupplierProvider } from './Context/SupplierContext'
+import { ExpensesProvider } from './Context/ExpensesContext'
 
 import './index.css'
-import { SupplierProvider } from './Context/SupplierContext'
 
 
 createRoot(document.getElementById('root')!).render(
@@ -20,7 +21,9 @@ createRoot(document.getElementById('root')!).render(
         <SupplierProvider>
           <ProductsProvider>
             <SaleProvider>
-              <App />
+              <ExpensesProvider>
+                <App />
+              </ExpensesProvider>
             </SaleProvider>
           </ProductsProvider>
         </SupplierProvider>
