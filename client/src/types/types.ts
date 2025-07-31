@@ -88,3 +88,13 @@ export interface Receivable extends ItemPayload {
     paymentDate: string | null
     bank: string
 }
+
+export interface Expense {
+  id?: string
+  name: string
+  value: string
+  dueDate?: string
+  description: string
+}
+export type ExpenseFromBackend = Expense & { _id: string }
+export type ExpenseErrors = Partial<Record<keyof Expense, string>>
