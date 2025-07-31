@@ -21,6 +21,7 @@ import receivables from './routes/api/sales/receivables.js'
 import lastPurchase from './routes/api/purchases/lastPurchase.js'
 import purchases from './routes/api/purchases/purchases.js'
 import payables from './routes/api/purchases/payables.js'
+import expenses from './routes/api/expenses.js'
 
 
 const PORT = process.env.PORT || 3500
@@ -45,6 +46,7 @@ app.use(cors({
 app.use("/login", login)
 app.use('/register', register)
 app.use('/refresh', refresh)
+app.use('/expenses', expenses)
 
 app.use(verifyJWT)
 app.use('/logout', logout)
