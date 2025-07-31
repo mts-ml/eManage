@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express"
 
 import { ProductErrors, ProductProps } from '../types/types.js'
-import { addErrorProducts, isMissing, validateStringFields } from "../utils/utils.js"
+import { addErrorProducts, isMissing, rejectExtraFields, validateStringFields } from "../utils/utils.js"
 
 
 export function handleProductValidation(req: Request<{}, {}, ProductProps>, res: Response, next: NextFunction) {
@@ -24,6 +24,9 @@ export function handleProductValidation(req: Request<{}, {}, ProductProps>, res:
     req.body.name = req.body.name.toUpperCase()
     const { name, description, salePrice, purchasePrice, stock } = req.body
 
+
+    const allowedFields = ["name", "description", "salePrice", "purchasePrice", "stock"]
+    if (rejectExtraFields(req.body, allowedFields, res)) return
 
     const errors: ProductErrors = {}
 

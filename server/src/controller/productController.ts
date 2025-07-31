@@ -17,7 +17,6 @@ export async function getAllProducts(req: Request, res: Response, next: NextFunc
 
         res.json(products)
     } catch (error) {
-        console.error(`productsController - ${JSON.stringify(error)}`)
         next(error)
     }
 }

@@ -5,6 +5,7 @@ export interface RegisterProps {
     name: string
     email: string
     password: string
+    [key: string]: unknown
 }
 
 
@@ -14,6 +15,7 @@ export interface UserProps {
     password: string
     refreshToken?: string
     roles: Roles
+    [key: string]: unknown
 }
 
 
@@ -42,6 +44,7 @@ export interface ClientProps {
     district: string
     city: string
     notes?: string
+    [key: string]: unknown
 }
 export type ClientErrors = Partial<Record<keyof ClientProps, string[]>>
 
@@ -55,6 +58,7 @@ export interface SupplierProps {
     district: string
     city: string
     notes?: string
+    [key: string]: unknown
 }
 export type SupplierErrors = Partial<Record<keyof SupplierProps, string[]>>
 
@@ -65,6 +69,7 @@ export interface ProductProps {
     salePrice: number
     purchasePrice: number
     stock: number
+    [key: string]: unknown
 }
 export type ProductErrors = Partial<Record<keyof ProductProps, string>>
 
@@ -88,6 +93,7 @@ export interface SalePayload {
     status: "Em aberto" | "Pago"
     paymentDate?: string | null
     bank?: string
+    [key: string]: unknown
 }
 export type SaleErrors = Partial<Record<keyof SalePayload | string, string[]>>
 
@@ -115,3 +121,12 @@ export interface TransactionUpdatePayload {
     paymentDate?: string | null
     bank?: string
 }
+
+export interface ExpenseProps {
+    name: string
+    value: string
+    description: string
+    dueDate?: string
+    [key: string]: unknown
+}
+export type ExpenseErrors = Partial<Record<keyof ExpenseProps, string>>

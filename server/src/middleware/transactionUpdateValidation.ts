@@ -1,10 +1,19 @@
 import { NextFunction, Request, Response } from 'express'
 
 import { SalePayload } from '../types/types.js'
+import { rejectExtraFields } from '../utils/utils.js'
 
 
 export async function handleTransactionUpdateValidation(req: Request<{}, {}, SalePayload>, res: Response, next: NextFunction) {
+    if (!req.body) {
+        res.status(400).json({ message: "Dados ausentes no corpo da requisição." })
+        return
+    }
+
     const { status, paymentDate, bank } = req.body
+
+    const allowedFields = ["status", "paymentDate", "bank"]
+    if (rejectExtraFields(req.body, allowedFields, res)) return
 
     if (status === undefined && paymentDate === undefined && bank === undefined) {
         res.status(400).json({ message: "Pelo menos um dos campos (status, data de pagamento, banco) deve ser fornecido para atualização." })
@@ -12,7 +21,6 @@ export async function handleTransactionUpdateValidation(req: Request<{}, {}, Sal
     }
 
     const validStatus = ["Em aberto", "Pago"]
-
     if (status !== undefined) {
         if (!validStatus.includes(status)) {
             res.status(400).json({ message: "Status inválido. Use 'Em aberto' ou 'Pago'." })

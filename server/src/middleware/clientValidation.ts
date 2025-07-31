@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express"
 
 import { ClientProps, ClientErrors } from "../types/types.js"
-import { addError, isMissing, isValidCNPJ, isValidCPF, validateStringFields } from "../utils/utils.js"
+import { addError, isMissing, isValidCNPJ, isValidCPF, rejectExtraFields, validateStringFields } from "../utils/utils.js"
 
 
 export function handleClientValidation(req: Request<{}, {}, ClientProps>, res: Response, next: NextFunction) {
@@ -24,6 +24,9 @@ export function handleClientValidation(req: Request<{}, {}, ClientProps>, res: R
     if (!validateStringFields(clientProps, requiredStringFields, res)) {
         return
     }
+
+    const allowedFields = ["name", "email", "phone", "cpfCnpj", "address", "district", "city", "notes"]
+    if (rejectExtraFields(req.body, allowedFields, res)) return
 
     const errors: ClientErrors = {}
 

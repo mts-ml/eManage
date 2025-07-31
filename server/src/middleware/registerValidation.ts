@@ -1,10 +1,19 @@
 import { NextFunction, Request, Response } from "express"
 
 import { RegisterProps } from "../types/types.js"
+import { rejectExtraFields } from "../utils/utils.js"
 
 
 export function formRegisterValidation(req: Request<{}, {}, RegisterProps>, res: Response, next: NextFunction) {
-    const { name, email, password } = req.body || {}
+    if (!req.body) {
+        res.status(400).json({ message: "Dados ausentes no corpo da requisição" })
+        return
+    }
+
+    const { name, email, password } = req.body
+
+    const allowedFields = ["name", "email", "password"]
+    if (rejectExtraFields(req.body, allowedFields, res)) return
 
     const validationErrors: Partial<Record<keyof RegisterProps, string[]>> = {}
 

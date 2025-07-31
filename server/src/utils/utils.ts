@@ -111,3 +111,18 @@ export function validateStringFields(obj: any, fields: string[], res: Response):
     }
     return true
 }
+
+
+export function rejectExtraFields(
+    body: Record<string, unknown>,
+    allowed: string[],
+    res: Response
+): boolean {
+    const extra = Object.keys(body).filter(key => !allowed.includes(key))
+    
+    if (extra.length > 0) {
+        res.status(400).json({ message: `Campos não permitidos: ${extra.join(", ")}` })
+        return true
+    }
+    return false
+}
