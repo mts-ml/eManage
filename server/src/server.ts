@@ -50,7 +50,6 @@ app.get('/', (req: Request, res: Response) => {
 app.use("/login", login)
 app.use('/register', register)
 app.use('/refresh', refresh)
-app.use('/expenses', expenses)
 
 app.use(verifyJWT)
 app.use('/logout', logout)
@@ -63,6 +62,7 @@ app.use('/receivables', receivables)
 app.use('/purchases/last', lastPurchase)
 app.use('/purchases', purchases)
 app.use('/payables', payables)
+app.use('/expenses', expenses)
 
 
 // Tratamento de erros

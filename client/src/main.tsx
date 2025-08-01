@@ -1,34 +1,14 @@
 // import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { BrowserRouter } from "react-router-dom"
+import { RouterProvider } from "react-router-dom"
 
-import App from './App'
-import { AuthProvider } from './Context/AuthContext'
-import { ClientsProvider } from './Context/ClientContext'
-import { ProductsProvider } from './Context/ProductsContext'
-import { SaleProvider } from './Context/SaleContext'
-import { SupplierProvider } from './Context/SupplierContext'
-import { ExpensesProvider } from './Context/ExpensesContext'
+import { router } from './Router.tsx'
 
 import './index.css'
 
 
 createRoot(document.getElementById('root')!).render(
   // <StrictMode>
-  < BrowserRouter >
-    <AuthProvider>
-      <ClientsProvider>
-        <SupplierProvider>
-          <ProductsProvider>
-            <SaleProvider>
-              <ExpensesProvider>
-                <App />
-              </ExpensesProvider>
-            </SaleProvider>
-          </ProductsProvider>
-        </SupplierProvider>
-      </ClientsProvider>
-    </AuthProvider >
-  </BrowserRouter >
+  <RouterProvider router={router} />
   // </StrictMode>
 )

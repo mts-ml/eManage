@@ -17,7 +17,7 @@ const expenseSchema = new Schema<ExpenseProps>({
     dueDate: String,
     description: {
         type: String,
-        required: true
+        default: ""
     }
 })
 

@@ -124,9 +124,9 @@ export interface TransactionUpdatePayload {
 
 export interface ExpenseProps {
     name: string
-    value: string
-    description: string
-    dueDate?: string
+    value: number
+    description?: string
+    dueDate?: string | null
     [key: string]: unknown
 }
 export type ExpenseErrors = Partial<Record<keyof ExpenseProps, string>>
