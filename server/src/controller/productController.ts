@@ -42,7 +42,6 @@ export async function createNewProduct(req: Request<{}, {}, ProductProps>, res: 
             return
         }
 
-        console.error(`Erro ao criar produto: ${JSON.stringify(error)}`)
         next(error)
     }
 }
@@ -83,7 +82,6 @@ export async function updateProduct(req: Request<{ id: string }, {}, ProductProp
             return
         }
         
-        console.error(`Erro ao editar produto ${JSON.stringify(error)}`)
         next(error)
     }
 }
@@ -103,7 +101,6 @@ export async function deleteProduct(req: Request<{ id: string }>, res: Response,
         }
         res.json({ message: `Produto - ${deleteProduct.name} deletado com sucesso.` })
     } catch (error) {
-        console.error("Erro ao deletar produto", error)
         next(error)
     }
 }
