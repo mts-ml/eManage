@@ -35,10 +35,14 @@ export const Expenses: React.FC = () => {
             errors.name = "Mínimo 3 caracteres"
         }
 
-        const value = parseFloat(form.value as string)
+        const value = Number(form.value)
         if (!form.value || isNaN(value) || value <= 0) {
             errors.value = "Valor inválido"
         }
+
+        // if (form.description && form.description.trim().length < 3) {
+        //     errors.description = "Mínimo 3 caracteres."
+        // }
 
         return errors
     }
@@ -73,16 +77,27 @@ export const Expenses: React.FC = () => {
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault()
+
         if (!isReadyToSubmit) return
 
         try {
+            const { name, value, description, dueDate } = form
+
+            const payload = {
+                name,
+                value,
+                description: description || "-",
+                dueDate: dueDate || null
+            }
+
             if (editingExpenseId) {
-                const response = await axiosPrivate.put<ExpenseFromBackend>(`/expenses/${editingExpenseId}`, form)
+                const response = await axiosPrivate.put<ExpenseFromBackend>(`/expenses/${editingExpenseId}`, payload)
 
                 const updated = { ...response.data, id: response.data._id }
                 setExpenses(prev => prev.map(exp => exp.id === editingExpenseId ? updated : exp))
             } else {
-                const response = await axiosPrivate.post<ExpenseFromBackend>(`/expenses`, form)
+                console.log(payload)                
+                const response = await axiosPrivate.post<ExpenseFromBackend>(`/expenses`, payload)
 
                 const newExpense = { ...response.data, id: response.data._id }
                 setExpenses(prev => [...prev, newExpense])
@@ -157,8 +172,9 @@ export const Expenses: React.FC = () => {
                                         onChange={handleChange}
                                         className="w-full rounded-md border-gray-300 shadow-sm focus:ring-emerald-500 focus:border-emerald-500 px-2"
                                     />
+
                                     {formErrors[fieldName] && (
-                                        <p className="text-red-600 text-sm text-center mt-1">{formErrors[fieldName]}</p>
+                                        <p className="ml-2 text-red-600 text-sm mt-1">{formErrors[fieldName]}</p>
                                     )}
                                 </div>
                             )
@@ -168,6 +184,7 @@ export const Expenses: React.FC = () => {
                             <label className="block text-sm font-medium mb-1" htmlFor="description">
                                 Descrição
                             </label>
+
                             <textarea
                                 name="description"
                                 id="description"
@@ -176,6 +193,12 @@ export const Expenses: React.FC = () => {
                                 rows={3}
                                 className="w-full rounded-md border-gray-300 shadow-sm focus:ring-emerald-500 focus:border-emerald-500"
                             />
+
+                            {formErrors.description && (
+                                <p className="ml-2 text-red-600 text-sm mt-1">
+                                    {formErrors.description}
+                                </p>
+                            )}
                         </div>
                     </div>
 
@@ -224,7 +247,7 @@ export const Expenses: React.FC = () => {
                             </tr>
                         </thead>
 
-                        <tbody className="bg-white divide-y divide-gray-100">
+                        <tbody className="bg-white divide-y text-center divide-gray-100">
                             {expenses.map(exp => (
                                 <tr key={exp.id}>
                                     <td className="px-4 py-2 text-sm">{exp.name}</td>
@@ -266,7 +289,6 @@ export const Expenses: React.FC = () => {
                     </table>
                 </div>
             )}
-
         </main>
     )
 }
