@@ -24,17 +24,18 @@ export async function createNewExpense(req: Request<{}, {}, ExpenseProps>, res: 
         const { name, value, description, dueDate } = req.body
         const expenseProps = { name, value, description, dueDate }
 
-        const createExpense = await Expense.create(expenseProps)
+        console.log("Payload para criar Expense:", expenseProps)
+        const newExpense = await Expense.create(expenseProps)
 
-        res.status(201).json(createExpense)
+        res.status(201).json(newExpense)
     } catch (error) {
         next(error)
     }
 }
 
-export async function editExpense(req: Request<{ id: string }, {}, ExpenseProps>, res: Response, next: NextFunction) {
+export async function updateExpense(req: Request<{ id: string }, {}, ExpenseProps>, res: Response, next: NextFunction) {
     const { id } = req.params
-    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
         res.status(400).json({ message: "Id inválido ou ausente." })
         return
     }
@@ -48,6 +49,26 @@ export async function editExpense(req: Request<{ id: string }, {}, ExpenseProps>
         }
 
         res.json(updateExpense)
+    } catch (error) {
+        next(error)
+    }
+}
+
+export async function deleteExpense(req: Request<{ id: string }, {}, ExpenseProps>, res: Response, next: NextFunction) {
+    const { id } = req.params
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+        res.status(400).json({ message: "Id inválido ou ausente." })
+        return
+    }
+
+    try {
+        const deletedExpense = await Expense.findByIdAndDelete(id)
+        if (!deleteExpense) {
+            res.status(404).json({ message: "Despesa não encontrada." })
+            return
+        }
+
+        res.json({ message: `Despesa ${deletedExpense} deletada com sucesso.` })
     } catch (error) {
         next(error)
     }
