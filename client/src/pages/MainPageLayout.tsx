@@ -88,9 +88,9 @@ export const MainPageLayout: React.FC = () => {
 
 
     return (
-        <main className="p-6 max-w-[87.5rem] mx-auto">
+        <main className="p-8 max-w-[87.5rem] mx-auto bg-gradient-to-br from-gray-50 to-emerald-50 min-h-screen">
             {/* Cards */}
-            <section className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+            <section className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-10">
                 {sectionsArray.map(({ section, sectionName, icon }) => {
                     const isOpen = openSection === section
 
@@ -98,20 +98,22 @@ export const MainPageLayout: React.FC = () => {
                         <div
                             key={section}
                             onClick={() => toggleSection(section)}
-                            className={`group cursor-pointer p-6 rounded-xl transition-all duration-300 ease-in-out flex flex-col items-center text-center border relative hover:-translate-y-1
+                            className={`group cursor-pointer p-8 rounded-2xl transition-all duration-500 ease-out flex flex-col items-center text-center border-2 relative hover:-translate-y-2 hover:scale-105
                                     ${isOpen
-                                    ? "bg-emerald-50 border-emerald-100 ring-2 ring-emerald-200"
-                                    : "bg-white shadow hover:shadow-lg border-gray-200"}`}
+                                    ? "bg-gradient-to-br from-emerald-100 to-green-100 border-emerald-300 ring-4 ring-emerald-200/50 shadow-2xl"
+                                    : "bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-2xl border-gray-200/50 hover:border-emerald-200"}`}
                         >
-                            <div className={`${isOpen ? "text-emerald-700" : "text-emerald-600"}`}>
+                            <div className={`p-4 rounded-full mb-4 transition-all duration-300 ${isOpen 
+                                ? "bg-gradient-to-br from-emerald-500 to-green-600 text-white shadow-lg" 
+                                : "bg-gradient-to-br from-emerald-100 to-green-100 text-emerald-600 group-hover:from-emerald-200 group-hover:to-green-200"}`}>
                                 {icon}
                             </div>
 
-                            <p className={`text-lg font-semibold ${isOpen ? "text-emerald-800" : ""}`}>
+                            <p className={`text-xl font-bold mb-2 transition-colors duration-300 ${isOpen ? "text-emerald-800" : "text-gray-800"}`}>
                                 {sectionName}
                             </p>
 
-                            <span className="text-sm text-gray-500">
+                            <span className="text-sm text-gray-500 group-hover:text-gray-600 transition-colors duration-300">
                                 Cadastrar ou visualizar
                             </span>
                         </div>
@@ -125,15 +127,15 @@ export const MainPageLayout: React.FC = () => {
                     <section
                         key={section}
                         id={`${section}-section`}
-                        className="relative bg-gray-50 border border-gray-200 rounded-lg p-6 mb-8"
+                        className="relative bg-white/90 backdrop-blur-sm border-2 border-emerald-200/50 rounded-2xl p-8 mb-8 shadow-xl"
                     >
                         <button
                             type="button"
                             onClick={() => toggleSection(section)}
-                            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+                            className="absolute top-6 right-6 text-gray-400 hover:text-gray-600 hover:scale-110 transition-all duration-200 p-2 rounded-full hover:bg-gray-100"
                             aria-label={`Fechar seção de ${section}`}
                         >
-                            <X className="w-5 h-5 cursor-pointer" />
+                            <X className="w-6 h-6 cursor-pointer" />
                         </button>
 
                         {component}

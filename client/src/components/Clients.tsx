@@ -221,10 +221,15 @@ export const Clients: React.FC = () => {
 
 
     return (
-        <main className="p-6 max-w-6xl mx-auto">
-            <h2 className="text-2xl font-bold text-center mb-6">Cadastro de Clientes</h2>
+        <main className="p-8 max-w-6xl mx-auto">
+            <div className="text-center mb-8">
+                <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-green-600 mb-2">
+                    👥 Cadastro de Clientes
+                </h2>
+                <p className="text-gray-600 font-medium">Gerencie seus clientes de forma eficiente</p>
+            </div>
 
-            <div className="text-center mb-6">
+            <div className="text-center mb-8">
                 <button
                     onClick={() => {
                         setForm(defaultClient)
@@ -232,58 +237,58 @@ export const Clients: React.FC = () => {
                         setShowForm(true)
                         setFormErrors({})
                     }}
-                    className="bg-emerald-600 cursor-pointer text-white px-4 py-2 rounded-md hover:bg-emerald-700"
+                    className="bg-gradient-to-r from-emerald-600 to-green-600 cursor-pointer text-white px-8 py-3 rounded-xl font-semibold hover:from-emerald-700 hover:to-green-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                 >
-                    Novo Cliente
+                    ➕ Novo Cliente
                 </button>
             </div>
 
             {clients.length > 0 && (
-                <div className="overflow-auto border rounded-lg shadow-sm mb-10">
+                <div className="overflow-auto border-2 border-emerald-200/50 rounded-2xl shadow-xl mb-10 max-h-[70vh] bg-white/90 backdrop-blur-sm">
                     <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-emerald-600 text-white">
+                        <thead className="bg-gradient-to-r from-emerald-600 to-green-600 text-white sticky top-0 z-10">
                             <tr>
-                                <th className="px-4 py-3 text-sm">Nome</th>
-                                <th className="px-4 py-3 text-sm">E-mail</th>
-                                <th className="px-4 py-3 text-sm">Telefone</th>
-                                <th className="px-4 py-3 text-sm">Documento</th>
-                                <th className="px-4 py-3 text-sm">Endereço</th>
-                                <th className="px-4 py-3 text-sm">Bairro</th>
-                                <th className="px-4 py-3 text-sm">Cidade</th>
-                                <th className="px-4 py-3 text-sm">Observações</th>
-                                <th className="px-4 py-3 text-sm">Ações</th>
+                                <th className="px-6 py-4 text-sm font-semibold text-center">Nome</th>
+                                <th className="px-6 py-4 text-sm font-semibold text-center">E-mail</th>
+                                <th className="px-6 py-4 text-sm font-semibold text-center">Telefone</th>
+                                <th className="px-6 py-4 text-sm font-semibold text-center">Documento</th>
+                                <th className="px-6 py-4 text-sm font-semibold text-center">Endereço</th>
+                                <th className="px-6 py-4 text-sm font-semibold text-center">Bairro</th>
+                                <th className="px-6 py-4 text-sm font-semibold text-center">Cidade</th>
+                                <th className="px-6 py-4 text-sm font-semibold text-center">Observações</th>
+                                <th className="px-6 py-4 text-sm font-semibold text-center">Ações</th>
                             </tr>
                         </thead>
 
                         <tbody className="bg-white divide-y divide-gray-100">
                             {clients.map(client => (
-                                <tr key={client.id}>
-                                    <td className="px-4 py-2 text-sm whitespace-nowrap">{client.name}</td>
+                                <tr key={client.id} className="hover:bg-emerald-50/50 transition-colors duration-200">
+                                    <td className="px-6 py-4 text-sm font-medium whitespace-nowrap text-center">{client.name}</td>
 
-                                    <td className="px-4 py-2 text-sm break-words">{client.email}</td>
+                                    <td className="px-6 py-4 text-sm break-words text-emerald-700 text-center">{client.email}</td>
 
-                                    <td className="px-4 py-2 text-sm whitespace-nowrap">{formatPhoneForDisplay(client.phone)}</td>
+                                    <td className="px-6 py-4 text-sm whitespace-nowrap font-medium text-center">{formatPhoneForDisplay(client.phone)}</td>
 
-                                    <td className="px-4 py-2 text-sm whitespace-nowrap">
+                                    <td className="px-6 py-4 text-sm whitespace-nowrap font-mono text-center">
                                         {client.cpfCnpj.length === 11
                                             ? client.cpfCnpj.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4")
                                             : client.cpfCnpj.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, "$1.$2.$3/$4-$5")}
                                     </td>
 
-                                    <td className="px-4 py-2 text-sm">{client.address}</td>
+                                    <td className="px-6 py-4 text-sm text-center">{client.address}</td>
 
-                                    <td className="px-4 py-2 text-sm">{client.district}</td>
+                                    <td className="px-6 py-4 text-sm text-center">{client.district}</td>
 
-                                    <td className="px-4 py-2 text-sm">{client.city}</td>
+                                    <td className="px-6 py-4 text-sm font-medium text-center">{client.city}</td>
 
-                                    <td className="px-4 py-2 text-sm max-w-[160px] truncate" title={client.notes}>
+                                    <td className="px-6 py-4 text-sm max-w-[160px] truncate text-center" title={client.notes}>
                                         {client.notes || "-"}
                                     </td>
 
-                                    <td className="px-4 py-2 text-sm space-x-1 flex justify-between">
+                                    <td className="px-6 py-4 text-sm flex gap-3 justify-center">
                                         <button
                                             onClick={() => handleEdit(client)}
-                                            className="text-emerald-600 cursor-pointer hover:underline"
+                                            className="text-emerald-600 cursor-pointer hover:text-emerald-800 p-2 rounded-lg hover:bg-emerald-50 transition-all duration-200"
                                             aria-label="Editar cliente."
                                         >
                                             <FaEdit size={18} />
@@ -291,7 +296,7 @@ export const Clients: React.FC = () => {
 
                                         <button
                                             onClick={() => handleDelete(client.id!)}
-                                            className="text-red-700 cursor-pointer hover:underline"
+                                            className="text-red-600 cursor-pointer hover:text-red-800 p-2 rounded-lg hover:bg-red-50 transition-all duration-200"
                                             aria-label="Excluir cliente"
                                         >
                                             <FaTrash size={18} />
@@ -305,19 +310,19 @@ export const Clients: React.FC = () => {
             )}
 
             {showForm && (
-                <form onSubmit={handleSubmit} className="border rounded-lg p-6 bg-gray-50 shadow-sm">
-                    <h3 className="text-xl cursor-pointer font-semibold mb-4">
-                        {editingClientId ? "Editar Cliente" : "Novo Cliente"}
+                <form onSubmit={handleSubmit} className="border-2 border-emerald-200/50 rounded-2xl p-8 bg-white/90 backdrop-blur-sm shadow-xl mb-8">
+                    <h3 className="text-2xl font-bold text-center mb-6 text-emerald-800">
+                        {editingClientId ? "✏️ Editar Cliente" : "➕ Novo Cliente"}
                     </h3>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                         {clientFields.map(({ key, label, placeholder }) => {
                             const fieldName = key as keyof Client
 
                             return (
                                 <div key={key}>
-                                    <label htmlFor={key} className="block text-sm font-medium text-gray-700 mb-1">
-                                        {label} *
+                                    <label htmlFor={key} className="block text-sm font-semibold text-gray-700 mb-2">
+                                        {label} <span className="text-red-500">*</span>
                                     </label>
 
                                     <input
@@ -328,20 +333,21 @@ export const Clients: React.FC = () => {
                                         value={form[fieldName]}
                                         onChange={handleChange}
                                         onBlur={handleBlur}
-                                        className="w-full rounded-md border-gray-300 shadow-sm focus:ring-emerald-500 focus:border-emerald-500 px-2"
+                                        className="w-full rounded-xl border-2 border-gray-200 shadow-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 px-4 py-3 transition-all duration-300 bg-white/80 backdrop-blur-sm"
                                     />
 
                                     {formErrors[fieldName] && (
-                                        <div className="text-red-600 text-sm mt-1">
+                                        <p className="text-red-500 font-medium text-sm mt-2 flex items-center">
+                                            <span className="mr-1">⚠️</span>
                                             {formErrors[key as keyof Client]}
-                                        </div>
+                                        </p>
                                     )}
                                 </div>
                             )
                         })}
 
                         <div className="md:col-span-2">
-                            <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-1">
+                            <label htmlFor="notes" className="block text-sm font-semibold text-gray-700 mb-2">
                                 Observações
                             </label>
                             <textarea
@@ -349,13 +355,14 @@ export const Clients: React.FC = () => {
                                 id="notes"
                                 value={form.notes || ""}
                                 onChange={handleChange}
-                                rows={3}
-                                className="w-full rounded-md border-gray-300 shadow-sm focus:ring-emerald-500 focus:border-emerald-500"
+                                rows={4}
+                                placeholder="Adicione observações sobre o cliente..."
+                                className="w-full rounded-xl border-2 border-gray-200 shadow-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 px-4 py-3 transition-all duration-300 bg-white/80 backdrop-blur-sm resize-none"
                             />
                         </div>
                     </div>
 
-                    <div className="flex gap-4 justify-center items-center">
+                    <div className="flex gap-6 justify-center">
                         <button
                             type="button"
                             onClick={() => {
@@ -364,23 +371,26 @@ export const Clients: React.FC = () => {
                                 setEditingClientId(null)
                                 setFormErrors({})
                             }}
-                            className="px-4 py-2 cursor-pointer border border-gray-300 rounded-md hover:bg-gray-100"
+                            className="px-8 py-3 border-2 border-gray-300 rounded-xl hover:bg-gray-50 cursor-pointer font-semibold transition-all duration-300"
                         >
-                            Cancelar
+                            ❌ Cancelar
                         </button>
 
                         <button
                             type="submit"
                             disabled={!isReadyToSubmit}
-                            className={`px-4 py-2 rounded-md transition ${isReadyToSubmit ? "bg-emerald-600 text-white hover:bg-emerald-700 cursor-pointer" : "bg-gray-400 text-gray-200 cursor-not-allowed"}`}
+                            className={`px-8 py-3 rounded-xl font-semibold transition-all duration-300 ${isReadyToSubmit ? "bg-gradient-to-r from-emerald-600 to-green-600 cursor-pointer text-white hover:from-emerald-700 hover:to-green-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5" : "bg-gray-400 text-gray-200 cursor-not-allowed"}`}
                         >
-                            {editingClientId ? "Atualizar" : "Salvar"} Cliente
+                            {editingClientId ? "💾 Atualizar" : "💾 Salvar"} Cliente
                         </button>
                     </div>
 
                     {errorMessage && (
-                        <div className="mb-4 p-3 mt-4 bg-red-100 text-red-700 rounded">
-                            {errorMessage}
+                        <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-xl">
+                            <p className="text-red-600 font-medium text-center flex items-center justify-center">
+                                <span className="mr-2">❌</span>
+                                {errorMessage}
+                            </p>
                         </div>
                     )}
                 </form>
