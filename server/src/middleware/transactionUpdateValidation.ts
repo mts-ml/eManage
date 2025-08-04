@@ -1,10 +1,10 @@
 import { NextFunction, Request, Response } from 'express'
 
-import { SalePayload } from '../types/types.js'
+import { TransactionUpdatePayload } from '../types/types.js'
 import { rejectExtraFields } from '../utils/utils.js'
 
 
-export async function handleTransactionUpdateValidation(req: Request<{}, {}, SalePayload>, res: Response, next: NextFunction) {
+export async function handleTransactionUpdateValidation(req: Request<{}, {}, TransactionUpdatePayload>, res: Response, next: NextFunction) {
     if (!req.body) {
         res.status(400).json({ message: "Dados ausentes no corpo da requisição." })
         return
