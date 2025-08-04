@@ -248,7 +248,7 @@ export const Sales: React.FC = () => {
                                     R$ {Number(selectedProduct.salePrice).toFixed(2).replace(".", ",")}
                                 </p>
                             </div>
-                            
+
                             <div className="bg-blue-50 p-4 rounded-xl">
                                 <p className="text-sm font-medium text-gray-600 mb-1">Estoque Disponível</p>
                                 <p className="text-lg font-bold text-blue-700">
@@ -256,22 +256,22 @@ export const Sales: React.FC = () => {
                                 </p>
                             </div>
 
-                                                         <div className="bg-green-50 p-4 rounded-xl">
-                                 <p className="text-sm font-medium text-gray-600 mb-1">Quantidade</p>
-                                 <div className="flex items-center gap-2">
-                                     <label htmlFor="quantity" className="sr-only">Quantidade</label>
-                                     <input
-                                         id="quantity"
-                                         type="number"
-                                         onChange={e => setQuantity(Number(e.currentTarget.value))}
-                                         value={quantity}
-                                         min={1}
-                                         max={selectedProduct.stock}
-                                         placeholder="Qtd"
-                                         className="w-20 border-2 border-gray-200 rounded-lg p-2 text-center font-semibold focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                                     />
-                                 </div>
-                             </div>
+                            <div className="bg-green-50 p-4 rounded-xl">
+                                <p className="text-sm font-medium text-gray-600 mb-1">Quantidade</p>
+                                <div className="flex items-center gap-2">
+                                    <label htmlFor="quantity" className="sr-only">Quantidade</label>
+                                    <input
+                                        id="quantity"
+                                        type="number"
+                                        onChange={e => setQuantity(Number(e.currentTarget.value))}
+                                        value={quantity}
+                                        min={1}
+                                        max={selectedProduct.stock}
+                                        placeholder="Qtd"
+                                        className="w-20 border-2 border-gray-200 rounded-lg p-2 text-center font-semibold focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                    />
+                                </div>
+                            </div>
                         </div>
 
                         <button
@@ -365,27 +365,33 @@ export const Sales: React.FC = () => {
 
             {lastSale && !selectedClientId && (
                 <div className="border-2 border-emerald-200/50 rounded-2xl p-8 bg-emerald-50/50 backdrop-blur-sm shadow-xl">
-                    <div className="text-center mb-6">
-                        <h3 className="text-2xl font-bold text-emerald-800 mb-2">✅ Venda Finalizada com Sucesso!</h3>
-                    </div>
-                    
+                    <h3 className="text-2xl font-bold text-center mb-8 text-emerald-800">
+                        ✅ Venda Finalizada com Sucesso!
+                    </h3>
+
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                         <div className="bg-white p-4 rounded-xl border border-emerald-200">
                             <p className="text-sm font-medium text-gray-600 mb-1">Número da Venda</p>
+
                             <p className="text-lg font-bold text-emerald-700">#{lastSale.saleNumber}</p>
                         </div>
+
                         <div className="bg-white p-4 rounded-xl border border-emerald-200">
                             <p className="text-sm font-medium text-gray-600 mb-1">Cliente</p>
+
                             <p className="text-lg font-bold text-emerald-700">{lastSale.clientName}</p>
                         </div>
+
                         <div className="bg-white p-4 rounded-xl border border-emerald-200">
                             <p className="text-sm font-medium text-gray-600 mb-1">Data</p>
+
                             <p className="text-lg font-bold text-emerald-700">{lastSale.date}</p>
                         </div>
                     </div>
 
                     <div className="bg-white rounded-xl p-6 border border-emerald-200">
                         <h4 className="font-semibold text-emerald-800 mb-3">Itens da Venda:</h4>
+                        
                         <ul className="space-y-2">
                             {lastSale.items.map((item, index) => (
                                 <li key={index} className="flex justify-between items-center py-2 border-b border-emerald-100 last:border-b-0">
@@ -396,7 +402,7 @@ export const Sales: React.FC = () => {
                                 </li>
                             ))}
                         </ul>
-                        
+
                         <div className="mt-4 pt-4 border-t border-emerald-200">
                             <p className="text-xl font-bold text-emerald-800 text-right">
                                 Total: {lastSale.total.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
