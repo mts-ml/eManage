@@ -1,5 +1,6 @@
 import { useContext, useState } from "react"
 import axios from "axios"
+import { FaTrash, FaEdit } from 'react-icons/fa'
 
 import type { Expense, ExpenseErrors, ExpenseFromBackend } from "../types/types"
 import ExpenseContext from "../Context/ExpensesContext"
@@ -110,7 +111,7 @@ export const Expenses: React.FC = () => {
         setInlineErrors(prev => ({ ...prev, [id]: "" }))
     }
 
-    async function handleUpdateInline(id: string) {
+    async function handleSave(id: string) {
         try {
             const expense = expenses.find(exp => exp.id === id)
             if (!expense) return
@@ -266,7 +267,7 @@ export const Expenses: React.FC = () => {
                                             id={key}
                                             value={form[fieldName] || ""}
                                             onChange={handleChange}
-                                            className={`w-full rounded-xl border-2 border-gray-200 shadow-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 px-4 py-3 transition-all duration-300 bg-white/80 backdrop-blur-sm ${form[fieldName] === "Pago" ? "bg-green-50 text-green-700 border-green-400" : ""}`}
+                                            className={`w-full rounded-xl border-2 border-gray-200 shadow-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 px-4 py-3 transition-all duration-300 bg-white/80 backdrop-blur-sm cursor-pointer ${form[fieldName] === "Pago" ? "bg-green-50 text-green-700 border-green-400" : ""}`}
                                         >
                                             {options?.map(option => (
                                                 <option key={option} value={option}>{option}</option>
@@ -280,7 +281,7 @@ export const Expenses: React.FC = () => {
                                             placeholder={placeholder}
                                             value={form[fieldName] || ""}
                                             onChange={handleChange}
-                                            className="w-full rounded-xl border-2 border-gray-200 shadow-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 px-4 py-3 transition-all duration-300 bg-white/80 backdrop-blur-sm"
+                                            className="w-full rounded-xl border-2 border-gray-200 shadow-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 px-4 py-3 transition-all duration-300 bg-white/80 backdrop-blur-sm cursor-text"
                                         />
                                     )}
 
@@ -306,7 +307,7 @@ export const Expenses: React.FC = () => {
                                 onChange={handleChange}
                                 rows={4}
                                 placeholder="Descreva detalhes sobre a despesa..."
-                                className="w-full rounded-xl border-2 border-gray-200 shadow-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 px-4 py-3 transition-all duration-300 bg-white/80 backdrop-blur-sm resize-none"
+                                className="w-full rounded-xl border-2 border-gray-200 shadow-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 px-4 py-3 transition-all duration-300 bg-white/80 backdrop-blur-sm resize-none cursor-text"
                             />
 
                             {formErrors.description && (
@@ -361,9 +362,10 @@ export const Expenses: React.FC = () => {
                     <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gradient-to-r from-emerald-600 to-green-600 text-white sticky top-0 z-10">
                             <tr>
+                                <th className="px-4 py-3 text-xs font-semibold text-center">Despesa</th>
                                 <th className="px-4 py-3 text-xs font-semibold text-center">Descrição</th>
                                 <th className="px-4 py-3 text-xs font-semibold text-center">Valor</th>
-                                <th className="px-4 py-3 text-xs font-semibold text-center">Data</th>
+                                <th className="px-4 py-3 text-xs font-semibold text-center">Data Vencimento</th>
                                 <th className="px-4 py-3 text-xs font-semibold text-center">Status</th>
                                 <th className="px-4 py-3 text-xs font-semibold text-center">Banco</th>
                                 <th className="px-4 py-3 text-xs font-semibold text-center">Ações</th>
@@ -373,84 +375,42 @@ export const Expenses: React.FC = () => {
                         <tbody className="bg-white divide-y divide-gray-100">
                             {expenses.map(exp => (
                                 <tr key={exp.id} className="hover:bg-emerald-50/50 transition-colors duration-200">
-                                    <td className="px-4 py-3 text-xs font-medium text-center">{exp.description}</td>
+                                    <td className="px-4 py-3 text-xs font-semibold text-gray-800 text-center">
+                                        {exp.name}
+                                    </td>
+
+                                    <td className="px-4 py-3 text-xs text-gray-600 text-center">
+                                        {exp.description || "-"}
+                                    </td>
 
                                     <td className="px-4 py-3 text-xs font-bold text-emerald-700 text-center">
                                         {Number(exp.value).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
                                     </td>
 
-                                                                    <td className="px-4 py-3 text-xs text-center">{exp.dueDate ? new Date(exp.dueDate).toLocaleDateString("pt-BR") : "-"}</td>
+                                    <td className="px-4 py-3 text-xs text-center">
+                                        {exp.dueDate ? new Date(exp.dueDate).toLocaleDateString("pt-BR") : "-"}
+                                    </td>
 
-                                <td className="px-4 py-3 text-xs text-center">
-                                    {modifiedId === exp.id ? (
+                                    <td className="px-4 py-3 text-xs text-center">
                                         <select
-                                            value={exp.status || "Em aberto"}
-                                            onChange={(e) => handleStatusChange(exp.id!, e.target.value as "Em aberto" | "Pago")}
-                                            className="border-2 border-gray-200 rounded-lg p-1 text-xs cursor-pointer transition-all duration-200 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                                             aria-label="Status da despesa"
+                                            className={`border-2 rounded-lg p-1 text-xs cursor-pointer transition-all duration-200 ${exp.status === "Pago" ? "bg-green-50 text-green-700 border-green-400" : "border-gray-200"}`}
+                                            value={exp.status || "Em aberto"}
+                                            onChange={e => handleStatusChange(exp.id!, e.target.value as "Em aberto" | "Pago")}
                                         >
                                             <option value="Em aberto">Em aberto</option>
                                             <option value="Pago">Pago</option>
                                         </select>
-                                    ) : (
-                                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${exp.status === "Pago" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}`}>
-                                            {exp.status || "Em aberto"}
-                                        </span>
-                                    )}
-                                </td>
+                                    </td>
 
-                                <td className="px-4 py-3 text-xs text-center">
-                                    {modifiedId === exp.id ? (
+                                    <td className="px-4 py-3 text-xs text-center">
                                         <input
                                             type="text"
                                             value={exp.bank || ""}
-                                            onChange={(e) => handleBankChange(exp.id!, e.target.value)}
+                                            onChange={e => handleBankChange(exp.id!, e.target.value)}
                                             placeholder="Banco"
-                                            className="border-2 border-gray-200 rounded-lg p-1 w-full text-xs focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200"
+                                            className="border-2 border-gray-200 rounded-lg p-1 w-full text-xs focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200 cursor-text"
                                         />
-                                    ) : (
-                                        <span className="text-gray-600">{exp.bank || "-"}</span>
-                                    )}
-                                </td>
-
-                                    <td className="px-4 py-3 text-xs text-center">
-                                        <div className="flex gap-2 justify-center">
-                                            {modifiedId === exp.id ? (
-                                                <>
-                                                    <button
-                                                        onClick={() => handleUpdateInline(exp.id!)}
-                                                        className="text-emerald-600 hover:text-emerald-800 p-1 rounded-lg hover:bg-emerald-50 transition-all duration-200"
-                                                        aria-label="Salvar alterações"
-                                                    >
-                                                        💾
-                                                    </button>
-                                                    <button
-                                                        onClick={() => setModifiedId(null)}
-                                                        className="text-gray-600 hover:text-gray-800 p-1 rounded-lg hover:bg-gray-50 transition-all duration-200"
-                                                        aria-label="Cancelar edição"
-                                                    >
-                                                        ❌
-                                                    </button>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <button
-                                                        onClick={() => handleEdit(exp)}
-                                                        className="text-emerald-600 hover:text-emerald-800 p-1 rounded-lg hover:bg-emerald-50 transition-all duration-200"
-                                                        aria-label="Editar despesa"
-                                                    >
-                                                        ✏️
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleDelete(exp.id!)}
-                                                        className="text-red-600 hover:text-red-800 p-1 rounded-lg hover:bg-red-50 transition-all duration-200"
-                                                        aria-label="Excluir despesa"
-                                                    >
-                                                        🗑️
-                                                    </button>
-                                                </>
-                                            )}
-                                        </div>
 
                                         {inlineErrors[exp.id!] && (
                                             <p className="text-red-500 text-xs mt-1 flex items-center justify-center">
@@ -458,6 +418,37 @@ export const Expenses: React.FC = () => {
                                                 {inlineErrors[exp.id!]}
                                             </p>
                                         )}
+                                    </td>
+
+                                    <td className="px-4 py-3 text-xs text-center">
+                                        <div className="flex gap-2 justify-center">
+                                            {modifiedId === exp.id ? (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleSave(exp.id!)}
+                                                    className="bg-gradient-to-r from-emerald-600 to-green-600 cursor-pointer text-white px-3 py-1 rounded-lg text-xs font-semibold hover:from-emerald-700 hover:to-green-700 transition-all duration-300 shadow-md hover:shadow-lg"
+                                                >
+                                                    💾 Salvar
+                                                </button>
+                                            ) : (
+                                                <>
+                                                    <button
+                                                        onClick={() => handleEdit(exp)}
+                                                        className="text-emerald-600 cursor-pointer hover:text-emerald-800 p-2 rounded-lg hover:bg-emerald-50 transition-all duration-200"
+                                                        aria-label="Editar despesa"
+                                                    >
+                                                        <FaEdit size={18} />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDelete(exp.id!)}
+                                                        className="text-red-600 cursor-pointer hover:text-red-800 p-2 rounded-lg hover:bg-red-50 transition-all duration-200"
+                                                        aria-label="Excluir despesa"
+                                                    >
+                                                        <FaTrash size={18} />
+                                                    </button>
+                                                </>
+                                            )}
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
