@@ -93,7 +93,6 @@ export interface SalePayload {
     status: "Em aberto" | "Pago"
     paymentDate?: string | null
     bank?: string
-    [key: string]: unknown
 }
 export type SaleErrors = Partial<Record<keyof SalePayload | string, string[]>>
 
@@ -120,6 +119,7 @@ export interface TransactionUpdatePayload {
     status?: "Em aberto" | "Pago"
     paymentDate?: string | null
     bank?: string
+    [key: string]: unknown
 }
 
 
