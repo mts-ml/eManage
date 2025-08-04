@@ -1,4 +1,4 @@
-import express, { Request, Response } from 'express'
+import express from 'express'
 
 import { handleExpenseValidation } from '../../middleware/expenseValidation.js'
 import { createNewExpense, deleteExpense, getAllExpenses, updateExpense } from '../../controller/expenseController.js'

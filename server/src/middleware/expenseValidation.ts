@@ -17,9 +17,9 @@ export function handleExpenseValidation(
     const requiredStringFields = ["name", "value"]
     if (!validateStringFields(req.body, requiredStringFields, res)) return
 
-    const { name, value, description, dueDate } = req.body
+    const { name, value, description, dueDate, status, bank } = req.body
 
-    const allowedFields = ["name", "value", "description", "dueDate"]
+    const allowedFields = ["name", "value", "description", "dueDate", "status", "bank"]
     if (rejectExtraFields(req.body, allowedFields, res)) return
 
     const errors: ExpenseErrors = {}
@@ -36,17 +36,31 @@ export function handleExpenseValidation(
         errors.value = "Valor inválido. Deve ser um número positivo maior que zero."
     }
 
-    // if (typeof description === "string" && description.length < 3) {
-    //     errors.description = "Descrição precisa ter pelo menos 3 letras."
-    // }
+    if (description != null && typeof description !== "string") {
+        errors.description = "Descrição deve ser uma string."
+    } else if (typeof description === "string" && description.trim() !== "" && description.length < 3) {
+        errors.description = "Descrição precisa ter pelo menos 3 letras."
+    }
 
-    if (typeof dueDate === "string" && dueDate.trim() !== "") {
+    if (dueDate != null) {
         const isoDateRegex = /^\d{4}-\d{2}-\d{2}$/;
         const parsedDate = new Date(dueDate);
 
         if (!isoDateRegex.test(dueDate) || isNaN(parsedDate.getTime())) {
             errors.dueDate = "Data inválida, informe no formato ISO: 'AAAA-MM-DD'.";
         }
+    }
+
+    if (status != null && status !== "Em aberto" && status !== "Pago") {
+        errors.status = "Status deve ser 'Em aberto' ou 'Pago'."
+    }
+
+    if (status === "Pago" && (!bank || bank.trim() === "")) {
+        errors.bank = "Banco é obrigatório quando o status é 'Pago'."
+    }
+
+    if (bank != null && typeof bank !== "string") {
+        errors.bank = "Banco deve ser uma string."
     }
 
     const hasError = Object.values(errors).length > 0

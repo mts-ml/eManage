@@ -16,6 +16,14 @@ const expenseSchema = new Schema<ExpenseProps>({
     },
     dueDate: String,
     description: {
+        type: String
+    },
+    status: {
+        type: String,
+        enum: ["Em aberto", "Pago"],
+        default: "Em aberto"
+    },
+    bank: {
         type: String,
         default: ""
     }

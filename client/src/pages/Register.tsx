@@ -153,17 +153,25 @@ export const Register: React.FC = () => {
 
 
     return (
-        <main className="h-[calc(100vh-72px)] bg-gray-100 flex items-center justify-center px-4">
-            <div className="p-8 rounded-2xl bg-gray-700 shadow-md max-w-sm">
-                <h1 className="text-2xl font-bold text-center mb-6 text-green-400">
-                    Cadastro - Panda Alimentos
-                </h1>
+        <main className="h-[calc(100vh-72px)] bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100 flex items-center justify-center px-4 relative overflow-hidden">
+            {/* Background decoration */}
+            <div className="absolute inset-0 bg-gradient-to-br from-emerald-200/20 to-green-300/20"></div>
+            <div className="absolute top-10 left-10 w-32 h-32 bg-emerald-300/30 rounded-full blur-3xl"></div>
+            <div className="absolute bottom-10 right-10 w-40 h-40 bg-green-300/30 rounded-full blur-3xl"></div>
+            
+            <div className="relative p-10 rounded-3xl bg-white/90 backdrop-blur-sm shadow-2xl border border-emerald-200/50 w-full max-w-md">
+                <div className="text-center mb-8">
+                    <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-green-600 mb-2">
+                        🐼 Panda Alimentos
+                    </h1>
+                    <p className="text-gray-600 font-medium">Crie sua conta para começar</p>
+                </div>
 
-                {/* NOME */}
-                <form onSubmit={handleSubmit} className="space-y-4 text-white">
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    {/* NOME */}
                     <div>
-                        <label htmlFor="name" className="block text-sm font-medium">
-                            Nome
+                        <label htmlFor="name" className="block text-sm font-semibold text-gray-700 mb-2">
+                            Nome Completo <span className="text-red-500">*</span>
                         </label>
                         <input
                             type="text"
@@ -171,17 +179,15 @@ export const Register: React.FC = () => {
                             name="name"
                             value={form.name}
                             onChange={handleChange}
+                            placeholder="Digite seu nome completo"
                             aria-describedby='nameError'
-                            className="mt-1 w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-400"
+                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-300 bg-white/80 backdrop-blur-sm"
                         />
 
                         {errors.name && (
-                            <div
-                                aria-live='polite'
-                                id='nameError'
-                                className="bg-red-900 border border-red-600 text-red-100 rounded-md p-2 mt-2 text-sm font-semibold"
-                            >
-                                <p>
+                            <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-xl">
+                                <p className="text-red-600 font-medium text-sm flex items-center">
+                                    <span className="mr-2">⚠️</span>
                                     {errors.name}
                                 </p>
                             </div>
@@ -190,8 +196,8 @@ export const Register: React.FC = () => {
 
                     {/* EMAIL */}
                     <div>
-                        <label htmlFor="email" className="block text-sm font-medium">
-                            E-mail
+                        <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
+                            E-mail <span className="text-red-500">*</span>
                         </label>
                         <input
                             type="email"
@@ -199,18 +205,16 @@ export const Register: React.FC = () => {
                             name="email"
                             value={form.email}
                             onChange={handleChange}
+                            placeholder="Digite seu e-mail"
                             aria-describedby='emailError'
-                            className="mt-1 w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-400"
+                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-300 bg-white/80 backdrop-blur-sm"
                         />
 
                         {errors.email && (
-                            <div
-                                aria-live='polite'
-                                id='emailError'
-                                className="bg-red-900 border border-red-600 text-red-100 rounded-md p-2 mt-2 text-sm font-semibold"
-                            >
-                                <p>
-                                    • {errors.email}
+                            <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-xl">
+                                <p className="text-red-600 font-medium text-sm flex items-center">
+                                    <span className="mr-2">⚠️</span>
+                                    {errors.email}
                                 </p>
                             </div>
                         )}
@@ -218,8 +222,8 @@ export const Register: React.FC = () => {
 
                     {/* SENHA */}
                     <div>
-                        <label htmlFor="password" className="block text-sm font-medium">
-                            Senha
+                        <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
+                            Senha <span className="text-red-500">*</span>
                         </label>
                         <input
                             type="password"
@@ -227,22 +231,23 @@ export const Register: React.FC = () => {
                             name="password"
                             value={form.password}
                             onChange={handleChange}
+                            placeholder="Digite sua senha"
                             autoComplete='off'
                             aria-describedby='passwordError'
-                            className="mt-1 w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-300 bg-white/80 backdrop-blur-sm"
                         />
 
                         {errors.password && (
-                            <div
-                                aria-live='polite'
-                                id='passwordError'
-                                className="bg-red-900 border border-red-600 text-red-100 rounded-md p-3 mt-2 space-y-1 max-h-40 overflow-auto text-sm font-semibold"
-                            >
-                                {errors.password.map((msg, index) => (
-                                    <p key={index} className="leading-tight">
-                                        • {msg}
-                                    </p>
-                                ))}
+                            <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-xl max-h-40 overflow-auto">
+                                <p className="text-red-600 font-medium text-sm mb-2">A senha deve conter:</p>
+                                <ul className="space-y-1 text-sm">
+                                    {errors.password.map((msg, index) => (
+                                        <li key={index} className="text-red-600 flex items-center">
+                                            <span className="mr-2">•</span>
+                                            {msg}
+                                        </li>
+                                    ))}
+                                </ul>
                             </div>
                         )}
                     </div>
@@ -250,25 +255,30 @@ export const Register: React.FC = () => {
                     <button
                         type="submit"
                         disabled={!isReadyToSubmit}
-                        className="w-full cursor-pointer bg-green-600 text-white py-2 rounded-md hover:bg-green-700 transition disabled:bg-gray-600 disabled:text-gray-400
-                        disabled:cursor-not-allowed"
+                        className="w-full cursor-pointer bg-gradient-to-r from-emerald-600 to-green-600 text-white py-3 rounded-xl font-semibold hover:from-emerald-700 hover:to-green-700 transition-all duration-300 disabled:from-gray-400 disabled:to-gray-500 disabled:text-gray-300 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                     >
-                        Registrar
+                        {apiMessage ? "Registrando..." : "Criar Conta"}
                     </button>
 
                     {apiMessage && (
-                        <p className='text-green-400 font-medium text-center'>
-                            {apiMessage}
-                        </p>
+                        <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl">
+                            <p className="text-emerald-600 font-medium text-center flex items-center justify-center">
+                                <span className="mr-2">✅</span>
+                                {apiMessage}
+                            </p>
+                        </div>
                     )}
 
                     {errors.general && (
-                        <p className='text-red-400 font-medium text-center'>
-                            {errors.general}
-                        </p>
+                        <div className="p-4 bg-red-50 border border-red-200 rounded-xl">
+                            <p className="text-red-600 font-medium text-center flex items-center justify-center">
+                                <span className="mr-2">❌</span>
+                                {errors.general}
+                            </p>
+                        </div>
                     )}
                 </form>
             </div>
-        </main >
+        </main>
     )
 }

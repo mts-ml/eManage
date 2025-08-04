@@ -21,10 +21,9 @@ export async function getAllExpenses(req: Request, res: Response, next: NextFunc
 
 export async function createNewExpense(req: Request<{}, {}, ExpenseProps>, res: Response, next: NextFunction) {
     try {
-        const { name, value, description, dueDate } = req.body
-        const expenseProps = { name, value, description, dueDate }
+        const { name, value, description, dueDate, status, bank } = req.body
+        const expenseProps = { name, value, description, dueDate, status, bank }
 
-        console.log("Payload para criar Expense:", expenseProps)
         const newExpense = await Expense.create(expenseProps)
 
         res.status(201).json(newExpense)
@@ -63,7 +62,7 @@ export async function deleteExpense(req: Request<{ id: string }, {}, ExpenseProp
 
     try {
         const deletedExpense = await Expense.findByIdAndDelete(id)
-        if (!deleteExpense) {
+        if (!deletedExpense) {
             res.status(404).json({ message: "Despesa não encontrada." })
             return
         }

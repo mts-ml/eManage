@@ -146,222 +146,263 @@ export const Sales: React.FC = () => {
 
 
     return (
-        <main className="p-6 max-w-3xl mx-auto">
-
-            <h2 className="text-2xl font-bold mb-8 text-center">
-                Vendas
-            </h2>
+        <main className="p-8 max-w-6xl mx-auto">
+            <div className="text-center mb-8">
+                <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-green-600 mb-2">
+                    🛒 Vendas
+                </h2>
+                <p className="text-gray-600 font-medium">Gerencie suas vendas de forma eficiente</p>
+            </div>
 
             {/* Selecionar cliente e produto */}
-            <section>
+            <section className="border-2 border-emerald-200/50 rounded-2xl p-8 bg-white/90 backdrop-blur-sm shadow-xl mb-8">
                 <div className="flex justify-between items-center mb-6">
-                    <p className="text-lg font-medium">
+                    <p className="text-xl font-semibold text-emerald-800">
                         Venda Nº {lastSale ? lastSale.saleNumber + 1 : '-'}
                     </p>
 
-                    <div className="text-sm text-gray-600">
+                    <div className="text-sm text-gray-600 bg-emerald-50 px-4 py-2 rounded-lg">
                         Data: {today}
                     </div>
                 </div>
 
-                <div className="mb-6">
-                    <label htmlFor="client" className="block text-sm font-medium mb-1">
-                        Cliente
-                    </label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label htmlFor="client" className="block text-sm font-semibold text-gray-700 mb-2">
+                            Cliente <span className="text-red-500">*</span>
+                        </label>
 
-                    <select
-                        id="client"
-                        value={selectedClientId}
-                        onChange={e => setSelectedClientId(e.target.value)}
-                        className="w-full border cursor-pointer border-gray-300 rounded-md p-2"
-                    >
-                        <option value="">Selecione um cliente</option>
-                        {clients.map(client => (
-                            <option
-                                key={client.id}
-                                value={client.id}
-                            >
-                                {client.name}
-                            </option>
-                        ))}
-                    </select>
-                </div>
+                        <select
+                            id="client"
+                            value={selectedClientId}
+                            onChange={e => setSelectedClientId(e.target.value)}
+                            className="w-full border-2 border-gray-200 cursor-pointer rounded-xl p-3 transition-all duration-300 bg-white/80 backdrop-blur-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                        >
+                            <option value="">Selecione um cliente</option>
+                            {clients.map(client => (
+                                <option
+                                    key={client.id}
+                                    value={client.id}
+                                >
+                                    {client.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
 
-                <div className="mb-6">
-                    <label htmlFor="product" className="block text-sm font-medium mb-1">
-                        Produto
-                    </label>
+                    <div>
+                        <label htmlFor="product" className="block text-sm font-semibold text-gray-700 mb-2">
+                            Produto <span className="text-red-500">*</span>
+                        </label>
 
-                    <select
-                        id="product"
-                        value={selectedProductId}
-                        onChange={e => setSelectedProductId(e.target.value)}
-                        className="w-full border cursor-pointer border-gray-300 rounded-md p-2"
-                    >
-                        <option value="">Selecione um produto</option>
-                        {products.map(product => (
-                            <option
-                                key={product.id}
-                                value={product.id}
-                            >
-                                {product.name}
-                            </option>
-                        ))}
-                    </select>
+                        <select
+                            id="product"
+                            value={selectedProductId}
+                            onChange={e => setSelectedProductId(e.target.value)}
+                            className="w-full border-2 border-gray-200 cursor-pointer rounded-xl p-3 transition-all duration-300 bg-white/80 backdrop-blur-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                        >
+                            <option value="">Selecione um produto</option>
+                            {products.map(product => (
+                                <option
+                                    key={product.id}
+                                    value={product.id}
+                                >
+                                    {product.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
             </section>
 
             {selectedProduct && selectedClient && (
-                <section className="mb-8 border rounded-md p-4 bg-gray-50">
+                <section className="mb-8 border-2 border-emerald-200/50 rounded-2xl p-6 bg-white/90 backdrop-blur-sm shadow-xl">
                     <div>
-                        <div className="flex items-center justify-between">
-                            <p className="mb-2">Cliente: <strong>{selectedClient.name}</strong></p>
+                        <div className="flex items-center justify-between mb-4">
+                            <div>
+                                <p className="text-lg font-semibold text-emerald-800 mb-2">
+                                    Cliente: <span className="text-emerald-600">{selectedClient.name}</span>
+                                </p>
+                                <p className="text-lg font-semibold text-emerald-800">
+                                    Produto: <span className="text-emerald-600">{selectedProduct.name}</span>
+                                </p>
+                            </div>
 
                             <button
                                 type="button"
+                                onClick={() => {
+                                    setSelectedProductId("")
+                                    setSelectedClientId("")
+                                }}
+                                className="text-gray-500 hover:text-red-600 p-2 rounded-lg hover:bg-red-50 transition-all duration-200"
                                 aria-label="Fechar aba de venda."
                             >
-                                <X
-                                    onClick={() => {
-                                        setSelectedProductId("")
-                                        setSelectedClientId("")
-                                    }}
-                                    className="w-5 h-5 text-gray-500 hover:cursor-pointer hover:text-black" />
+                                <X className="w-6 h-6" />
                             </button>
                         </div>
 
-                        <p className="mb-2">
-                            Produto: <strong>{selectedProduct.name}</strong>
-                        </p>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            <div className="bg-emerald-50 p-4 rounded-xl">
+                                <p className="text-sm font-medium text-gray-600 mb-1">Preço Unitário</p>
+                                <p className="text-lg font-bold text-emerald-700">
+                                    R$ {Number(selectedProduct.salePrice).toFixed(2).replace(".", ",")}
+                                </p>
+                            </div>
+                            
+                            <div className="bg-blue-50 p-4 rounded-xl">
+                                <p className="text-sm font-medium text-gray-600 mb-1">Estoque Disponível</p>
+                                <p className="text-lg font-bold text-blue-700">
+                                    {selectedProduct.stock} {selectedProduct.description}
+                                </p>
+                            </div>
 
-                        <p className="text-sm text-gray-600 mb-2">
-                            Preço: <strong>R${Number(selectedProduct.salePrice).toFixed(2).replace(".", ",")}</strong>
-                        </p>
-                    </div>
-
-                    <p className="text-sm text-gray-600 mb-4">
-                        Estoque disponível: <strong>{selectedProduct.stock}{selectedProduct.description}</strong>
-                    </p>
-
-                    <div className="flex gap-2 items-center">
-                        <label htmlFor="quantity" className="text-sm">
-                            Quantidade:
-                        </label>
-
-                        <input
-                            id="quantity"
-                            type="number"
-                            onChange={e => setQuantity(Number(e.currentTarget.value))}
-                            value={quantity}
-                            min={1}
-                            max={selectedProduct.stock}
-                            className="w-24 border border-gray-300 rounded-md p-1"
-                        />
+                                                         <div className="bg-green-50 p-4 rounded-xl">
+                                 <p className="text-sm font-medium text-gray-600 mb-1">Quantidade</p>
+                                 <div className="flex items-center gap-2">
+                                     <label htmlFor="quantity" className="sr-only">Quantidade</label>
+                                     <input
+                                         id="quantity"
+                                         type="number"
+                                         onChange={e => setQuantity(Number(e.currentTarget.value))}
+                                         value={quantity}
+                                         min={1}
+                                         max={selectedProduct.stock}
+                                         placeholder="Qtd"
+                                         className="w-20 border-2 border-gray-200 rounded-lg p-2 text-center font-semibold focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                     />
+                                 </div>
+                             </div>
+                        </div>
 
                         <button
                             onClick={() => handleAddToCart(selectedProduct, quantity)}
-                            className="bg-emerald-600 cursor-pointer text-white px-4 py-1.5 rounded hover:bg-emerald-700"
+                            className="w-full bg-gradient-to-r from-emerald-600 to-green-600 cursor-pointer text-white px-6 py-3 rounded-xl font-semibold hover:from-emerald-700 hover:to-green-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                         >
-                            Adicionar ao Carrinho
+                            ➕ Adicionar ao Carrinho
                         </button>
                     </div>
-
                 </section>
             )}
 
-
             {selectedClientId && cart.length > 0 && (
-                <>
-                    <h3 className="text-lg font-semibold mb-2">
-                        Carrinho
-                    </h3>
+                <div className="border-2 border-emerald-200/50 rounded-2xl p-8 bg-white/90 backdrop-blur-sm shadow-xl mb-8">
+                    <div className="text-center mb-6">
+                        <h3 className="text-2xl font-bold text-emerald-800 mb-2">
+                            🛒 Carrinho
+                        </h3>
+                        <p className="text-gray-600 font-medium">
+                            Cliente: <span className="font-semibold text-emerald-700">{selectedClient?.name}</span>
+                        </p>
+                    </div>
 
-                    <p className="text-sm text-gray-600 mb-4">
-                        Cliente: <span className="font-medium">{selectedClient?.name}</span>
-                    </p>
-
-                    <div className="mb-6">
+                    <div className="space-y-4 mb-6">
                         {cart.map(item => (
                             <div
                                 key={item.id}
-                                className="flex justify-between items-center border-b py-2"
+                                className="flex justify-between items-center border-2 border-emerald-100 rounded-xl p-4 bg-emerald-50/50 hover:bg-emerald-50 transition-all duration-200"
                             >
-                                <div>
-                                    <p className="font-medium">
+                                <div className="flex-1">
+                                    <p className="font-semibold text-emerald-800 text-lg">
                                         {item.name}
                                     </p>
-
-                                    <p className="text-sm text-gray-500">
+                                    <p className="text-sm text-gray-600">
                                         {Number(item.salePrice).toLocaleString("pt-BR", {
                                             style: "currency",
                                             currency: "BRL"
-                                        })} - {Number(item.quantity).toLocaleString("pt-BR")}(x){item.description}
+                                        })} - {Number(item.quantity).toLocaleString("pt-BR")}x {item.description}
                                     </p>
-
                                 </div>
 
-                                <div className="flex items-center gap-2">
-                                    <button
-                                        onClick={() => handleQuantityChange(item.id!, -1)}
-                                        className="px-2 py-1 cursor-pointer border rounded hover:bg-black/30"
-                                        aria-label="Diminuir quantidade"
-                                    >
-                                        -
-                                    </button>
+                                <div className="flex items-center gap-3">
+                                    <div className="flex items-center gap-2 bg-white rounded-lg p-2 border-2 border-emerald-200">
+                                        <button
+                                            onClick={() => handleQuantityChange(item.id!, -1)}
+                                            className="w-8 h-8 flex items-center justify-center cursor-pointer border border-emerald-300 rounded-lg hover:bg-emerald-100 transition-all duration-200 font-bold text-emerald-700"
+                                            aria-label="Diminuir quantidade"
+                                        >
+                                            -
+                                        </button>
 
-                                    <span>
-                                        {Number(item.quantity).toLocaleString("pt-BR")}
-                                    </span>
+                                        <span className="font-semibold text-emerald-800 min-w-[2rem] text-center">
+                                            {Number(item.quantity).toLocaleString("pt-BR")}
+                                        </span>
 
-                                    <button
-                                        onClick={() => handleQuantityChange(item.id!, 1)}
-                                        className="px-2 cursor-pointer py-1 border rounded hover:bg-black/30"
-                                        aria-label="Aumentar quantidade"
-                                    >
-                                        +
-                                    </button>
+                                        <button
+                                            onClick={() => handleQuantityChange(item.id!, 1)}
+                                            className="w-8 h-8 flex items-center justify-center cursor-pointer border border-emerald-300 rounded-lg hover:bg-emerald-100 transition-all duration-200 font-bold text-emerald-700"
+                                            aria-label="Aumentar quantidade"
+                                        >
+                                            +
+                                        </button>
+                                    </div>
 
                                     <button
                                         onClick={() => handleRemoveItem(item.id!)}
-                                        className="ml-4 cursor-pointer text-red-600 hover:text-red-800"
+                                        className="text-red-600 hover:text-red-800 p-2 rounded-lg hover:bg-red-50 transition-all duration-200 font-semibold"
                                     >
-                                        Remover
+                                        ❌ Remover
                                     </button>
                                 </div>
                             </div>
                         ))}
+                    </div>
 
-                        <p className="text-right font-semibold mt-4">
+                    <div className="text-center">
+                        <p className="text-2xl font-bold text-emerald-800 mb-6">
                             Total: {Number(total).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
                         </p>
 
                         <button
                             type="button"
-                            className="bg-emerald-600 block mx-auto mt-6 cursor-pointer text-white px-6 py-2 rounded hover:bg-emerald-700"
+                            className="bg-gradient-to-r from-emerald-600 to-green-600 cursor-pointer text-white px-8 py-4 rounded-xl font-semibold hover:from-emerald-700 hover:to-green-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-lg"
                             onClick={submitSale}
                         >
-                            Finalizar Compra
+                            💳 Finalizar Venda
                         </button>
                     </div>
-                </>
+                </div>
             )}
 
             {lastSale && !selectedClientId && (
-                <div className="bg-green-100 border border-green-400 p-4 rounded mt-8">
-                    <h3 className="text-lg font-semibold text-green-800 mb-2">Venda Finalizada com Sucesso!</h3>
-                    <p><strong>Número da Venda:</strong> {lastSale.saleNumber}</p>
-                    <p><strong>Cliente:</strong> {lastSale.clientName}</p>
-                    <p><strong>Data:</strong> {lastSale.date}</p>
+                <div className="border-2 border-emerald-200/50 rounded-2xl p-8 bg-emerald-50/50 backdrop-blur-sm shadow-xl">
+                    <div className="text-center mb-6">
+                        <h3 className="text-2xl font-bold text-emerald-800 mb-2">✅ Venda Finalizada com Sucesso!</h3>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div className="bg-white p-4 rounded-xl border border-emerald-200">
+                            <p className="text-sm font-medium text-gray-600 mb-1">Número da Venda</p>
+                            <p className="text-lg font-bold text-emerald-700">#{lastSale.saleNumber}</p>
+                        </div>
+                        <div className="bg-white p-4 rounded-xl border border-emerald-200">
+                            <p className="text-sm font-medium text-gray-600 mb-1">Cliente</p>
+                            <p className="text-lg font-bold text-emerald-700">{lastSale.clientName}</p>
+                        </div>
+                        <div className="bg-white p-4 rounded-xl border border-emerald-200">
+                            <p className="text-sm font-medium text-gray-600 mb-1">Data</p>
+                            <p className="text-lg font-bold text-emerald-700">{lastSale.date}</p>
+                        </div>
+                    </div>
 
-                    <ul className="mt-2 list-disc list-inside">
-                        {lastSale.items.map((item, index) => (
-                            <li key={index}>
-                                {item.productName} - {item.quantity.toLocaleString("pt-BR")}(x) - {Number(item.price).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-                            </li>
-                        ))}
-                    </ul>
-
-                    <p className="mt-2 font-semibold">Total: {lastSale.total.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</p>
+                    <div className="bg-white rounded-xl p-6 border border-emerald-200">
+                        <h4 className="font-semibold text-emerald-800 mb-3">Itens da Venda:</h4>
+                        <ul className="space-y-2">
+                            {lastSale.items.map((item, index) => (
+                                <li key={index} className="flex justify-between items-center py-2 border-b border-emerald-100 last:border-b-0">
+                                    <span className="text-gray-700">{item.productName}</span>
+                                    <span className="text-emerald-700 font-semibold">
+                                        {item.quantity}x - {Number(item.price).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                                    </span>
+                                </li>
+                            ))}
+                        </ul>
+                        
+                        <div className="mt-4 pt-4 border-t border-emerald-200">
+                            <p className="text-xl font-bold text-emerald-800 text-right">
+                                Total: {lastSale.total.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                            </p>
+                        </div>
+                    </div>
                 </div>
             )}
         </main>

@@ -95,6 +95,8 @@ export interface Expense {
   value: string
   dueDate?: string
   description?: string
+  status?: "Em aberto" | "Pago"
+  bank?: string
 }
 export type ExpenseFromBackend = Expense & { _id: string }
 export type ExpenseErrors = Partial<Record<keyof Expense, string>>

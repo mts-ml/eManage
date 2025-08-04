@@ -122,11 +122,14 @@ export interface TransactionUpdatePayload {
     bank?: string
 }
 
+
 export interface ExpenseProps {
     name: string
     value: number
     description?: string
     dueDate?: string | null
+    status: "Em aberto" | "Pago"
+    bank?: string
     [key: string]: unknown
 }
 export type ExpenseErrors = Partial<Record<keyof ExpenseProps, string>>

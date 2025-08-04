@@ -145,11 +145,16 @@ export const Products: React.FC = () => {
     }
 
     return (
-        <main className="p-6 max-w-[87.5rem] mx-auto">
-            <h2 className="text-2xl font-bold mb-8 text-center">Cadastro de Produtos</h2>
+        <main className="p-8 max-w-6xl mx-auto">
+            <div className="text-center mb-8">
+                <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-green-600 mb-2">
+                    📦 Cadastro de Produtos
+                </h2>
+                <p className="text-gray-600 font-medium">Gerencie seu catálogo de produtos</p>
+            </div>
 
             {!showForm && (
-                <div className="text-center mb-6">
+                <div className="text-center mb-8">
                     <button
                         onClick={() => {
                             setForm(defaultValues)
@@ -157,9 +162,9 @@ export const Products: React.FC = () => {
                             setShowForm(true)
                             setErrors(defaultValues)
                         }}
-                        className="bg-emerald-600 cursor-pointer text-white px-4 py-2 rounded-md hover:bg-emerald-700"
+                        className="bg-gradient-to-r from-emerald-600 to-green-600 cursor-pointer text-white px-8 py-3 rounded-xl font-semibold hover:from-emerald-700 hover:to-green-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                     >
-                        Novo Produto
+                        ➕ Novo Produto
                     </button>
                 </div>
             )}
@@ -167,137 +172,137 @@ export const Products: React.FC = () => {
             {showForm && (
                 <form
                     onSubmit={handleSubmit}
-                    className="grid gap-4 mb-6 border rounded-lg p-6 bg-gray-50 shadow-sm"
+                    className="border-2 border-emerald-200/50 rounded-2xl p-8 bg-white/90 backdrop-blur-sm shadow-xl mb-8"
                     aria-label="Formulário de cadastro de produtos"
                 >
+                    <h3 className="text-2xl font-bold text-center mb-6 text-emerald-800">
+                        {editingProductId ? "✏️ Editar Produto" : "➕ Novo Produto"}
+                    </h3>
 
-                    {/* Nome */}
-                    <div>
-                        <label htmlFor="name" className="block text-sm font-medium text-gray-700">Nome</label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                        {/* Nome */}
+                        <div>
+                            <label htmlFor="name" className="block text-sm font-semibold text-gray-700 mb-2">
+                                Nome <span className="text-red-500">*</span>
+                            </label>
 
-                        <input
-                            type="text"
-                            id="name"
-                            name="name"
-                            placeholder="Nome do produto"
-                            value={form.name}
-                            onChange={handleChange}
-                            aria-describedby="nameError"
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-emerald-500 focus:border-emerald-500"
-                        />
-                        {errors.name && (
-                            <div
-                                id="nameError"
-                                aria-live="polite"
-                                className="text-red-600 text-sm mt-1"
-                            >
-                                {errors.name}
-                            </div>
-                        )}
-                    </div>
+                            <input
+                                type="text"
+                                id="name"
+                                name="name"
+                                placeholder="Nome do produto"
+                                value={form.name}
+                                onChange={handleChange}
+                                aria-describedby="nameError"
+                                className="w-full rounded-xl border-2 border-gray-200 shadow-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 px-4 py-3 transition-all duration-300 bg-white/80 backdrop-blur-sm"
+                            />
+                            {errors.name && (
+                                <p className="text-red-500 font-medium text-sm mt-2 flex items-center">
+                                    <span className="mr-1">⚠️</span>
+                                    {errors.name}
+                                </p>
+                            )}
+                        </div>
 
-                    {/* Preço de Venda */}
-                    <div>
-                        <label htmlFor="salePrice" className="block text-sm font-medium text-gray-700">Preço de Venda</label>
+                        {/* Preço de Venda */}
+                        <div>
+                            <label htmlFor="salePrice" className="block text-sm font-semibold text-gray-700 mb-2">
+                                Preço de Venda <span className="text-red-500">*</span>
+                            </label>
 
-                        <input
-                            type="text"
-                            id="salePrice"
-                            name="salePrice"
-                            placeholder="0.00"
-                            value={form.salePrice}
-                            onChange={handleChange}
-                            aria-describedby="salePriceError"
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-emerald-500 focus:border-emerald-500"
-                        />
+                            <input
+                                type="text"
+                                id="salePrice"
+                                name="salePrice"
+                                placeholder="0.00"
+                                value={form.salePrice}
+                                onChange={handleChange}
+                                aria-describedby="salePriceError"
+                                className="w-full rounded-xl border-2 border-gray-200 shadow-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 px-4 py-3 transition-all duration-300 bg-white/80 backdrop-blur-sm"
+                            />
 
-                        {errors.salePrice && (
-                            <div
-                                id="salePriceError"
-                                aria-live="polite"
-                                className="text-red-600 text-sm mt-1"
-                            >
-                                {errors.salePrice}
-                            </div>
-                        )}
-                    </div>
+                            {errors.salePrice && (
+                                <p className="text-red-500 font-medium text-sm mt-2 flex items-center">
+                                    <span className="mr-1">⚠️</span>
+                                    {errors.salePrice}
+                                </p>
+                            )}
+                        </div>
 
-                    {/* Preço de Compra */}
-                    <div>
-                        <label htmlFor="purchasePrice" className="block text-sm font-medium text-gray-700">Preço de Compra</label>
+                        {/* Preço de Compra */}
+                        <div>
+                            <label htmlFor="purchasePrice" className="block text-sm font-semibold text-gray-700 mb-2">
+                                Preço de Compra <span className="text-red-500">*</span>
+                            </label>
 
-                        <input
-                            type="text"
-                            id="purchasePrice"
-                            name="purchasePrice"
-                            placeholder="0.00"
-                            value={form.purchasePrice}
-                            onChange={handleChange}
-                            aria-describedby="purchasePriceError"
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-emerald-500 focus:border-emerald-500"
-                        />
-
-                        {errors.purchasePrice && (
-                            <div
+                            <input
+                                type="text"
                                 id="purchasePrice"
-                                aria-live="polite"
-                                className="text-red-600 text-sm mt-1"
-                            >
-                                {errors.purchasePrice}
-                            </div>
-                        )}
+                                name="purchasePrice"
+                                placeholder="0.00"
+                                value={form.purchasePrice}
+                                onChange={handleChange}
+                                aria-describedby="purchasePriceError"
+                                className="w-full rounded-xl border-2 border-gray-200 shadow-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 px-4 py-3 transition-all duration-300 bg-white/80 backdrop-blur-sm"
+                            />
+
+                            {errors.purchasePrice && (
+                                <p className="text-red-500 font-medium text-sm mt-2 flex items-center">
+                                    <span className="mr-1">⚠️</span>
+                                    {errors.purchasePrice}
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Estoque */}
+                        <div>
+                            <label htmlFor="stock" className="block text-sm font-semibold text-gray-700 mb-2">
+                                Estoque <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                id="stock"
+                                name="stock"
+                                placeholder="0"
+                                value={form.stock}
+                                onChange={handleChange}
+                                aria-describedby="stockError"
+                                className="w-full rounded-xl border-2 border-gray-200 shadow-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 px-4 py-3 transition-all duration-300 bg-white/80 backdrop-blur-sm"
+                            />
+                            {errors.stock && (
+                                <p className="text-red-500 font-medium text-sm mt-2 flex items-center">
+                                    <span className="mr-1">⚠️</span>
+                                    {errors.stock}
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Descrição */}
+                        <div className="md:col-span-2">
+                            <label htmlFor="description" className="block text-sm font-semibold text-gray-700 mb-2">
+                                Descrição <span className="text-red-500">*</span>
+                            </label>
+                            <textarea
+                                id="description"
+                                name="description"
+                                placeholder="Descrição do produto, g ou kg."
+                                value={form.description}
+                                onChange={handleChange}
+                                aria-describedby="descriptionError"
+                                className="w-full rounded-xl border-2 border-gray-200 shadow-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 px-4 py-3 transition-all duration-300 bg-white/80 backdrop-blur-sm resize-none"
+                                rows={4}
+                            />
+
+                            {errors.description && (
+                                <p className="text-red-500 font-medium text-sm mt-2 flex items-center">
+                                    <span className="mr-1">⚠️</span>
+                                    {errors.description}
+                                </p>
+                            )}
+                        </div>
                     </div>
 
-                    {/* Estoque */}
-                    <div>
-                        <label htmlFor="stock" className="block text-sm font-medium text-gray-700">Estoque</label>
-                        <input
-                            type="text"
-                            id="stock"
-                            name="stock"
-                            placeholder="0.00"
-                            value={form.stock}
-                            onChange={handleChange}
-                            aria-describedby="stockError"
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-emerald-500 focus:border-emerald-500"
-                        />
-                        {errors.stock && (
-                            <div
-                                id="stockError"
-                                className="text-red-600 text-sm mt-1"
-                                aria-live="polite"
-                            >
-                                {errors.stock}
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Descrição */}
-                    <div>
-                        <label htmlFor="description" className="block text-sm font-medium text-gray-700">Descrição</label>
-                        <textarea
-                            id="description"
-                            name="description"
-                            placeholder="Descrição do produto, g ou kg."
-                            value={form.description}
-                            onChange={handleChange}
-                            aria-describedby="descriptionError"
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-emerald-500 focus:border-emerald-500"
-                            rows={3}
-                        />
-
-                        {errors.description && (
-                            <div
-                                id="descriptionError"
-                                aria-live="polite"
-                                className="text-red-600 text-sm mt-1"
-                            >
-                                {errors.description}
-                            </div>
-                        )}
-                    </div>
-
-                    <div className="flex justify-center items-center gap-4">
+                    <div className="flex gap-6 justify-center">
                         <button
                             type="button"
                             onClick={() => {
@@ -306,25 +311,26 @@ export const Products: React.FC = () => {
                                 setShowForm(false)
                                 setErrors(defaultValues)
                             }}
-                            className="px-4 py-2 cursor-pointer border border-gray-300 rounded-md hover:bg-gray-100"
+                            className="px-8 py-3 border-2 border-gray-300 rounded-xl hover:bg-gray-50 cursor-pointer font-semibold transition-all duration-300"
                         >
-                            Cancelar
+                            ❌ Cancelar
                         </button>
 
                         <button
                             type="submit"
                             disabled={!isReadyToSubmit}
-                            className={`px-4 py-2 rounded-md transition ${isReadyToSubmit ? "bg-emerald-600 text-white hover:bg-emerald-700 cursor-pointer" : "bg-gray-400 text-gray-200 cursor-not-allowed"}`}
+                            className={`px-8 py-3 rounded-xl font-semibold transition-all duration-300 ${isReadyToSubmit ? "bg-gradient-to-r from-emerald-600 to-green-600 cursor-pointer text-white hover:from-emerald-700 hover:to-green-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5" : "bg-gray-400 text-gray-200 cursor-not-allowed"}`}
                         >
-                            {editingProductId ? "Atualizar" : "Salvar"} Produto
+                            {editingProductId ? "💾 Atualizar" : "💾 Salvar"} Produto
                         </button>
                     </div>
 
                     {errorMessage && (
-                        <div
-                            className="text-red-600 text-sm mt-1 text-center"
-                        >
-                            {errorMessage}
+                        <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-xl">
+                            <p className="text-red-600 font-medium text-center flex items-center justify-center">
+                                <span className="mr-2">❌</span>
+                                {errorMessage}
+                            </p>
                         </div>
                     )}
                 </form>
@@ -332,68 +338,66 @@ export const Products: React.FC = () => {
 
             {products.length > 0 && (
                 <>
-                    <h3 className="text-lg font-semibold mb-2">Lista de Produtos</h3>
+                    <div className="text-center mb-6">
+                        <h3 className="text-2xl font-bold text-emerald-800">📋 Lista de Produtos</h3>
+                    </div>
 
-                    <table className="w-full border-collapse border text-center border-gray-300 text-sm">
-                        <thead className="bg-emerald-600 text-white">
-                            <tr>
-                                <th className="p-2 border">Nome</th>
-                                <th className="p-2 border">Preço de Venda</th>
-                                <th className="p-2 border">Preço de Compra</th>
-                                <th className="p-2 border">Estoque</th>
-                                <th className="p-2 border">Descrição</th>
-                                <th className="p-2 border">Ações</th>
-                            </tr>
-                        </thead>
+                    <div className="overflow-auto border-2 border-emerald-200/50 rounded-2xl shadow-xl mb-10 max-h-[70vh] bg-white/90 backdrop-blur-sm">
+                        <table className="min-w-full divide-y divide-gray-200">
+                            <thead className="bg-gradient-to-r from-emerald-600 to-green-600 text-white sticky top-0 z-10">
+                                <tr>
+                                    <th className="px-6 py-4 text-sm font-semibold text-center">Nome</th>
+                                    <th className="px-6 py-4 text-sm font-semibold text-center">Descrição</th>
+                                    <th className="px-6 py-4 text-sm font-semibold text-center">Preço de Venda</th>
+                                    <th className="px-6 py-4 text-sm font-semibold text-center">Preço de Compra</th>
+                                    <th className="px-6 py-4 text-sm font-semibold text-center">Estoque</th>
+                                    <th className="px-6 py-4 text-sm font-semibold text-center">Ações</th>
+                                </tr>
+                            </thead>
 
-                        <tbody>
-                            {products.map(product => (
-                                <tr key={product.id} className="odd:bg-white even:bg-gray-100">
-                                    <td className="p-2 border">
-                                        {product.name}
-                                    </td>
+                            <tbody className="bg-white divide-y divide-gray-100">
+                                {products.map(product => (
+                                    <tr key={product.id} className="hover:bg-emerald-50/50 transition-colors duration-200">
+                                        <td className="px-6 py-4 text-sm font-medium whitespace-nowrap text-center">{product.name}</td>
 
-                                    <td className="p-2 border">
-                                        R${Number(product.salePrice).toFixed(2).replace('.', ',')}
-                                    </td>
+                                        <td className="px-6 py-4 text-sm text-center">{product.description}</td>
 
-                                    <td className="p-2 border">
-                                        R${Number(product.purchasePrice).toFixed(2).replace('.', ',')}
-                                    </td>
+                                        <td className="px-6 py-4 text-sm font-bold text-emerald-700 text-center">
+                                            {Number(product.salePrice).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                                        </td>
 
-                                    <td className="p-2 border">
-                                        {product.stock}
-                                    </td>
+                                        <td className="px-6 py-4 text-sm font-bold text-blue-700 text-center">
+                                            {Number(product.purchasePrice).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                                        </td>
 
-                                    <td className="p-2 border">
-                                        {product.description}
-                                    </td>
+                                        <td className="px-6 py-4 text-sm font-bold text-center">
+                                            <span className={`px-2 py-1 rounded-full text-xs font-semibold ${Number(product.stock) > 10 ? "bg-green-100 text-green-800" : Number(product.stock) > 0 ? "bg-yellow-100 text-yellow-800" : "bg-red-100 text-red-800"}`}>
+                                                {product.stock}
+                                            </span>
+                                        </td>
 
-                                    <td className="p-2 border space-x-2">
-                                        <div className="flex items-center justify-center gap-2">
+                                        <td className="px-6 py-4 text-sm flex gap-3 justify-center">
                                             <button
                                                 onClick={() => handleEditProduct(product)}
-                                                type="button"
+                                                className="text-emerald-600 cursor-pointer hover:text-emerald-800 p-2 rounded-lg hover:bg-emerald-50 transition-all duration-200"
                                                 aria-label="Editar produto."
-                                                className="text-emerald-600 cursor-pointer hover:text-emerald-700"
                                             >
                                                 <FaEdit size={18} />
                                             </button>
 
                                             <button
                                                 onClick={() => handleDeleteProduct(product.id!)}
-                                                type="button"
-                                                aria-label="Excluir produto."
-                                                className="text-red-700 cursor-pointer hover:text-red-800"
+                                                className="text-red-600 cursor-pointer hover:text-red-800 p-2 rounded-lg hover:bg-red-50 transition-all duration-200"
+                                                aria-label="Excluir produto"
                                             >
                                                 <FaTrash size={18} />
                                             </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 </>
             )}
         </main>
