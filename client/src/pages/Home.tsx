@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Users, Truck, Package, Wallet, ShoppingCart, ShoppingBag, X, ArrowDownCircle, ArrowUpCircle } from "lucide-react"
 
 import { Clients } from "../components/Clients"
@@ -79,16 +79,25 @@ const sectionsArray: SectionConfig[] = [
 ]
 
 
-export const MainPageLayout: React.FC = () => {
+export const Home: React.FC = () => {
     const [openSection, setOpenSection] = useState<SectionKey | null>(null);
 
     function toggleSection(section: SectionKey) {
         setOpenSection(prev => (prev === section ? null : section))
     }
 
+    useEffect(() => {
+        if (openSection) {
+            const sectionEl = document.getElementById(`${openSection}-section`);
+            if (sectionEl) {
+                sectionEl.scrollIntoView({ behavior: "smooth", block: "start" });
+            }
+        }
+    }, [openSection]);
+
 
     return (
-        <main className="p-8 max-w-[87.5rem] mx-auto bg-gradient-to-br from-gray-50 to-emerald-50 min-h-screen">
+        <main className="p-8 max-w-[87.5rem] mx-auto bg-gradient-to-br from-emerald-50/10 via-emerald-50/5 to-emerald-50/20 min-h-screen">
             {/* Cards */}
             <section className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-10">
                 {sectionsArray.map(({ section, sectionName, icon }) => {
@@ -103,8 +112,8 @@ export const MainPageLayout: React.FC = () => {
                                     ? "bg-gradient-to-br from-emerald-100 to-green-100 border-emerald-300 ring-4 ring-emerald-200/50 shadow-2xl"
                                     : "bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-2xl border-gray-200/50 hover:border-emerald-200"}`}
                         >
-                            <div className={`p-4 rounded-full mb-4 transition-all duration-300 ${isOpen 
-                                ? "bg-gradient-to-br from-emerald-500 to-green-600 text-white shadow-lg" 
+                            <div className={`p-4 rounded-full mb-4 transition-all duration-300 ${isOpen
+                                ? "bg-gradient-to-br from-emerald-500 to-green-600 text-white shadow-lg"
                                 : "bg-gradient-to-br from-emerald-100 to-green-100 text-emerald-600 group-hover:from-emerald-200 group-hover:to-green-200"}`}>
                                 {icon}
                             </div>

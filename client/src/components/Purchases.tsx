@@ -146,7 +146,7 @@ export const Purchases: React.FC = () => {
                         Compra Nº {lastPurchase ? lastPurchase.purchaseNumber + 1 : '1'}
                     </p>
 
-                    <div className="text-sm text-gray-600 bg-emerald-50 px-4 py-2 rounded-lg">
+                    <div className="text-sm text-gray-600 bg-emerald-50/50 px-4 py-2 rounded-lg">
                         Data: {today}
                     </div>
                 </div>
@@ -227,14 +227,14 @@ export const Purchases: React.FC = () => {
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                            <div className="bg-emerald-50 p-4 rounded-xl">
+                            <div className="bg-emerald-50/50 p-4 rounded-xl">
                                 <p className="text-sm font-medium text-gray-600 mb-1">Preço Unitário</p>
                                 <p className="text-lg font-bold text-emerald-700">
                                     R$ {Number(selectedProduct.purchasePrice).toFixed(2).replace(".", ",")}
                                 </p>
                             </div>
 
-                            <div className="bg-green-50 p-4 rounded-xl">
+                            <div className="bg-green-50/50 p-4 rounded-xl">
                                 <p className="text-sm font-medium text-gray-600 mb-1">Quantidade</p>
                                 <div className="flex items-center gap-2">
                                     <label htmlFor="quantity" className="sr-only">Quantidade</label>
@@ -276,7 +276,7 @@ export const Purchases: React.FC = () => {
                         {cart.map(item => (
                             <div
                                 key={item.id}
-                                className="flex justify-between items-center border-2 border-emerald-100 rounded-xl p-4 bg-emerald-50/50 hover:bg-emerald-50 transition-all duration-200"
+                                className="flex justify-between items-center border-2 border-emerald-100 rounded-xl p-4 bg-emerald-50/50 hover:bg-emerald-50/70 transition-all duration-200"
                             >
                                 <div className="flex-1">
                                     <p className="font-semibold text-emerald-800 text-lg">
@@ -294,7 +294,7 @@ export const Purchases: React.FC = () => {
                                     <div className="flex items-center gap-2 bg-white rounded-lg p-2 border-2 border-emerald-200">
                                         <button
                                             onClick={() => handleQuantityChange(item.id!, -1)}
-                                            className="w-8 h-8 flex items-center justify-center cursor-pointer border border-emerald-300 rounded-lg hover:bg-emerald-100 transition-all duration-200 font-bold text-emerald-700"
+                                            className="w-8 h-8 flex items-center justify-center cursor-pointer border border-emerald-300 rounded-lg hover:bg-emerald-100/50 transition-all duration-200 font-bold text-emerald-700"
                                             aria-label="Diminuir quantidade"
                                         >
                                             -
@@ -306,7 +306,7 @@ export const Purchases: React.FC = () => {
 
                                         <button
                                             onClick={() => handleQuantityChange(item.id!, 1)}
-                                            className="w-8 h-8 flex items-center justify-center cursor-pointer border border-emerald-300 rounded-lg hover:bg-emerald-100 transition-all duration-200 font-bold text-emerald-700"
+                                            className="w-8 h-8 flex items-center justify-center cursor-pointer border border-emerald-300 rounded-lg hover:bg-emerald-100/50 transition-all duration-200 font-bold text-emerald-700"
                                             aria-label="Aumentar quantidade"
                                         >
                                             +

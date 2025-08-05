@@ -434,7 +434,7 @@ export const Expenses: React.FC = () => {
                                                 <>
                                                     <button
                                                         onClick={() => handleEdit(exp)}
-                                                        className="text-emerald-600 cursor-pointer hover:text-emerald-800 p-2 rounded-lg hover:bg-emerald-50 transition-all duration-200"
+                                                        className="text-emerald-600 cursor-pointer hover:text-emerald-800 p-2 rounded-lg hover:bg-emerald-50/50 transition-all duration-200"
                                                         aria-label="Editar despesa"
                                                     >
                                                         <FaEdit size={18} />

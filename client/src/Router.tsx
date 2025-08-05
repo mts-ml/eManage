@@ -3,7 +3,7 @@ import { createBrowserRouter } from "react-router-dom"
 import { Layout } from "./pages/Layout"
 import { Login } from "./pages/Login"
 import { Register } from "./pages/Register"
-import { MainPageLayout } from "./pages/MainPageLayout"
+import { Home } from "./pages/Home"
 import { Unauthorized } from "./pages/Unauthorized"
 import { AuthProvider } from "./Context/AuthContext"
 import { ClientsProvider } from "./Context/ClientContext"
@@ -50,7 +50,7 @@ export const router = createBrowserRouter([
          {
             element: <RouteAuthentication allowedRoles={[ROLES_LIST.Admin, ROLES_LIST.Editor, ROLES_LIST.User]} />,
             children: [
-               { path: "main", element: <MainPageLayout />, // loader: mainLoader, // loader opcional
+               { path: "main", element: <Home />, // loader: mainLoader, // loader opcional
                },
                { path: "unauthorized", element: <Unauthorized /> }
             ]

@@ -379,7 +379,7 @@ export const Products: React.FC = () => {
                                         <td className="px-6 py-4 text-sm flex gap-3 justify-center">
                                             <button
                                                 onClick={() => handleEditProduct(product)}
-                                                className="text-emerald-600 cursor-pointer hover:text-emerald-800 p-2 rounded-lg hover:bg-emerald-50 transition-all duration-200"
+                                                className="text-emerald-600 cursor-pointer hover:text-emerald-800 p-2 rounded-lg hover:bg-emerald-50/50 transition-all duration-200"
                                                 aria-label="Editar produto."
                                             >
                                                 <FaEdit size={18} />
