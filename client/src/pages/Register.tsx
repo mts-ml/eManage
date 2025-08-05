@@ -153,7 +153,7 @@ export const Register: React.FC = () => {
 
 
     return (
-        <main className="h-[calc(100vh-72px)] bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100 flex items-center justify-center px-4 relative overflow-hidden">
+        <main className="h-[calc(100vh-72px)] bg-gradient-to-br from-emerald-50/10 via-emerald-50/5 to-emerald-50/20 flex items-center justify-center px-4 relative overflow-hidden">
             {/* Background decoration */}
             <div className="absolute inset-0 bg-gradient-to-br from-emerald-200/20 to-green-300/20"></div>
             <div className="absolute top-10 left-10 w-32 h-32 bg-emerald-300/30 rounded-full blur-3xl"></div>
@@ -261,7 +261,7 @@ export const Register: React.FC = () => {
                     </button>
 
                     {apiMessage && (
-                        <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl">
+                        <div className="p-4 bg-emerald-50/50 border border-emerald-200/50 rounded-xl">
                             <p className="text-emerald-600 font-medium text-center flex items-center justify-center">
                                 <span className="mr-2">✅</span>
                                 {apiMessage}

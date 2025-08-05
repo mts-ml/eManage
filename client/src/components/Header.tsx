@@ -12,7 +12,7 @@ export const Header: React.FC = () => {
 
 
     return (
-        <header className="relative bg-gradient-to-r from-green-900 via-emerald-800 to-green-900 text-white shadow-xl border-b border-emerald-700/30">
+        <header className="relative bg-gradient-to-r from-green-800/80 via-emerald-700/80 to-green-800/80 text-white shadow-xl border-b border-emerald-600/30">
             <div className="max-w-[1400px] mx-auto px-6 py-5 flex justify-between items-center">
                 <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-200 to-green-300">
                     <NavLink to="/main" className="hover:from-emerald-100 hover:to-green-200 transition-all duration-300">
