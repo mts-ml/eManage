@@ -35,7 +35,7 @@ export const LogoutButton: React.FC = () => {
         <button
             type="button"
             onClick={handleLogout}
-            className="bg-green-700 hover:bg-green-600 px-4 py-2 rounded-md text-white transition cursor-pointer"
+            className="bg-green-700 hover:bg-green-600 px-3 sm:px-4 py-1.5 sm:py-2 rounded-md text-white transition cursor-pointer text-sm sm:text-base"
         >
             Sair
         </button>
