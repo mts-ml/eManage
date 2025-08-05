@@ -1,5 +1,6 @@
 import { useContext, useEffect, useState } from "react"
 import { X } from "lucide-react"
+import { FaSearch } from 'react-icons/fa'
 import type { AxiosResponse } from "axios"
 
 
@@ -22,7 +23,22 @@ export const Purchases: React.FC = () => {
     const [selectedSupplierId, setSelectedSupplierId] = useState<string>("")
     const [selectedProductId, setSelectedProductId] = useState<string>("")
     const [quantity, setQuantity] = useState<number>(1)
+    const [customPrice, setCustomPrice] = useState<string>("")
+    const [supplierSearchTerm, setSupplierSearchTerm] = useState<string>("")
+    const [productSearchTerm, setProductSearchTerm] = useState<string>("")
     const axiosPrivate = useAxiosPrivate()
+
+    // Filtrar fornecedores baseado no termo de busca
+    const filteredSuppliers = suppliers.filter(supplier => {
+        if (!supplierSearchTerm.trim()) return true
+        return supplier.name.toLowerCase().includes(supplierSearchTerm.toLowerCase().trim())
+    })
+
+    // Filtrar produtos baseado no termo de busca
+    const filteredProducts = products.filter(product => {
+        if (!productSearchTerm.trim()) return true
+        return product.name.toLowerCase().includes(productSearchTerm.toLowerCase().trim())
+    })
 
     const today = new Date().toLocaleDateString("pt-BR")
     const selectedProduct = products.find(p => p.id === selectedProductId)
@@ -47,21 +63,28 @@ export const Purchases: React.FC = () => {
         setCart(prev => {
             const existingProduct = prev.find(item => item.id === product.id)
 
+            // Usar preço customizado se fornecido, senão usar o preço padrão
+            const finalPrice = customPrice && !isNaN(Number(customPrice)) && Number(customPrice) > 0 
+                ? customPrice 
+                : product.purchasePrice
+
             if (existingProduct) {
                 return prev.map(item =>
                     item.id === product.id
                         ? {
                             ...item,
                             quantity: item.quantity + quantity,
-                            price: item.purchasePrice
+                            purchasePrice: finalPrice // Atualizar preço se necessário
                         }
                         : item
                 )
             } else {
-                return [...prev, { ...product, quantity }]
+                return [...prev, { ...product, quantity, purchasePrice: finalPrice }]
             }
 
         })
+
+        setCustomPrice("") // Limpar preço customizado
     }
 
     function handleQuantityChange(id: string, change: number) {
@@ -92,9 +115,8 @@ export const Purchases: React.FC = () => {
                     productName: item.name,
                     quantity: item.quantity,
                     price: Number(item.purchasePrice)
-                }),
-                ),
-            total,
+                })),
+            total: Number(total),
         }
 
         if (!selectedSupplierId || cart.length === 0) {
@@ -157,6 +179,20 @@ export const Purchases: React.FC = () => {
                             Fornecedor <span className="text-red-500">*</span>
                         </label>
 
+                        {/* Input de busca para fornecedores */}
+                        <div className="relative mb-2">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <FaSearch className="h-4 w-4 text-gray-400" />
+                            </div>
+                            <input
+                                type="text"
+                                placeholder="Buscar fornecedor por nome..."
+                                value={supplierSearchTerm}
+                                onChange={(e) => setSupplierSearchTerm(e.currentTarget.value)}
+                                className="block w-full pl-10 pr-3 py-2 border-2 border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-300 bg-white/80 backdrop-blur-sm text-sm"
+                            />
+                        </div>
+
                         <select
                             id="client"
                             value={selectedSupplierId}
@@ -164,7 +200,7 @@ export const Purchases: React.FC = () => {
                             className="w-full border-2 border-gray-200 cursor-pointer rounded-xl p-3 transition-all duration-300 bg-white/80 backdrop-blur-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                         >
                             <option value="">Selecione um fornecedor</option>
-                            {suppliers.map(supplier => (
+                            {filteredSuppliers.map(supplier => (
                                 <option
                                     key={supplier.id}
                                     value={supplier.id}
@@ -180,6 +216,20 @@ export const Purchases: React.FC = () => {
                             Produto <span className="text-red-500">*</span>
                         </label>
 
+                        {/* Input de busca para produtos */}
+                        <div className="relative mb-2">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <FaSearch className="h-4 w-4 text-gray-400" />
+                            </div>
+                            <input
+                                type="text"
+                                placeholder="Buscar produto por nome..."
+                                value={productSearchTerm}
+                                onChange={(e) => setProductSearchTerm(e.currentTarget.value)}
+                                className="block w-full pl-10 pr-3 py-2 border-2 border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-300 bg-white/80 backdrop-blur-sm text-sm"
+                            />
+                        </div>
+
                         <select
                             id="product"
                             value={selectedProductId}
@@ -187,7 +237,7 @@ export const Purchases: React.FC = () => {
                             className="w-full border-2 border-gray-200 cursor-pointer rounded-xl p-3 transition-all duration-300 bg-white/80 backdrop-blur-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                         >
                             <option value="">Selecione um produto</option>
-                            {products.map(product => (
+                            {filteredProducts.map(product => (
                                 <option
                                     key={product.id}
                                     value={product.id}
@@ -226,30 +276,73 @@ export const Purchases: React.FC = () => {
                             </button>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                            <div className="bg-emerald-50/50 p-4 rounded-xl">
-                                <p className="text-sm font-medium text-gray-600 mb-1">Preço Unitário</p>
-                                <p className="text-lg font-bold text-emerald-700">
-                                    R$ {Number(selectedProduct.purchasePrice).toFixed(2).replace(".", ",")}
-                                </p>
-                            </div>
+                                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                             <div className="bg-emerald-50/50 p-4 rounded-xl">
+                                 <p className="text-sm font-medium text-gray-600 mb-1">Preço Padrão</p>
+                                 <p className="text-lg font-bold text-emerald-700">
+                                     R$ {Number(selectedProduct.purchasePrice).toFixed(2).replace(".", ",")}
+                                 </p>
+                             </div>
 
-                            <div className="bg-green-50/50 p-4 rounded-xl">
-                                <p className="text-sm font-medium text-gray-600 mb-1">Quantidade</p>
-                                <div className="flex items-center gap-2">
-                                    <label htmlFor="quantity" className="sr-only">Quantidade</label>
-                                    <input
-                                        id="quantity"
-                                        type="number"
-                                        onChange={e => setQuantity(Number(e.currentTarget.value))}
-                                        value={quantity}
-                                        min={1}
-                                        placeholder="Qtd"
-                                        className="w-20 border-2 border-gray-200 rounded-lg p-2 text-center font-semibold focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                                    />
-                                </div>
-                            </div>
-                        </div>
+                             <div className="bg-yellow-50/50 p-4 rounded-xl">
+                                 <p className="text-sm font-medium text-gray-600 mb-1">Preço Customizado</p>
+                                 <div className="flex items-center gap-2">
+                                     <label htmlFor="customPrice" className="sr-only">Preço Customizado</label>
+                                     <input
+                                         id="customPrice"
+                                         type="number"
+                                         step="0.01"
+                                         min="0"
+                                         onChange={e => setCustomPrice(e.currentTarget.value)}
+                                         value={customPrice}
+                                         placeholder={selectedProduct.purchasePrice}
+                                         className="w-full border-2 border-gray-200 rounded-lg p-2 text-center font-semibold focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                     />
+                                 </div>
+                                 <p className="text-xs text-gray-500 mt-1">Deixe vazio para usar o preço padrão</p>
+                             </div>
+
+                             <div className="bg-blue-50 p-4 rounded-xl">
+                                 <p className="text-sm font-medium text-gray-600 mb-2">Estoque Disponível</p>
+                                 <div className="flex items-center justify-between">
+                                     <div className="flex items-center gap-2">
+                                         <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                             <span className="text-blue-600 text-sm font-bold">📦</span>
+                                         </div>
+                                         <div>
+                                             <p className="text-xl font-bold text-blue-700">
+                                                 {selectedProduct.stock}
+                                             </p>
+                                             <p className="text-xs text-blue-600 font-medium">unidades</p>
+                                         </div>
+                                     </div>
+                                     {selectedProduct.description && selectedProduct.description.trim() !== "" && (
+                                         <div className="text-right">
+                                             <p className="text-xs text-blue-600 font-medium mb-1">Descrição</p>
+                                             <p className="text-xs text-blue-700 italic max-w-[120px] truncate">
+                                                 {selectedProduct.description}
+                                             </p>
+                                         </div>
+                                     )}
+                                 </div>
+                             </div>
+
+                             <div className="bg-green-50/50 p-4 rounded-xl">
+                                 <p className="text-sm font-medium text-gray-600 mb-1">Quantidade</p>
+                                 <div className="flex items-center gap-2">
+                                     <label htmlFor="quantity" className="sr-only">Quantidade</label>
+                                     <input
+                                         id="quantity"
+                                         type="number"
+                                         onChange={e => setQuantity(Number(e.currentTarget.value))}
+                                         value={quantity}
+                                         min={1}
+                                         placeholder="Qtd"
+                                         className="w-20 border-2 border-gray-200 rounded-lg p-2 text-center font-semibold focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                     />
+                                 </div>
+                             </div>
+                         </div>
 
                         <button
                             onClick={() => handleAddToCart(selectedProduct, quantity)}
@@ -276,49 +369,93 @@ export const Purchases: React.FC = () => {
                         {cart.map(item => (
                             <div
                                 key={item.id}
-                                className="flex justify-between items-center border-2 border-emerald-100 rounded-xl p-4 bg-emerald-50/50 hover:bg-emerald-50/70 transition-all duration-200"
+                                className="border-2 border-emerald-100 rounded-xl p-6 bg-gradient-to-r from-emerald-50/50 to-green-50/50 hover:from-emerald-50/70 hover:to-green-50/70 transition-all duration-200 shadow-sm hover:shadow-md"
                             >
-                                <div className="flex-1">
-                                    <p className="font-semibold text-emerald-800 text-lg">
-                                        {item.name}
-                                    </p>
-                                    <p className="text-sm text-gray-600">
-                                        {Number(item.purchasePrice).toLocaleString("pt-BR", {
-                                            style: "currency",
-                                            currency: "BRL"
-                                        })} - {Number(item.quantity).toLocaleString("pt-BR")}x {item.description}
-                                    </p>
-                                </div>
-
-                                <div className="flex items-center gap-3">
-                                    <div className="flex items-center gap-2 bg-white rounded-lg p-2 border-2 border-emerald-200">
-                                        <button
-                                            onClick={() => handleQuantityChange(item.id!, -1)}
-                                            className="w-8 h-8 flex items-center justify-center cursor-pointer border border-emerald-300 rounded-lg hover:bg-emerald-100/50 transition-all duration-200 font-bold text-emerald-700"
-                                            aria-label="Diminuir quantidade"
-                                        >
-                                            -
-                                        </button>
-
-                                        <span className="font-semibold text-emerald-800 min-w-[2rem] text-center">
-                                            {Number(item.quantity).toLocaleString("pt-BR")}
-                                        </span>
-
-                                        <button
-                                            onClick={() => handleQuantityChange(item.id!, 1)}
-                                            className="w-8 h-8 flex items-center justify-center cursor-pointer border border-emerald-300 rounded-lg hover:bg-emerald-100/50 transition-all duration-200 font-bold text-emerald-700"
-                                            aria-label="Aumentar quantidade"
-                                        >
-                                            +
-                                        </button>
+                                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                                    {/* Informações do produto */}
+                                    <div className="flex-1">
+                                        <div className="flex items-start gap-4">
+                                            <div className="flex-shrink-0 w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center">
+                                                <span className="text-emerald-600 text-xl">📦</span>
+                                            </div>
+                                            
+                                            <div className="flex-1 min-w-0">
+                                                <h4 className="font-bold text-emerald-800 text-lg mb-1 truncate">
+                                                    {item.name}
+                                                </h4>
+                                                
+                                                <div className="space-y-1">
+                                                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                                                        <span className="font-medium">Preço:</span>
+                                                        <span className="font-semibold text-emerald-700">
+                                                            {Number(item.purchasePrice).toLocaleString("pt-BR", {
+                                                                style: "currency",
+                                                                currency: "BRL"
+                                                            })}
+                                                        </span>
+                                                    </div>
+                                                    
+                                                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                                                        <span className="font-medium">Quantidade:</span>
+                                                        <span className="font-semibold text-emerald-700">
+                                                            {Number(item.quantity).toLocaleString("pt-BR")} (x)
+                                                        </span>
+                                                    </div>
+                                                    
+                                                    {item.description && item.description.trim() !== "" && (
+                                                        <div className="flex items-start gap-2 text-sm text-gray-600">
+                                                            <span className="font-medium mt-0.5">Descrição:</span>
+                                                            <span className="italic text-gray-700 bg-gray-50 px-2 py-1 rounded-md">
+                                                                {item.description}
+                                                            </span>
+                                                        </div>
+                                                    )}
+                                                    
+                                                    <div className="flex items-center gap-2 text-sm">
+                                                        <span className="font-medium text-gray-600">Subtotal:</span>
+                                                        <span className="font-bold text-emerald-800 text-base">
+                                                            {(Number(item.purchasePrice) * Number(item.quantity)).toLocaleString("pt-BR", {
+                                                                style: "currency",
+                                                                currency: "BRL"
+                                                            })}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
 
-                                    <button
-                                        onClick={() => handleRemoveItem(item.id!)}
-                                        className="text-red-600 hover:text-red-800 p-2 rounded-lg hover:bg-red-50 transition-all duration-200 font-semibold"
-                                    >
-                                        ❌ Remover
-                                    </button>
+                                    {/* Controles de quantidade e remoção */}
+                                    <div className="flex flex-col sm:flex-row items-center gap-3">
+                                        <div className="flex items-center gap-2 bg-white rounded-lg p-3 border-2 border-emerald-200 shadow-sm">
+                                            <button
+                                                onClick={() => handleQuantityChange(item.id!, -1)}
+                                                className="w-10 h-10 flex items-center justify-center cursor-pointer border border-emerald-300 rounded-lg hover:bg-emerald-100/50 transition-all duration-200 font-bold text-emerald-700 hover:scale-105"
+                                                aria-label="Diminuir quantidade"
+                                            >
+                                                -
+                                            </button>
+
+                                            <span className="font-bold text-emerald-800 min-w-[3rem] text-center text-lg">
+                                                {Number(item.quantity).toLocaleString("pt-BR")}
+                                            </span>
+
+                                            <button
+                                                onClick={() => handleQuantityChange(item.id!, 1)}
+                                                className="w-10 h-10 flex items-center justify-center cursor-pointer border border-emerald-300 rounded-lg hover:bg-emerald-100/50 transition-all duration-200 font-bold text-emerald-700 hover:scale-105"
+                                                aria-label="Aumentar quantidade"
+                                            >
+                                                +
+                                            </button>
+                                        </div>
+
+                                        <button
+                                            onClick={() => handleRemoveItem(item.id!)}
+                                            className="text-red-600 hover:text-red-800 p-3 rounded-lg hover:bg-red-50 transition-all duration-200 font-semibold border-2 border-red-200 hover:border-red-300 cursor-pointer"
+                                        >
+                                            🗑️ Remover
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         ))}
@@ -340,44 +477,115 @@ export const Purchases: React.FC = () => {
                 </div>
             )}
 
-            {lastPurchase && (
-                <div className="border-2 border-emerald-200/50 rounded-2xl p-8 bg-emerald-50/50 backdrop-blur-sm shadow-xl">
-                    <div className="text-center mb-6">
-                        <h3 className="text-2xl font-bold text-emerald-800 mb-2">✅ Compra Finalizada com Sucesso!</h3>
+            {lastPurchase && !selectedSupplierId && (
+                <div className="border-2 border-emerald-200/50 rounded-2xl p-8 bg-gradient-to-br from-emerald-50 to-green-50 backdrop-blur-sm shadow-xl">
+                    {/* Header com ícone e título */}
+                    <div className="text-center mb-8">
+                        <div className="inline-flex items-center justify-center w-16 h-16 bg-emerald-100 rounded-full mb-4">
+                            <span className="text-3xl">✅</span>
+                        </div>
+                        <h3 className="text-3xl font-bold text-emerald-800 mb-2">
+                            Compra Finalizada com Sucesso!
+                        </h3>
+                        <p className="text-emerald-600 font-medium">Detalhes da transação</p>
                     </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                        <div className="bg-white p-4 rounded-xl border border-emerald-200">
-                            <p className="text-sm font-medium text-gray-600 mb-1">Número da Compra</p>
-                            <p className="text-lg font-bold text-emerald-700">#{lastPurchase.purchaseNumber}</p>
+
+                    {/* Informações principais */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        <div className="bg-white p-6 rounded-xl border border-emerald-200 shadow-sm hover:shadow-md transition-shadow">
+                            <div className="flex items-center mb-2">
+                                <span className="text-emerald-600 mr-2">📋</span>
+                                <p className="text-sm font-medium text-gray-600">Número da Compra</p>
+                            </div>
+                            <p className="text-2xl font-bold text-emerald-700">#{lastPurchase.purchaseNumber}</p>
                         </div>
-                        <div className="bg-white p-4 rounded-xl border border-emerald-200">
-                            <p className="text-sm font-medium text-gray-600 mb-1">Fornecedor</p>
-                            <p className="text-lg font-bold text-emerald-700">{lastPurchase.clientName}</p>
+
+                        <div className="bg-white p-6 rounded-xl border border-emerald-200 shadow-sm hover:shadow-md transition-shadow">
+                            <div className="flex items-center mb-2">
+                                <span className="text-emerald-600 mr-2">🏢</span>
+                                <p className="text-sm font-medium text-gray-600">Fornecedor</p>
+                            </div>
+                            <p className="text-xl font-bold text-emerald-700 truncate">{lastPurchase.clientName}</p>
                         </div>
-                        <div className="bg-white p-4 rounded-xl border border-emerald-200">
-                            <p className="text-sm font-medium text-gray-600 mb-1">Data</p>
-                            <p className="text-lg font-bold text-emerald-700">{lastPurchase.date}</p>
+
+                        <div className="bg-white p-6 rounded-xl border border-emerald-200 shadow-sm hover:shadow-md transition-shadow">
+                            <div className="flex items-center mb-2">
+                                <span className="text-emerald-600 mr-2">📅</span>
+                                <p className="text-sm font-medium text-gray-600">Data</p>
+                            </div>
+                            <p className="text-xl font-bold text-emerald-700">{lastPurchase.date}</p>
                         </div>
                     </div>
 
-                    <div className="bg-white rounded-xl p-6 border border-emerald-200">
-                        <h4 className="font-semibold text-emerald-800 mb-3">Itens da Compra:</h4>
-                        <ul className="space-y-2">
-                            {lastPurchase.items.map((item, index) => (
-                                <li key={index} className="flex justify-between items-center py-2 border-b border-emerald-100 last:border-b-0">
-                                    <span className="text-gray-700">{item.productName}</span>
-                                    <span className="text-emerald-700 font-semibold">
-                                        {item.quantity}x - {Number(item.price).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-                                    </span>
-                                </li>
-                            ))}
-                        </ul>
+                    {/* Tabela de itens */}
+                    <div className="bg-white rounded-xl border border-emerald-200 shadow-sm overflow-hidden">
+                        <div className="bg-gradient-to-r from-emerald-600 to-green-600 px-6 py-4">
+                            <h4 className="font-semibold text-white text-lg flex items-center">
+                                <span className="mr-2">📦</span>
+                                Itens da Compra
+                            </h4>
+                        </div>
                         
-                        <div className="mt-4 pt-4 border-t border-emerald-200">
-                            <p className="text-xl font-bold text-emerald-800 text-right">
-                                Total: {lastPurchase.total.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-                            </p>
+                        <div className="overflow-x-auto">
+                            <table className="w-full">
+                                <thead className="bg-emerald-50">
+                                    <tr>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-emerald-700 uppercase tracking-wider">
+                                            Produto
+                                        </th>
+                                        <th className="px-6 py-3 text-center text-xs font-medium text-emerald-700 uppercase tracking-wider">
+                                            Quantidade
+                                        </th>
+                                        <th className="px-6 py-3 text-center text-xs font-medium text-emerald-700 uppercase tracking-wider">
+                                            Preço Unit.
+                                        </th>
+                                        <th className="px-6 py-3 text-right text-xs font-medium text-emerald-700 uppercase tracking-wider">
+                                            Subtotal
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-emerald-100">
+                                    {lastPurchase.items.map((item, index) => (
+                                        <tr key={index} className="hover:bg-emerald-50/50 transition-colors">
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center">
+                                                    <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center mr-3">
+                                                        <span className="text-emerald-600 text-sm font-semibold">
+                                                            {index + 1}
+                                                        </span>
+                                                    </div>
+                                                    <span className="text-gray-900 font-medium">{item.productName}</span>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 text-center">
+                                                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-emerald-100 text-emerald-800">
+                                                    {item.quantity}x
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 text-center">
+                                                <span className="text-gray-700 font-medium">
+                                                    {Number(item.price).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 text-right">
+                                                <span className="text-emerald-700 font-bold">
+                                                    {(Number(item.price) * item.quantity).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {/* Total */}
+                        <div className="bg-gradient-to-r from-emerald-50 to-green-50 px-6 py-4 border-t border-emerald-200">
+                            <div className="flex justify-between items-center">
+                                <span className="text-lg font-semibold text-emerald-800">Total da Compra:</span>
+                                <span className="text-2xl font-bold text-emerald-700">
+                                    {lastPurchase.total.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
