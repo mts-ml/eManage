@@ -16,22 +16,30 @@ export function handleProductValidation(req: Request<{}, {}, ProductProps>, res:
         "salePrice",
         "purchasePrice",
         "stock",
+        "group",
     ]
     if (!validateStringFields(req.body, requiredStringFields, res)) {
         return
     }
 
     req.body.name = req.body.name.toUpperCase()
-    const { name, description, salePrice, purchasePrice, stock } = req.body
+    const { name, description, salePrice, purchasePrice, stock, group } = req.body
 
 
-    const allowedFields = ["name", "description", "salePrice", "purchasePrice", "stock"]
+    const allowedFields = ["name", "description", "salePrice", "purchasePrice", "stock", "group"]
     if (rejectExtraFields(req.body, allowedFields, res)) return
 
     const errors: ProductErrors = {}
 
     if (isMissing(name)) addErrorProducts(errors, "name", "Campo obrigatório")
     if (isMissing(description)) addErrorProducts(errors, 'description', "Campo obrigatório")
+    if (isMissing(group)) addErrorProducts(errors, 'group', "Campo obrigatório")
+
+    // Validar se o grupo é um dos valores permitidos
+    const allowedGroups = ['Temperos', 'Vegetais', 'Frutas', 'Outros']
+    if (group && !allowedGroups.includes(group)) {
+        addErrorProducts(errors, 'group', "Grupo inválido. Valores permitidos: Temperos, Vegetais, Frutas, Outros")
+    }
 
     if (salePrice == null) {
         addErrorProducts(errors, 'salePrice', "Campo obrigatório")
