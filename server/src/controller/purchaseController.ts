@@ -10,7 +10,8 @@ import { Product } from "../model/Products.js"
 
 export async function getAllPurchases(req: Request, res: Response, next: NextFunction) {
     try {
-        const purchases = await Purchase.find()
+        const purchases = await Purchase.find({}).sort({ date: -1 })
+        
         if (purchases.length === 0) {
             res.sendStatus(204)
             return
@@ -28,7 +29,9 @@ export async function createNewPurchase(req: Request<{}, {}, Omit<PurchasePayloa
         const purchaseProps = req.body
 
         const client = await Client.findById(purchaseProps.clientId)
+        
         const productIds = purchaseProps.items.map(item => new mongoose.Types.ObjectId(item.productId))
+        
         const products = await Product.find({ _id: { $in: productIds } })
 
         const newPurchase = {
@@ -80,7 +83,7 @@ export async function createNewPurchase(req: Request<{}, {}, Omit<PurchasePayloa
             res.status(409).json({ message: "Registro já existe." })
             return
         }
-        console.error(`createNewSale error: ${JSON.stringify(error)}`)
+        console.error(`createNewPurchase error: ${JSON.stringify(error)}`)
         next(error)
     }
 }

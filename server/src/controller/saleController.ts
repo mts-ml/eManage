@@ -10,7 +10,8 @@ import { Product } from "../model/Products.js"
 
 export async function getAllSales(req: Request, res: Response, next: NextFunction) {
     try {
-        const sales = await Sale.find()
+        const sales = await Sale.find({}).sort({ date: -1 })
+        
         if (sales.length === 0) {
             res.sendStatus(204)
             return

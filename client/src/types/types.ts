@@ -48,6 +48,7 @@ export interface Product {
     salePrice: string
     purchasePrice: string
     stock: string
+    group: string
 }
 export type ProductFromBackend = Product & { _id: string }
 
@@ -70,13 +71,13 @@ export interface ItemPayload {
 
 
 export interface SaleResponse {
-    sale: ItemPayload & { _id: string, saleNumber: number }
+    sale: ItemPayload & { _id: string, saleNumber: number, status: "Em aberto" | "Pago" }
     updatedProducts: Product[]
 }
 
 
 export interface PurchaseResponse {
-    purchase: ItemPayload & { _id: string, purchaseNumber: number }
+    purchase: ItemPayload & { _id: string, purchaseNumber: number, status: "Em aberto" | "Pago" }
     updatedProducts: Product[]
 }
 

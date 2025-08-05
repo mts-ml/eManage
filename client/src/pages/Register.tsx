@@ -153,15 +153,15 @@ export const Register: React.FC = () => {
 
 
     return (
-        <main className="h-[calc(100vh-72px)] bg-gradient-to-br from-emerald-50/10 via-emerald-50/5 to-emerald-50/20 flex items-center justify-center px-4 relative overflow-hidden">
+        <main className="h-[calc(100vh-72px)] bg-gradient-to-br from-emerald-50/30 via-green-50/30 to-emerald-100/30 flex items-center justify-center px-4 relative overflow-hidden">
             {/* Background decoration */}
-            <div className="absolute inset-0 bg-gradient-to-br from-emerald-200/20 to-green-300/20"></div>
-            <div className="absolute top-10 left-10 w-32 h-32 bg-emerald-300/30 rounded-full blur-3xl"></div>
-            <div className="absolute bottom-10 right-10 w-40 h-40 bg-green-300/30 rounded-full blur-3xl"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-emerald-100/10 to-green-100/10"></div>
+            <div className="absolute top-10 left-10 w-32 h-32 bg-emerald-200/20 rounded-full blur-3xl"></div>
+            <div className="absolute bottom-10 right-10 w-40 h-40 bg-green-200/20 rounded-full blur-3xl"></div>
             
-            <div className="relative p-10 rounded-3xl bg-white/90 backdrop-blur-sm shadow-2xl border border-emerald-200/50 w-full max-w-md">
+            <div className="relative p-6 sm:p-8 lg:p-10 rounded-3xl bg-white/90 backdrop-blur-sm shadow-2xl border border-emerald-200/50 w-full max-w-md mx-4">
                 <div className="text-center mb-8">
-                    <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-green-600 mb-2">
+                    <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-green-600 mb-2">
                         🐼 Panda Alimentos
                     </h1>
                     <p className="text-gray-600 font-medium">Crie sua conta para começar</p>

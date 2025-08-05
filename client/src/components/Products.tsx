@@ -1,7 +1,7 @@
 import { useContext, useState } from "react"
 import axios from "axios"
 
-import { FaTrash, FaEdit } from 'react-icons/fa'
+import { FaTrash, FaEdit, FaSearch } from 'react-icons/fa'
 import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
 import ProductsContext from "../Context/ProductsContext"
 import type { Product } from "../types/types"
@@ -13,7 +13,8 @@ export const Products: React.FC = () => {
         description: "",
         salePrice: "",
         purchasePrice: "",
-        stock: ""
+        stock: "",
+        group: ""
     }
 
     const [form, setForm] = useState<Product>(defaultValues)
@@ -22,11 +23,23 @@ export const Products: React.FC = () => {
     const [editingProductId, setEditingProductId] = useState<string | null>(null)
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
     const [showForm, setShowForm] = useState<boolean>(false)
+    const [searchTerm, setSearchTerm] = useState<string>("")
+    const [selectedGroup, setSelectedGroup] = useState<string>("")
     const { products, setProducts } = useContext(ProductsContext)
     const axiosPrivate = useAxiosPrivate()
 
+    // Filtrar produtos baseado no termo de busca e grupo
+    const filteredProducts = products.filter(product => {
+        const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase())
+        const matchesGroup = selectedGroup === "" || product.group === selectedGroup
+        return matchesSearch && matchesGroup
+    })
 
-    function handleChange(event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
+    // Obter grupos únicos dos produtos
+    const uniqueGroups = Array.from(new Set(products.map(product => product.group))).filter(group => group)
+
+
+    function handleChange(event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
         const { name, value } = event.currentTarget as {
             name: keyof Product,
             value: string
@@ -52,6 +65,7 @@ export const Products: React.FC = () => {
 
         if (!form.name.trim()) errors.name = "Campo obrigatório"
         if (!form.description.trim()) errors.description = "Campo obrigatório"
+        if (!form.group.trim()) errors.group = "Campo obrigatório"
 
         if (!form.salePrice.trim()) {
             errors.salePrice = "Campo obrigatório"
@@ -126,6 +140,7 @@ export const Products: React.FC = () => {
             salePrice: String(product.salePrice ?? ""),
             purchasePrice: String(product.purchasePrice ?? ""),
             stock: String(product.stock ?? ""),
+            group: product.group ?? "",
         })
 
         setShowForm(true)
@@ -156,6 +171,7 @@ export const Products: React.FC = () => {
             {!showForm && (
                 <div className="text-center mb-8">
                     <button
+                        type="button"
                         onClick={() => {
                             setForm(defaultValues)
                             setEditingProductId(null)
@@ -277,6 +293,33 @@ export const Products: React.FC = () => {
                             )}
                         </div>
 
+                        {/* Grupo */}
+                        <div>
+                            <label htmlFor="group" className="block text-sm font-semibold text-gray-700 mb-2">
+                                Grupo <span className="text-red-500">*</span>
+                            </label>
+                            <select
+                                id="group"
+                                name="group"
+                                value={form.group}
+                                onChange={handleChange}
+                                aria-describedby="groupError"
+                                className="w-full rounded-xl border-2 border-gray-200 shadow-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 px-4 py-3 transition-all duration-300 bg-white/80 backdrop-blur-sm"
+                            >
+                                <option value="">Selecione um grupo</option>
+                                <option value="Temperos">Temperos</option>
+                                <option value="Vegetais">Vegetais</option>
+                                <option value="Frutas">Frutas</option>
+                                <option value="Outros">Outros</option>
+                            </select>
+                            {errors.group && (
+                                <p className="text-red-500 font-medium text-sm mt-2 flex items-center">
+                                    <span className="mr-1">⚠️</span>
+                                    {errors.group}
+                                </p>
+                            )}
+                        </div>
+
                         {/* Descrição */}
                         <div className="md:col-span-2">
                             <label htmlFor="description" className="block text-sm font-semibold text-gray-700 mb-2">
@@ -338,8 +381,56 @@ export const Products: React.FC = () => {
 
             {products.length > 0 && (
                 <>
-                    <div className="text-center mb-6">
+                    <div className="text-center mb-6 flex w-full justify-center items-center">
                         <h3 className="text-2xl font-bold text-emerald-800">📋 Lista de Produtos</h3>
+                    </div>
+
+                    {/* Filtros de Busca */}
+                    <div className="mb-6">
+                        <div className="flex flex-col md:flex-row gap-4 justify-center items-center">
+
+                            {/* Input de Busca por Nome */}
+                            <div className="relative max-w-md w-full self-end">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <FaSearch className="h-5 w-5 text-gray-400" />
+                                </div>
+                                <input
+                                    type="text"
+                                    placeholder="Buscar produto pelo nome..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.currentTarget.value)}
+                                    className="block w-full pl-10 pr-3 py-3 border-2 border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-300 bg-white/80 backdrop-blur-sm"
+                                />
+                            </div>
+
+                            {/* Filtro por Grupo */}
+                            <div className="max-w-md w-full">
+                                <label
+                                    htmlFor="groupFilter"
+                                    className="block text-sm font-semibold text-gray-700 pl-3 mb-2"
+                                >
+                                    Filtrar por Grupo
+                                </label>
+
+                                <select
+                                    id="groupFilter"
+                                    value={selectedGroup}
+                                    onChange={(e) => setSelectedGroup(e.target.value)}
+                                    className="block cursor-pointer w-full px-4 py-3 border-2 border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-300 bg-white/80 backdrop-blur-sm"
+                                >
+                                    <option value="">Todos os grupos</option>
+                                    {uniqueGroups.map(group => (
+                                        <option key={group} value={group}>{group}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+
+                        {(searchTerm || selectedGroup) && (
+                            <p className="text-center text-sm text-gray-600 mt-2">
+                                {filteredProducts.length} produto{filteredProducts.length !== 1 ? 's' : ''} encontrado{filteredProducts.length !== 1 ? 's' : ''}
+                            </p>
+                        )}
                     </div>
 
                     <div className="overflow-auto border-2 border-emerald-200/50 rounded-2xl shadow-xl mb-10 max-h-[70vh] bg-white/90 backdrop-blur-sm">
@@ -347,20 +438,29 @@ export const Products: React.FC = () => {
                             <thead className="bg-gradient-to-r from-emerald-600 to-green-600 text-white sticky top-0 z-10">
                                 <tr>
                                     <th className="px-6 py-4 text-sm font-semibold text-center">Nome</th>
-                                    <th className="px-6 py-4 text-sm font-semibold text-center">Descrição</th>
+                                    <th className="px-6 py-4 text-sm font-semibold text-center">Grupo</th>
                                     <th className="px-6 py-4 text-sm font-semibold text-center">Preço de Venda</th>
                                     <th className="px-6 py-4 text-sm font-semibold text-center">Preço de Compra</th>
                                     <th className="px-6 py-4 text-sm font-semibold text-center">Estoque</th>
+                                    <th className="px-6 py-4 text-sm font-semibold text-center">Unidade</th>
                                     <th className="px-6 py-4 text-sm font-semibold text-center">Ações</th>
                                 </tr>
                             </thead>
 
                             <tbody className="bg-white divide-y divide-gray-100">
-                                {products.map(product => (
+                                {filteredProducts.map(product => (
                                     <tr key={product.id} className="hover:bg-emerald-50/50 transition-colors duration-200">
                                         <td className="px-6 py-4 text-sm font-medium whitespace-nowrap text-center">{product.name}</td>
 
-                                        <td className="px-6 py-4 text-sm text-center">{product.description}</td>
+                                        <td className="px-6 py-4 text-sm text-center">
+                                            <span className={`px-2 py-1 rounded-full text-xs font-semibold ${product.group === 'Temperos' ? 'bg-orange-100 text-orange-800' :
+                                                product.group === 'Vegetais' ? 'bg-green-100 text-green-800' :
+                                                    product.group === 'Frutas' ? 'bg-yellow-100 text-yellow-800' :
+                                                        'bg-gray-100 text-gray-800'
+                                                }`}>
+                                                {product.group}
+                                            </span>
+                                        </td>
 
                                         <td className="px-6 py-4 text-sm font-bold text-emerald-700 text-center">
                                             {Number(product.salePrice).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
@@ -376,8 +476,11 @@ export const Products: React.FC = () => {
                                             </span>
                                         </td>
 
+                                        <td className="px-6 py-4 text-sm text-center">{product.description}</td>
+
                                         <td className="px-6 py-4 text-sm flex gap-3 justify-center">
                                             <button
+                                                type="button"
                                                 onClick={() => handleEditProduct(product)}
                                                 className="text-emerald-600 cursor-pointer hover:text-emerald-800 p-2 rounded-lg hover:bg-emerald-50/50 transition-all duration-200"
                                                 aria-label="Editar produto."
@@ -386,6 +489,7 @@ export const Products: React.FC = () => {
                                             </button>
 
                                             <button
+                                                type="button"
                                                 onClick={() => handleDeleteProduct(product.id!)}
                                                 className="text-red-600 cursor-pointer hover:text-red-800 p-2 rounded-lg hover:bg-red-50 transition-all duration-200"
                                                 aria-label="Excluir produto"

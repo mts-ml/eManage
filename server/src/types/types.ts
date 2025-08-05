@@ -69,6 +69,7 @@ export interface ProductProps {
     salePrice: number
     purchasePrice: number
     stock: number
+    group: string
     [key: string]: unknown
 }
 export type ProductErrors = Partial<Record<keyof ProductProps, string>>

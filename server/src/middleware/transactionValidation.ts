@@ -52,7 +52,7 @@ export function handleTransactionValidation(req: Request<{}, {}, CommonTransacti
     }
 
     if (!Array.isArray(payload.items) || payload.items.length === 0) {
-        errors.items = ["Venda deve conter ao menos um item"]
+        errors.items = ["Transação deve conter ao menos um item"]
     } else {
         payload.items.forEach((item: Item, index: number) => {
             const itemErrors: string[] = []
