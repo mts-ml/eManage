@@ -26,6 +26,11 @@ const productsSchema = new Schema<ProductProps>({
     stock: {
         type: Number,
         required: true
+    },
+    group: {
+        type: String,
+        required: true,
+        enum: ['Temperos', 'Vegetais', 'Frutas', 'Outros']
     }
 })
 
