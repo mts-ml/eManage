@@ -1,30 +1,25 @@
-import { useContext, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 
-import ProductsContext from "../Context/ProductsContext"
 import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
-import type { ItemPayload } from "../types/types"
-
-
-interface Payable extends ItemPayload {
-  _id: string
-  purchaseNumber: number
-  status: "Em aberto" | "Pago"
-  paymentDate: string | null
-  bank: string
-}
+import type {
+  Payable,
+  UpdatePayableRequest,
+  ApiResponse,
+  DeleteResponse,
+  AxiosErrorResponse
+} from "../types/types"
 
 
 export const Payables: React.FC = () => {
   const [payables, setPayables] = useState<Payable[]>([])
   const [errors, setErrors] = useState<Partial<Record<string, string>>>({})
   const [modifiedId, setModifiedId] = useState<string | null>(null)
-  const { products } = useContext(ProductsContext)
   const axiosPrivate = useAxiosPrivate()
 
   useEffect(() => {
     async function fetchPurchases() {
       try {
-        const response = await axiosPrivate.get("/purchases")
+        const response = await axiosPrivate.get<Payable[]>("/purchases")
         const purchasesWithPayableInfo: Payable[] = response.data.map((purchase: Payable) => ({
           ...purchase,
           status: purchase.status || "Em aberto",
@@ -62,7 +57,7 @@ export const Payables: React.FC = () => {
     setModifiedId(id)
   }
 
-  async function handleSave(id: string) {
+  async function handleSave(id: string): Promise<void> {
     const purchaseToSave = payables.find(sale => sale._id === id)
     if (!purchaseToSave) return
 
@@ -71,12 +66,15 @@ export const Payables: React.FC = () => {
       return
     }
 
+    const updateData: UpdatePayableRequest = {
+      status: purchaseToSave.status,
+      paymentDate: purchaseToSave.paymentDate,
+      bank: purchaseToSave.bank,
+      invoiceNumber: purchaseToSave.invoiceNumber
+    }
+
     try {
-      await axiosPrivate.patch(`/payables/${id}`, {
-        status: purchaseToSave.status,
-        paymentDate: purchaseToSave.paymentDate,
-        bank: purchaseToSave.bank
-      })
+      await axiosPrivate.patch<ApiResponse<Payable>>(`/payables/${id}`, updateData)
 
       setErrors(prev => {
         const copy = { ...prev }
@@ -91,6 +89,44 @@ export const Payables: React.FC = () => {
     }
   }
 
+  async function handleDeletePurchase(id: string): Promise<void> {
+    const purchaseToDelete = payables.find(purchase => purchase._id === id)
+    if (!purchaseToDelete) return
+
+    if (purchaseToDelete.status === "Pago") {
+      return
+    }
+
+    const confirmed = window.confirm(
+      `Tem certeza que deseja excluir a compra #${purchaseToDelete.purchaseNumber}?\n\nEsta ação não pode ser desfeita.`
+    )
+
+    if (!confirmed) return
+
+    try {
+      const response = await axiosPrivate.delete<DeleteResponse>(`/purchases/${id}`)
+      setPayables(prev => prev.filter(purchase => purchase._id !== id))
+      console.log("Compra excluída com sucesso:", response.data.message)
+    } catch (error: unknown) {
+      console.error("Erro ao excluir compra:", error)
+
+      let errorMessage = "Erro ao excluir compra. Tente novamente."
+
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as AxiosErrorResponse
+
+        if (axiosError.response?.status === 404) {
+          errorMessage = "Compra não encontrada."
+        } else if (axiosError.response?.status === 400) {
+          errorMessage = "Dados inválidos para exclusão."
+        } else if (axiosError.response?.data?.message) {
+          errorMessage = axiosError.response.data.message
+        }
+      }
+
+      alert(errorMessage)
+    }
+  }
 
   return (
     <main className="p-8 max-w-6xl mx-auto">
@@ -98,6 +134,7 @@ export const Payables: React.FC = () => {
         <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-green-600 mb-2">
           💸 Contas a Pagar
         </h2>
+
         <p className="text-gray-600 font-medium">Gerencie suas obrigações financeiras</p>
       </div>
 
@@ -107,8 +144,8 @@ export const Payables: React.FC = () => {
             <tr>
               <th className="px-4 py-3 text-xs font-semibold text-center">Data da Compra</th>
               <th className="px-4 py-3 text-xs font-semibold text-center">Nº Compra</th>
+              <th className="px-4 py-3 text-xs font-semibold text-center">Nº Nota</th>
               <th className="px-4 py-3 text-xs font-semibold text-center">Fornecedor</th>
-              <th className="px-4 py-3 text-xs font-semibold text-center min-w-[200px]">Produto(s)</th>
               <th className="px-4 py-3 text-xs font-semibold text-center">Valor Total</th>
               <th className="px-4 py-3 text-xs font-semibold text-center">Status</th>
               <th className="px-4 py-3 text-xs font-semibold text-center">Data Pagamento</th>
@@ -124,25 +161,11 @@ export const Payables: React.FC = () => {
 
                 <td className="px-4 py-3 text-xs font-bold text-emerald-700 text-center">#{purchase.purchaseNumber}</td>
 
-                <td className="px-4 py-3 text-xs text-center">{purchase.clientName}</td>
-
-                <td className="px-4 py-3 text-xs text-left min-w-[200px]">
-                  <ul className="space-y-1">
-                    {purchase.items.map(item => {
-                      const product = products.find(p => p.id === item.productId)
-                      return (
-                        <li key={item.productId} className="text-gray-700 whitespace-nowrap">
-                          <span className="font-medium">{item.productName}</span> -
-                          <span className="text-emerald-600 font-semibold"> R${item.price}</span> -
-                          <span className="text-gray-600">{item.quantity}(x)</span>
-                          {product?.description && (
-                            <span className="text-gray-500 text-xs ml-1">• {product.description}</span>
-                          )}
-                        </li>
-                      )
-                    })}
-                  </ul>
+                <td className="px-4 py-3 text-xs text-center">
+                  {purchase.invoiceNumber ? `#${purchase.invoiceNumber}` : "--"}
                 </td>
+
+                <td className="px-4 py-3 text-xs text-center">{purchase.clientName}</td>
 
                 <td className="px-4 py-3 text-xs font-bold text-emerald-700 text-center">
                   {purchase.total.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
@@ -182,15 +205,28 @@ export const Payables: React.FC = () => {
                 </td>
 
                 <td className="px-4 py-3 text-xs text-center">
-                  {modifiedId === purchase._id && (
-                    <button
-                      type="button"
-                      onClick={() => handleSave(purchase._id)}
-                      className="bg-gradient-to-r from-emerald-600 to-green-600 cursor-pointer text-white px-3 py-1 rounded-lg text-xs font-semibold hover:from-emerald-700 hover:to-green-700 transition-all duration-300 shadow-md hover:shadow-lg"
-                    >
-                      💾 Salvar
-                    </button>
-                  )}
+                  <div className="flex flex-col gap-1 items-center">
+                    {modifiedId === purchase._id && (
+                      <button
+                        type="button"
+                        onClick={() => handleSave(purchase._id)}
+                        className="bg-gradient-to-r from-emerald-600 to-green-600 cursor-pointer text-white px-3 py-1 rounded-lg text-xs font-semibold hover:from-emerald-700 hover:to-green-700 transition-all duration-300 shadow-md hover:shadow-lg"
+                      >
+                        💾 Salvar
+                      </button>
+                    )}
+
+                    {purchase.status === "Em aberto" && (
+                      <button
+                        type="button"
+                        onClick={() => handleDeletePurchase(purchase._id)}
+                        className="text-red-500 hover:text-red-700 cursor-pointer text-lg font-bold transition-colors duration-200"
+                        title="Excluir compra"
+                      >
+                        ×
+                      </button>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}
