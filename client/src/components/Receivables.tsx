@@ -1,30 +1,25 @@
-import { useContext, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 
-import ProductsContext from "../Context/ProductsContext"
 import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
-import type { ItemPayload } from "../types/types"
-
-
-interface Receivable extends ItemPayload {
-    _id: string
-    saleNumber: number
-    status: "Em aberto" | "Pago"
-    paymentDate: string | null
-    bank: string
-}
+import type {
+    Receivable,
+    UpdateReceivableRequest,
+    ApiResponse,
+    DeleteResponse,
+    AxiosErrorResponse
+} from "../types/types"
 
 
 export const Receivables: React.FC = () => {
     const [receivables, setReceivables] = useState<Receivable[]>([])
     const [errors, setErrors] = useState<Partial<Record<string, string>>>({})
     const [modifiedId, setModifiedId] = useState<string | null>(null)
-    const { products } = useContext(ProductsContext)
     const axiosPrivate = useAxiosPrivate()
 
     useEffect(() => {
         async function fetchSales() {
             try {
-                const response = await axiosPrivate.get("/sales")
+                const response = await axiosPrivate.get<Receivable[]>("/sales")
                 const salesWithReceivableInfo: Receivable[] = response.data.map((sale: Receivable) => ({
                     ...sale,
                     status: sale.status || "Em aberto",
@@ -62,7 +57,7 @@ export const Receivables: React.FC = () => {
         setModifiedId(id)
     }
 
-    async function handleSave(id: string) {
+    async function handleSave(id: string): Promise<void> {
         const saleToSave = receivables.find(sale => sale._id === id)
         if (!saleToSave) return
 
@@ -71,12 +66,14 @@ export const Receivables: React.FC = () => {
             return
         }
 
+        const updateData: UpdateReceivableRequest = {
+            status: saleToSave.status,
+            paymentDate: saleToSave.paymentDate,
+            bank: saleToSave.bank
+        }
+
         try {
-            await axiosPrivate.patch(`/receivables/${id}`, {
-                status: saleToSave.status,
-                paymentDate: saleToSave.paymentDate,
-                bank: saleToSave.bank
-            })
+            await axiosPrivate.patch<ApiResponse<Receivable>>(`/receivables/${id}`, updateData)
 
             setErrors(prev => {
                 const copy = { ...prev }
@@ -91,6 +88,44 @@ export const Receivables: React.FC = () => {
         }
     }
 
+    async function handleDeleteSale(id: string): Promise<void> {
+        const saleToDelete = receivables.find(sale => sale._id === id)
+        if (!saleToDelete) return
+
+        if (saleToDelete.status === "Pago") {
+            return
+        }
+
+        const confirmed = window.confirm(
+            `Tem certeza que deseja excluir a venda #${saleToDelete.saleNumber}?\n\nEsta ação não pode ser desfeita.`
+        )
+
+        if (!confirmed) return
+
+        try {
+            const response = await axiosPrivate.delete<DeleteResponse>(`/sales/${id}`)
+            setReceivables(prev => prev.filter(sale => sale._id !== id))
+            console.log("Venda excluída com sucesso:", response.data.message)
+        } catch (error: unknown) {
+            console.error("Erro ao excluir venda:", error)
+
+            let errorMessage = "Erro ao excluir venda. Tente novamente."
+
+            if (error && typeof error === 'object' && 'response' in error) {
+                const axiosError = error as AxiosErrorResponse
+
+                if (axiosError.response?.status === 404) {
+                    errorMessage = "Venda não encontrada."
+                } else if (axiosError.response?.status === 400) {
+                    errorMessage = "Dados inválidos para exclusão."
+                } else if (axiosError.response?.data?.message) {
+                    errorMessage = axiosError.response.data.message
+                }
+            }
+
+            alert(errorMessage)
+        }
+    }
 
     return (
         <main className="p-8 max-w-6xl mx-auto">
@@ -98,6 +133,7 @@ export const Receivables: React.FC = () => {
                 <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-green-600 mb-2">
                     💰 Contas a Receber
                 </h2>
+
                 <p className="text-gray-600 font-medium">Gerencie seus recebimentos financeiros</p>
             </div>
 
@@ -108,7 +144,6 @@ export const Receivables: React.FC = () => {
                             <th className="px-4 py-3 text-xs font-semibold text-center">Data da Venda</th>
                             <th className="px-4 py-3 text-xs font-semibold text-center">Nº Venda</th>
                             <th className="px-4 py-3 text-xs font-semibold text-center">Cliente</th>
-                            <th className="px-4 py-3 text-xs font-semibold text-center min-w-[200px]">Produto(s)</th>
                             <th className="px-4 py-3 text-xs font-semibold text-center">Valor Total</th>
                             <th className="px-4 py-3 text-xs font-semibold text-center">Status</th>
                             <th className="px-4 py-3 text-xs font-semibold text-center">Data Pagamento</th>
@@ -125,24 +160,6 @@ export const Receivables: React.FC = () => {
                                 <td className="px-4 py-3 text-xs font-bold text-emerald-700 text-center">#{sale.saleNumber}</td>
 
                                 <td className="px-4 py-3 text-xs text-center">{sale.clientName}</td>
-
-                                <td className="px-4 py-3 text-xs text-left min-w-[200px]">
-                                    <ul className="space-y-1">
-                                        {sale.items.map(item => {
-                                            const product = products.find(p => p.id === item.productId)
-                                            return (
-                                                <li key={item.productId} className="text-gray-700 whitespace-nowrap">
-                                                    <span className="font-medium">{item.productName}</span> - 
-                                                    <span className="text-emerald-600 font-semibold"> R${item.price}</span> - 
-                                                    <span className="text-gray-600">{item.quantity}(x)</span>
-                                                    {product?.description && (
-                                                        <span className="text-gray-500 text-xs ml-1">• {product.description}</span>
-                                                    )}
-                                                </li>
-                                            )
-                                        })}
-                                    </ul>
-                                </td>
 
                                 <td className="px-4 py-3 text-xs font-bold text-emerald-700 text-center">
                                     {sale.total.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
@@ -182,15 +199,28 @@ export const Receivables: React.FC = () => {
                                 </td>
 
                                 <td className="px-4 py-3 text-xs text-center">
-                                    {modifiedId === sale._id && (
-                                        <button
-                                            type="button"
-                                            onClick={() => handleSave(sale._id)}
-                                            className="bg-gradient-to-r from-emerald-600 to-green-600 cursor-pointer text-white px-3 py-1 rounded-lg text-xs font-semibold hover:from-emerald-700 hover:to-green-700 transition-all duration-300 shadow-md hover:shadow-lg"
-                                        >
-                                            💾 Salvar
-                                        </button>
-                                    )}
+                                    <div className="flex flex-col gap-1 items-center">
+                                        {modifiedId === sale._id && (
+                                            <button
+                                                type="button"
+                                                onClick={() => handleSave(sale._id)}
+                                                className="bg-gradient-to-r from-emerald-600 to-green-600 cursor-pointer text-white px-3 py-1 rounded-lg text-xs font-semibold hover:from-emerald-700 hover:to-green-700 transition-all duration-300 shadow-md hover:shadow-lg"
+                                            >
+                                                💾 Salvar
+                                            </button>
+                                        )}
+
+                                        {sale.status === "Em aberto" && (
+                                            <button
+                                                type="button"
+                                                onClick={() => handleDeleteSale(sale._id)}
+                                                className="text-red-500 hover:text-red-700 cursor-pointer text-lg font-bold transition-colors duration-200"
+                                                title="Excluir venda"
+                                            >
+                                                ×
+                                            </button>
+                                        )}
+                                    </div>
                                 </td>
                             </tr>
                         ))}
