@@ -226,22 +226,22 @@ export const Suppliers: React.FC = () => {
                 <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-green-600 mb-2">
                     🚚 Cadastro de Fornecedores
                 </h2>
+
                 <p className="text-gray-600 font-medium">Gerencie seus fornecedores de forma eficiente</p>
             </div>
 
-            <div className="text-center mb-8">
-                <button
-                    onClick={() => {
-                        setForm(defaultSupplier)
-                        setEditingSupplierId(null)
-                        setShowForm(true)
-                        setFormErrors({})
-                    }}
-                    className="bg-gradient-to-r from-emerald-600 to-green-600 cursor-pointer text-white px-8 py-3 rounded-xl font-semibold hover:from-emerald-700 hover:to-green-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-                >
-                    ➕ Novo Fornecedor
-                </button>
-            </div>
+            <button
+                type="button"
+                onClick={() => {
+                    setForm(defaultSupplier)
+                    setEditingSupplierId(null)
+                    setShowForm(true)
+                    setFormErrors({})
+                }}
+                className="block mx-auto text-center mb-8 bg-gradient-to-r from-emerald-600 to-green-600 cursor-pointer text-white px-8 py-3 rounded-xl font-semibold hover:from-emerald-700 hover:to-green-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+            >
+                ➕ Novo Fornecedor
+            </button>
 
             {showForm && (
                 <form onSubmit={handleSubmit} className="border-2 border-emerald-200/50 rounded-2xl p-8 bg-white/90 backdrop-blur-sm shadow-xl mb-8">
@@ -339,10 +339,6 @@ export const Suppliers: React.FC = () => {
                                 <th className="px-6 py-4 text-sm font-semibold text-center">E-mail</th>
                                 <th className="px-6 py-4 text-sm font-semibold text-center">Telefone</th>
                                 <th className="px-6 py-4 text-sm font-semibold text-center">Documento</th>
-                                <th className="px-6 py-4 text-sm font-semibold text-center">Endereço</th>
-                                <th className="px-6 py-4 text-sm font-semibold text-center">Bairro</th>
-                                <th className="px-6 py-4 text-sm font-semibold text-center">Cidade</th>
-                                <th className="px-6 py-4 text-sm font-semibold text-center">Observações</th>
                                 <th className="px-6 py-4 text-sm font-semibold text-center">Ações</th>
                             </tr>
                         </thead>
@@ -354,7 +350,9 @@ export const Suppliers: React.FC = () => {
 
                                     <td className="px-6 py-4 text-sm break-words text-emerald-700 text-center">{supplier.email}</td>
 
-                                    <td className="px-6 py-4 text-sm whitespace-nowrap font-medium text-center">{formatPhoneForDisplay(supplier.phone)}</td>
+                                    <td className="px-6 py-4 text-sm whitespace-nowrap font-medium text-center">
+                                        {formatPhoneForDisplay(supplier.phone)}
+                                    </td>
 
                                     <td className="px-6 py-4 text-sm whitespace-nowrap font-mono text-center">
                                         {supplier.cpfCnpj.length === 11
@@ -362,18 +360,9 @@ export const Suppliers: React.FC = () => {
                                             : supplier.cpfCnpj.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, "$1.$2.$3/$4-$5")}
                                     </td>
 
-                                    <td className="px-6 py-4 text-sm text-center">{supplier.address}</td>
-
-                                    <td className="px-6 py-4 text-sm text-center">{supplier.district}</td>
-
-                                    <td className="px-6 py-4 text-sm font-medium text-center">{supplier.city}</td>
-
-                                    <td className="px-6 py-4 text-sm max-w-[160px] truncate text-center" title={supplier.notes}>
-                                        {supplier.notes || "-"}
-                                    </td>
-
-                                    <td className="px-6 py-4 text-sm flex gap-3 justify-center">
+                                    <td className="px-6 py-4 text-sm flex justify-center">
                                         <button
+                                            type="button"
                                             onClick={() => handleEdit(supplier)}
                                             className="text-emerald-600 cursor-pointer hover:text-emerald-800 p-2 rounded-lg hover:bg-emerald-50/50 transition-all duration-200"
                                             aria-label="Editar fornecedor."
@@ -382,6 +371,7 @@ export const Suppliers: React.FC = () => {
                                         </button>
 
                                         <button
+                                            type="button"
                                             onClick={() => handleDelete(supplier.id!)}
                                             className="text-red-600 cursor-pointer hover:text-red-800 p-2 rounded-lg hover:bg-red-50 transition-all duration-200"
                                             aria-label="Excluir fornecedor"
