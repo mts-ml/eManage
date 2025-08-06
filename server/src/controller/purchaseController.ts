@@ -134,3 +134,21 @@ export async function deletePurchase(req: Request<{ id: string }>, res: Response
         next(error)
     }
 }
+
+export async function getPurchasesHistory(req: Request, res: Response, next: NextFunction) {
+    try {
+        const purchases = await Purchase.find({})
+            .sort({ date: -1, purchaseNumber: -1 })
+            .select('-__v')
+        
+        if (purchases.length === 0) {
+            res.json([])
+            return
+        }
+
+        res.json(purchases)
+    } catch (error) {
+        console.error(`getPurchasesHistory error: ${JSON.stringify(error)}`)
+        next(error)
+    }
+}
