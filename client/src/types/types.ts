@@ -67,6 +67,7 @@ export interface ItemPayload {
     date: string
     items: Item[]
     total: number
+    invoiceNumber?: string
 }
 
 
@@ -90,6 +91,15 @@ export interface Receivable extends ItemPayload {
     bank: string
 }
 
+export interface Payable extends ItemPayload {
+    _id: string
+    purchaseNumber: number
+    invoiceNumber: string
+    status: "Em aberto" | "Pago"
+    paymentDate: string | null
+    bank: string
+}
+
 export interface Expense {
   id?: string
   name: string
@@ -101,3 +111,36 @@ export interface Expense {
 }
 export type ExpenseFromBackend = Expense & { _id: string }
 export type ExpenseErrors = Partial<Record<keyof Expense, string>>
+
+export interface UpdateReceivableRequest {
+    status: "Em aberto" | "Pago"
+    paymentDate: string | null
+    bank: string
+}
+
+export interface UpdatePayableRequest {
+    status: "Em aberto" | "Pago"
+    paymentDate: string | null
+    bank: string
+    invoiceNumber?: string
+}
+
+export interface ApiResponse<T> {
+    data: T
+    message?: string
+    success: boolean
+}
+
+export interface DeleteResponse {
+    message: string
+    success: boolean
+}
+
+export interface AxiosErrorResponse {
+    response?: {
+        status?: number
+        data?: {
+            message?: string
+        }
+    }
+}
