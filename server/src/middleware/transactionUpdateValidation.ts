@@ -10,13 +10,13 @@ export async function handleTransactionUpdateValidation(req: Request<{}, {}, Tra
         return
     }
 
-    const { status, paymentDate, bank } = req.body
+    const { status, paymentDate, bank, invoiceNumber } = req.body
 
-    const allowedFields = ["status", "paymentDate", "bank"]
+    const allowedFields = ["status", "paymentDate", "bank", "invoiceNumber"]
     if (rejectExtraFields(req.body, allowedFields, res)) return
 
-    if (status === undefined && paymentDate === undefined && bank === undefined) {
-        res.status(400).json({ message: "Pelo menos um dos campos (status, data de pagamento, banco) deve ser fornecido para atualização." })
+    if (status === undefined && paymentDate === undefined && bank === undefined && invoiceNumber === undefined) {
+        res.status(400).json({ message: "Pelo menos um dos campos (status, data de pagamento, banco, número da nota) deve ser fornecido para atualização." })
         return
     }
 
@@ -65,6 +65,11 @@ export async function handleTransactionUpdateValidation(req: Request<{}, {}, Tra
             res.status(400).json({ message: "Banco deve ser uma string." })
             return
         }
+    }
+
+    if (invoiceNumber !== undefined && typeof invoiceNumber !== "string") {
+        res.status(400).json({ message: "Número da nota deve ser uma string." })
+        return
     }
 
     next()

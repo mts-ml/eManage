@@ -15,6 +15,7 @@ export function handleTransactionValidation(req: Request<{}, {}, CommonTransacti
         "clientId",
         "clientName",
         "date",
+        "invoiceNumber",
         "items",
         "total",
         "paid",
@@ -49,6 +50,10 @@ export function handleTransactionValidation(req: Request<{}, {}, CommonTransacti
 
     if (!payload.date || typeof payload.date !== "string" || payload.date.trim().length < 8) {
         errors.date = ["Data inválida"]
+    }
+
+    if (!payload.invoiceNumber || typeof payload.invoiceNumber !== "string" || payload.invoiceNumber.trim().length === 0) {
+        errors.invoiceNumber = ["Número da nota é obrigatório"]
     }
 
     if (!Array.isArray(payload.items) || payload.items.length === 0) {
