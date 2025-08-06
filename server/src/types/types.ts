@@ -102,6 +102,7 @@ export interface PurchasePayload {
     clientId: string
     clientName: string
     purchaseNumber: number
+    invoiceNumber: string
     date: string
     items: Item[]
     total: number
@@ -120,6 +121,7 @@ export interface TransactionUpdatePayload {
     status?: "Em aberto" | "Pago"
     paymentDate?: string | null
     bank?: string
+    invoiceNumber?: string
     [key: string]: unknown
 }
 
