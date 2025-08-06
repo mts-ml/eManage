@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { Users, Truck, Package, ShoppingCart, ShoppingBag, X, ArrowDownCircle, ArrowUpCircle, BarChart3, History } from "lucide-react"
+import { Users, Truck, Package, ShoppingCart, ShoppingBag, X, ArrowDownCircle, ArrowUpCircle, BarChart3, History, Building2 } from "lucide-react"
 
 import { Clients } from "../components/Clients"
 import { Suppliers } from "../components/Suppliers"
@@ -11,9 +11,10 @@ import { PurchasesHistory } from "../components/PurchasesHistory"
 import { Receivables } from "../components/Receivables"
 import { Expenses } from "../components/Expenses"
 import { Payables } from "../components/Payables"
+import { Caixa } from "../components/Caixa"
 
 
-type SectionKey = "clients" | "suppliers" | "products" | "sales" | "purchases" | "receivables" | "payables" | "expenses" | "salesHistory" | "purchasesHistory"
+type SectionKey = "clients" | "suppliers" | "products" | "sales" | "purchases" | "receivables" | "payables" | "expenses" | "salesHistory" | "purchasesHistory" | "caixa"
 
 type SectionConfig = {
     section: SectionKey
@@ -82,6 +83,12 @@ const sectionsArray: SectionConfig[] = [
         sectionName: "Histórico de Compras",
         icon: <History className="h-6 w-6 sm:h-8 sm:w-8 mb-2" />,
         component: <PurchasesHistory />
+    },
+    {
+        section: "caixa",
+        sectionName: "Caixa",
+        icon: <Building2 className="h-6 w-6 sm:h-8 sm:w-8 mb-2" />,
+        component: <Caixa />
     }
 ]
 
@@ -111,7 +118,7 @@ export const Home: React.FC = () => {
                     const isOpen = openSection === section
 
                     return (
-                        <div
+                        <article
                             key={section}
                             onClick={() => toggleSection(section)}
                             className={`group cursor-pointer p-4 sm:p-6 lg:p-8 rounded-2xl transition-all duration-500 ease-out flex flex-col items-center text-center border-2 relative hover:-translate-y-2 hover:scale-105
@@ -119,20 +126,20 @@ export const Home: React.FC = () => {
                                     ? "bg-gradient-to-br from-emerald-100 to-green-100 border-emerald-300 ring-4 ring-emerald-200/50 shadow-2xl"
                                     : "bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-2xl border-gray-200/50 hover:border-emerald-200"}`}
                         >
-                            <div className={`p-2 sm:p-4 rounded-full mb-2 sm:mb-4 transition-all duration-300 ${isOpen
+                            <header className={`p-2 sm:p-4 rounded-full mb-2 sm:mb-4 transition-all duration-300 ${isOpen
                                 ? "bg-gradient-to-br from-emerald-500 to-green-600 text-white shadow-lg"
                                 : "bg-gradient-to-br from-emerald-100 to-green-100 text-emerald-600 group-hover:from-emerald-200 group-hover:to-green-200"}`}>
                                 {icon}
-                            </div>
+                            </header>
 
-                            <p className={`text-base sm:text-lg lg:text-xl font-bold mb-1 sm:mb-2 transition-colors duration-300 ${isOpen ? "text-emerald-800" : "text-gray-800"}`}>
+                            <h2 className={`text-base sm:text-lg lg:text-xl font-bold mb-1 sm:mb-2 transition-colors duration-300 ${isOpen ? "text-emerald-800" : "text-gray-800"}`}>
                                 {sectionName}
-                            </p>
+                            </h2>
 
-                            <span className="text-xs sm:text-sm text-gray-500 group-hover:text-gray-600 transition-colors duration-300">
+                            <p className="text-xs sm:text-sm text-gray-500 group-hover:text-gray-600 transition-colors duration-300">
                                 Cadastrar ou visualizar
-                            </span>
-                        </div>
+                            </p>
+                        </article>
                     )
                 })}
             </section>

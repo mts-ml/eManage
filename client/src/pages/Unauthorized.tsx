@@ -5,7 +5,7 @@ export const Unauthorized: React.FC = () => {
 
 
     return (
-        <div className="max-h-[calc(100vh-72px)] flex flex-col items-center justify-center h-screen p-6 text-rose-50 bg-gradient-to-r from-neutral-900 via-neutral-800 to-neutral-700">
+        <main className="max-h-[calc(100vh-72px)] flex flex-col items-center justify-center h-screen p-6 text-rose-50 bg-gradient-to-r from-neutral-900 via-neutral-800 to-neutral-700">
             <h1 className="text-4xl font-extrabold mb-4 text-center tracking-wide text-emerald-400">
                 Acesso não autorizado
             </h1>
@@ -18,6 +18,6 @@ export const Unauthorized: React.FC = () => {
             >
                 Voltar a página de login
             </Link>
-        </div>
+        </main>
     )
 }

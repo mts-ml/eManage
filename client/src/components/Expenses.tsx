@@ -289,13 +289,13 @@ export const Expenses: React.FC = () => {
 
     return (
         <main className="p-8 max-w-6xl mx-auto">
-            <div className="text-center mb-8">
-                <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-green-600 mb-2">
+            <header className="text-center mb-8">
+                <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-green-600 mb-2">
                     💰 Despesas
-                </h2>
+                </h1>
 
                 <p className="text-gray-600 font-medium">Gerencie suas despesas de forma eficiente</p>
-            </div>
+            </header>
 
             <button
                 type="button"
@@ -314,247 +314,256 @@ export const Expenses: React.FC = () => {
             </button>
 
             {showForm && (
-                <form onSubmit={handleSubmit} className="border-2 border-emerald-200/50 rounded-2xl p-8 bg-white/90 backdrop-blur-sm shadow-xl mb-8">
-                    <h3 className="text-2xl font-bold text-center mb-6 text-emerald-800">
-                        {editingExpenseId ? "✏️ Editar Despesa" : "➕ Nova Despesa"}
-                    </h3>
+                <section className="border-2 border-emerald-200/50 rounded-2xl p-8 bg-white/90 backdrop-blur-sm shadow-xl mb-8">
+                    <header className="text-center mb-6">
+                        <h2 className="text-2xl font-bold text-emerald-800">
+                            {editingExpenseId ? "✏️ Editar Despesa" : "➕ Nova Despesa"}
+                        </h2>
+                    </header>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                        {fields.map(({ key, label, placeholder, required, type, options }) => {
-                            const isDate = key === "dueDate"
-                            const isSelect = type === "select"
-                            const fieldName = key as keyof Expense
-                            return (
-                                <div key={key}>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2" htmlFor={key}>
-                                        {label} {required && <span className="text-red-500">*</span>}
+                    <form onSubmit={handleSubmit}>
+                        <section className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                            {fields.map(({ key, label, placeholder, required, type, options }) => {
+                                const isDate = key === "dueDate"
+                                const isSelect = type === "select"
+                                const fieldName = key as keyof Expense
+                                return (
+                                    <article key={key}>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2" htmlFor={key}>
+                                            {label} {required && <span className="text-red-500">*</span>}
+                                        </label>
+
+                                        {isSelect ? (
+                                            <select
+                                                name={key}
+                                                id={key}
+                                                value={form[fieldName] || ""}
+                                                onChange={handleChange}
+                                                className={`w-full rounded-xl border-2 border-gray-200 shadow-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 px-4 py-3 transition-all duration-300 bg-white/80 backdrop-blur-sm cursor-pointer ${form[fieldName] === "Pago" ? "bg-green-50 text-green-700 border-green-400" : ""}`}
+                                            >
+                                                {options?.map(option => (
+                                                    <option key={option} value={option}>{option}</option>
+                                                ))}
+                                            </select>
+                                        ) : (
+                                            <input
+                                                type={isDate ? "date" : "text"}
+                                                name={key}
+                                                id={key}
+                                                placeholder={placeholder}
+                                                value={form[fieldName] || ""}
+                                                onChange={handleChange}
+                                                className="w-full rounded-xl border-2 border-gray-200 shadow-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 px-4 py-3 transition-all duration-300 bg-white/80 backdrop-blur-sm cursor-text"
+                                            />
+                                        )}
+
+                                        {formErrors[fieldName] && (
+                                            <p className="text-red-500 font-medium text-sm mt-2 flex items-center">
+                                                <span className="mr-1">⚠️</span>
+                                                {formErrors[fieldName]}
+                                            </p>
+                                        )}
+                                    </article>
+                                )
+                            })}
+
+                            {!editingExpenseId && (
+                                <article>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2" htmlFor="repeatMonths">
+                                        Repetir por (meses) <span className="text-emerald-600">🔄</span>
                                     </label>
-
-                                    {isSelect ? (
-                                        <select
-                                            name={key}
-                                            id={key}
-                                            value={form[fieldName] || ""}
-                                            onChange={handleChange}
-                                            className={`w-full rounded-xl border-2 border-gray-200 shadow-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 px-4 py-3 transition-all duration-300 bg-white/80 backdrop-blur-sm cursor-pointer ${form[fieldName] === "Pago" ? "bg-green-50 text-green-700 border-green-400" : ""}`}
-                                        >
-                                            {options?.map(option => (
-                                                <option key={option} value={option}>{option}</option>
-                                            ))}
-                                        </select>
-                                    ) : (
-                                        <input
-                                            type={isDate ? "date" : "text"}
-                                            name={key}
-                                            id={key}
-                                            placeholder={placeholder}
-                                            value={form[fieldName] || ""}
-                                            onChange={handleChange}
-                                            className="w-full rounded-xl border-2 border-gray-200 shadow-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 px-4 py-3 transition-all duration-300 bg-white/80 backdrop-blur-sm cursor-text"
-                                        />
-                                    )}
-
-                                    {formErrors[fieldName] && (
-                                        <p className="text-red-500 font-medium text-sm mt-2 flex items-center">
+                                    <input
+                                        type="number"
+                                        id="repeatMonths"
+                                        value={repeatMonths}
+                                        onChange={handleRepeatMonthsChange}
+                                        className="w-full rounded-xl border-2 border-gray-200 shadow-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 px-4 py-3 transition-all duration-300 bg-white/80 backdrop-blur-sm cursor-text"
+                                        placeholder="Ex: 12"
+                                    />
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        {repeatMonths > 1 ? `Criará ${repeatMonths} despesas com datas incrementadas mensalmente` : "Criará 1 despesa"}
+                                    </p>
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        💡 Digite um valor maior que 0 (máximo 60 meses)
+                                    </p>
+                                    {repeatMonths > 1 && !form.dueDate && (
+                                        <p className="text-xs text-amber-600 mt-1 flex items-center">
                                             <span className="mr-1">⚠️</span>
-                                            {formErrors[fieldName]}
+                                            Data de vencimento é necessária para repetir despesas
                                         </p>
                                     )}
-                                </div>
-                            )
-                        })}
+                                </article>
+                            )}
 
-                        {!editingExpenseId && (
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2" htmlFor="repeatMonths">
-                                    Repetir por (meses) <span className="text-emerald-600">🔄</span>
+                            <article className="md:col-span-2">
+                                <label className="block text-sm font-semibold text-gray-700 mb-2" htmlFor="description">
+                                    Descrição
                                 </label>
-                                <input
-                                    type="number"
-                                    id="repeatMonths"
-                                    value={repeatMonths}
-                                    onChange={handleRepeatMonthsChange}
-                                    className="w-full rounded-xl border-2 border-gray-200 shadow-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 px-4 py-3 transition-all duration-300 bg-white/80 backdrop-blur-sm cursor-text"
-                                    placeholder="Ex: 12"
+                                <textarea
+                                    name="description"
+                                    id="description"
+                                    value={form.description || ""}
+                                    onChange={handleChange}
+                                    rows={4}
+                                    placeholder="Descreva detalhes sobre a despesa..."
+                                    className="w-full rounded-xl border-2 border-gray-200 shadow-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 px-4 py-3 transition-all duration-300 bg-white/80 backdrop-blur-sm resize-none cursor-text"
                                 />
-                                <p className="text-xs text-gray-500 mt-1">
-                                    {repeatMonths > 1 ? `Criará ${repeatMonths} despesas com datas incrementadas mensalmente` : "Criará 1 despesa"}
-                                </p>
-                                <p className="text-xs text-gray-500 mt-1">
-                                    💡 Digite um valor maior que 0 (máximo 60 meses)
-                                </p>
-                                {repeatMonths > 1 && !form.dueDate && (
-                                    <p className="text-xs text-amber-600 mt-1 flex items-center">
+
+                                {formErrors.description && (
+                                    <p className="text-red-500 font-medium text-sm mt-2 flex items-center">
                                         <span className="mr-1">⚠️</span>
-                                        Data de vencimento é necessária para repetir despesas
+                                        {formErrors.description}
                                     </p>
                                 )}
-                            </div>
-                        )}
+                            </article>
+                        </section>
 
-                        <div className="md:col-span-2">
-                            <label className="block text-sm font-semibold text-gray-700 mb-2" htmlFor="description">
-                                Descrição
-                            </label>
+                        <section className="flex justify-center gap-6">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setForm(defaultExpense)
+                                    setShowForm(false)
+                                    setEditingExpenseId(null)
+                                    setFormErrors({})
+                                    setErrorMessage(null)
+                                    setIsReadyToSubmit(false)
+                                    setRepeatMonths(1)
+                                }}
+                                className="px-8 py-3 border-2 border-gray-300 rounded-xl hover:bg-gray-50 cursor-pointer font-semibold transition-all duration-300"
+                            >
+                                ❌ Cancelar
+                            </button>
 
-                            <textarea
-                                name="description"
-                                id="description"
-                                value={form.description || ""}
-                                onChange={handleChange}
-                                rows={4}
-                                placeholder="Descreva detalhes sobre a despesa..."
-                                className="w-full rounded-xl border-2 border-gray-200 shadow-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 px-4 py-3 transition-all duration-300 bg-white/80 backdrop-blur-sm resize-none cursor-text"
-                            />
+                            <button
+                                type="submit"
+                                disabled={!isReadyToSubmit}
+                                className={`px-8 py-3 rounded-xl font-semibold transition-all duration-300 ${isReadyToSubmit ? "bg-gradient-to-r from-emerald-600 to-green-600 cursor-pointer text-white hover:from-emerald-700 hover:to-green-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5" : "bg-gray-400 text-gray-200 cursor-not-allowed"}`}
+                            >
+                                {editingExpenseId ? "💾 Atualizar" : "💾 Salvar"} Despesa
+                            </button>
+                        </section>
 
-                            {formErrors.description && (
-                                <p className="text-red-500 font-medium text-sm mt-2 flex items-center">
-                                    <span className="mr-1">⚠️</span>
-                                    {formErrors.description}
+                        {errorMessage && (
+                            <section className="mt-6 p-4 bg-red-50 border border-red-200 rounded-xl">
+                                <p className="text-red-600 font-medium text-center flex items-center justify-center">
+                                    <span className="mr-2">❌</span>
+                                    {errorMessage}
                                 </p>
-                            )}
-                        </div>
-                    </div>
-
-                    <div className="flex justify-center gap-6">
-                        <button
-                            type="button"
-                            onClick={() => {
-                                setForm(defaultExpense)
-                                setShowForm(false)
-                                setEditingExpenseId(null)
-                                setFormErrors({})
-                                setIsReadyToSubmit(false)
-                                setRepeatMonths(1)
-                            }}
-                            className="px-8 py-3 border-2 border-gray-300 rounded-xl hover:bg-gray-50 cursor-pointer font-semibold transition-all duration-300"
-                        >
-                            ❌ Cancelar
-                        </button>
-
-                        <button
-                            type="submit"
-                            disabled={!isReadyToSubmit || isRepeating}
-                            className={`px-8 py-3 rounded-xl font-semibold transition-all duration-300 ${isReadyToSubmit && !isRepeating
-                                ? "bg-gradient-to-r from-emerald-600 to-green-600 cursor-pointer text-white hover:from-emerald-700 hover:to-green-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-                                : "bg-gray-400 text-gray-200 cursor-not-allowed"
-                                }`}
-                        >
-                            {isRepeating ? "⏳ Criando..." : editingExpenseId ? "💾 Atualizar" : "💾 Salvar"} Despesa{repeatMonths > 1 && !editingExpenseId ? "s" : ""}
-                        </button>
-                    </div>
-
-                    {errorMessage && (
-                        <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-xl">
-                            <p className="text-red-600 font-medium text-center flex items-center justify-center">
-                                <span className="mr-2">❌</span>
-                                {errorMessage}
-                            </p>
-                        </div>
-                    )}
-                </form>
+                            </section>
+                        )}
+                    </form>
+                </section>
             )}
 
             {expenses.length > 0 && (
-                <div className="overflow-auto border-2 border-emerald-200/50 rounded-2xl shadow-xl mb-10 max-h-[70vh] bg-white/90 backdrop-blur-sm">
-                    <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gradient-to-r from-emerald-600 to-green-600 text-white sticky top-0 z-10">
-                            <tr>
-                                <th className="px-4 py-3 text-xs font-semibold text-center">Despesa</th>
-                                <th className="px-4 py-3 text-xs font-semibold text-center">Descrição</th>
-                                <th className="px-4 py-3 text-xs font-semibold text-center">Valor</th>
-                                <th className="px-4 py-3 text-xs font-semibold text-center">Data Vencimento</th>
-                                <th className="px-4 py-3 text-xs font-semibold text-center">Status</th>
-                                <th className="px-4 py-3 text-xs font-semibold text-center">Banco</th>
-                                <th className="px-4 py-3 text-xs font-semibold text-center">Ações</th>
-                            </tr>
-                        </thead>
+                <>
+                    <header className="text-center mb-6">
+                        <h2 className="text-2xl font-bold text-emerald-800">
+                            📋 Lista de Despesas
+                        </h2>
+                    </header>
 
-                        <tbody className="bg-white divide-y divide-gray-100">
-                            {expenses.map(exp => (
-                                <tr key={exp.id} className="hover:bg-emerald-50/50 transition-colors duration-200">
-                                    <td className="px-4 py-3 text-xs font-semibold text-gray-800 text-center">
-                                        {exp.name}
-                                    </td>
-
-                                    <td className="px-4 py-3 text-xs text-gray-600 text-center">
-                                        {exp.description || "-"}
-                                    </td>
-
-                                    <td className="px-4 py-3 text-xs font-bold text-emerald-700 text-center">
-                                        {Number(exp.value).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-                                    </td>
-
-                                    <td className="px-4 py-3 text-xs text-center">
-                                        {exp.dueDate ? new Date(exp.dueDate).toLocaleDateString("pt-BR") : "-"}
-                                    </td>
-
-                                    <td className="px-4 py-3 text-xs text-center">
-                                        <select
-                                            aria-label="Status da despesa"
-                                            className={`border-2 rounded-lg p-1 text-xs cursor-pointer transition-all duration-200 ${exp.status === "Pago" ? "bg-green-50 text-green-700 border-green-400" : "border-gray-200"}`}
-                                            value={exp.status || "Em aberto"}
-                                            onChange={e => handleStatusChange(exp.id!, e.target.value as "Em aberto" | "Pago")}
-                                        >
-                                            <option value="Em aberto">Em aberto</option>
-                                            <option value="Pago">Pago</option>
-                                        </select>
-                                    </td>
-
-                                    <td className="px-4 py-3 text-xs text-center">
-                                        <input
-                                            type="text"
-                                            value={exp.bank || ""}
-                                            onChange={e => handleBankChange(exp.id!, e.target.value)}
-                                            placeholder="Banco"
-                                            className="border-2 border-gray-200 rounded-lg p-1 w-full text-xs focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200 cursor-text"
-                                        />
-
-                                        {inlineErrors[exp.id!] && (
-                                            <p className="text-red-500 text-xs mt-1 flex items-center justify-center">
-                                                <span className="mr-1">⚠️</span>
-                                                {inlineErrors[exp.id!]}
-                                            </p>
-                                        )}
-                                    </td>
-
-                                    <td className="px-4 py-3 text-xs text-center">
-                                        <div className="flex gap-2 justify-center">
-                                            {modifiedId === exp.id ? (
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleSave(exp.id!)}
-                                                    className="bg-gradient-to-r from-emerald-600 to-green-600 cursor-pointer text-white px-3 py-1 rounded-lg text-xs font-semibold hover:from-emerald-700 hover:to-green-700 transition-all duration-300 shadow-md hover:shadow-lg"
-                                                >
-                                                    💾 Salvar
-                                                </button>
-                                            ) : (
-                                                <>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => handleEdit(exp)}
-                                                        className="text-emerald-600 cursor-pointer hover:text-emerald-800 p-2 rounded-lg hover:bg-emerald-50/50 transition-all duration-200"
-                                                        aria-label="Editar despesa"
-                                                    >
-                                                        <FaEdit size={18} />
-                                                    </button>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => handleDelete(exp.id!)}
-                                                        className="text-red-600 cursor-pointer hover:text-red-800 p-2 rounded-lg hover:bg-red-50 transition-all duration-200"
-                                                        aria-label="Excluir despesa"
-                                                    >
-                                                        <FaTrash size={18} />
-                                                    </button>
-                                                </>
-                                            )}
-                                        </div>
-                                    </td>
+                    <section className="overflow-auto border-2 border-emerald-200/50 rounded-2xl shadow-xl mb-10 max-h-[70vh] bg-white/90 backdrop-blur-sm">
+                        <table className="min-w-full divide-y divide-gray-200">
+                            <thead className="bg-gradient-to-r from-emerald-600 to-green-600 text-white sticky top-0 z-10">
+                                <tr>
+                                    <th className="px-4 py-3 text-xs font-semibold text-center">Despesa</th>
+                                    <th className="px-4 py-3 text-xs font-semibold text-center">Descrição</th>
+                                    <th className="px-4 py-3 text-xs font-semibold text-center">Valor</th>
+                                    <th className="px-4 py-3 text-xs font-semibold text-center">Data Vencimento</th>
+                                    <th className="px-4 py-3 text-xs font-semibold text-center">Status</th>
+                                    <th className="px-4 py-3 text-xs font-semibold text-center">Banco</th>
+                                    <th className="px-4 py-3 text-xs font-semibold text-center">Ações</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                            </thead>
+
+                            <tbody className="bg-white divide-y divide-gray-100">
+                                {expenses.map(exp => (
+                                    <tr key={exp.id} className="hover:bg-emerald-50/50 transition-colors duration-200">
+                                        <td className="px-4 py-3 text-xs font-semibold text-gray-800 text-center">
+                                            {exp.name}
+                                        </td>
+
+                                        <td className="px-4 py-3 text-xs text-gray-600 text-center">
+                                            {exp.description || "-"}
+                                        </td>
+
+                                        <td className="px-4 py-3 text-xs font-bold text-emerald-700 text-center">
+                                            {Number(exp.value).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                                        </td>
+
+                                        <td className="px-4 py-3 text-xs text-center">
+                                            {exp.dueDate ? new Date(exp.dueDate).toLocaleDateString("pt-BR") : "-"}
+                                        </td>
+
+                                        <td className="px-4 py-3 text-xs text-center">
+                                            <select
+                                                aria-label="Status da despesa"
+                                                className={`border-2 rounded-lg p-1 text-xs cursor-pointer transition-all duration-200 ${exp.status === "Pago" ? "bg-green-50 text-green-700 border-green-400" : "border-gray-200"}`}
+                                                value={exp.status || "Em aberto"}
+                                                onChange={e => handleStatusChange(exp.id!, e.target.value as "Em aberto" | "Pago")}
+                                            >
+                                                <option value="Em aberto">Em aberto</option>
+                                                <option value="Pago">Pago</option>
+                                            </select>
+                                        </td>
+
+                                        <td className="px-4 py-3 text-xs text-center">
+                                            <input
+                                                type="text"
+                                                value={exp.bank || ""}
+                                                onChange={e => handleBankChange(exp.id!, e.target.value)}
+                                                placeholder="Banco"
+                                                className="border-2 border-gray-200 rounded-lg p-1 w-full text-xs focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200 cursor-text"
+                                            />
+
+                                            {inlineErrors[exp.id!] && (
+                                                <p className="text-red-500 text-xs mt-1 flex items-center justify-center">
+                                                    <span className="mr-1">⚠️</span>
+                                                    {inlineErrors[exp.id!]}
+                                                </p>
+                                            )}
+                                        </td>
+
+                                        <td className="px-4 py-3 text-xs text-center">
+                                            <div className="flex gap-2 justify-center">
+                                                {modifiedId === exp.id ? (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleSave(exp.id!)}
+                                                        className="bg-gradient-to-r from-emerald-600 to-green-600 cursor-pointer text-white px-3 py-1 rounded-lg text-xs font-semibold hover:from-emerald-700 hover:to-green-700 transition-all duration-300 shadow-md hover:shadow-lg"
+                                                    >
+                                                        💾 Salvar
+                                                    </button>
+                                                ) : (
+                                                    <>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleEdit(exp)}
+                                                            className="text-emerald-600 cursor-pointer hover:text-emerald-800 p-2 rounded-lg hover:bg-emerald-50/50 transition-all duration-200"
+                                                            aria-label="Editar despesa"
+                                                        >
+                                                            <FaEdit size={18} />
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleDelete(exp.id!)}
+                                                            className="text-red-600 cursor-pointer hover:text-red-800 p-2 rounded-lg hover:bg-red-50 transition-all duration-200"
+                                                            aria-label="Excluir despesa"
+                                                        >
+                                                            <FaTrash size={18} />
+                                                        </button>
+                                                    </>
+                                                )}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </section>
+                </>
             )}
         </main>
     )
