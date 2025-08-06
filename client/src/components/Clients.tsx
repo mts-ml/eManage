@@ -38,17 +38,17 @@ export const Clients: React.FC = () => {
     // Filtrar clientes baseado no termo de busca (nome ou CPF/CNPJ)
     const filteredClients = clients.filter(client => {
         if (!searchTerm.trim()) return true
-        
+
         const searchLower = searchTerm.toLowerCase().trim()
         const clientNameLower = client.name.toLowerCase()
-        
+
         // Busca por nome (exata ou parcial)
         const nameMatch = clientNameLower.includes(searchLower)
-        
+
         // Busca por CPF/CNPJ (apenas números)
         const searchNumbers = searchTerm.replace(/\D/g, '')
         const cpfCnpjMatch = searchNumbers && client.cpfCnpj.replace(/\D/g, '').includes(searchNumbers)
-        
+
         return nameMatch || cpfCnpjMatch
     })
 
@@ -244,115 +244,22 @@ export const Clients: React.FC = () => {
                 <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-green-600 mb-2">
                     👥 Cadastro de Clientes
                 </h2>
+
                 <p className="text-gray-600 font-medium">Gerencie seus clientes de forma eficiente</p>
             </div>
 
-            <div className="text-center mb-8">
-                <button
-                    onClick={() => {
-                        setForm(defaultClient)
-                        setEditingClientId(null)
-                        setShowForm(true)
-                        setFormErrors({})
-                    }}
-                    className="bg-gradient-to-r from-emerald-600 to-green-600 cursor-pointer text-white px-8 py-3 rounded-xl font-semibold hover:from-emerald-700 hover:to-green-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-                >
-                    ➕ Novo Cliente
-                </button>
-            </div>
-
-            {clients.length > 0 && (
-                <>
-                    <h3 className="text-center mb-6 text-2xl font-bold text-emerald-800">
-                        📋 Lista de Clientes
-                    </h3>
-
-                    {/* Input de Busca */}
-                    <div className="mb-6">
-                        <div className="flex justify-center">
-
-                            <div className="relative max-w-md w-full">
-                                <label htmlFor="searchInput" className="block text-sm font-semibold text-gray-700 mb-2">
-                                    Buscar Cliente
-                                </label>
-
-                                <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <FaSearch className="h-5 w-5 text-gray-400" />
-                                    </div>
-                                    
-                                    <input
-                                        id="searchInput"
-                                        type="text"
-                                        placeholder="Buscar por nome ou CPF/CNPJ..."
-                                        value={searchTerm}
-                                        onChange={(e) => setSearchTerm(e.currentTarget.value)}
-                                        className="block w-full pl-10 pr-3 py-3 border-2 border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-300 bg-white/80 backdrop-blur-sm"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
-                        {searchTerm && (
-                            <p className="text-center text-sm text-gray-600 mt-2">
-                                {filteredClients.length} cliente{filteredClients.length !== 1 ? 's' : ''} encontrado{filteredClients.length !== 1 ? 's' : ''}
-                            </p>
-                        )}
-                    </div>
-
-                    <div className="overflow-auto border-2 border-emerald-200/50 rounded-2xl shadow-xl mb-10 max-h-[70vh] bg-white/90 backdrop-blur-sm">
-                                                 <table className="min-w-full divide-y divide-gray-200">
-                             <thead className="bg-gradient-to-r from-emerald-600 to-green-600 text-white sticky top-0 z-10">
-                                 <tr>
-                                     <th className="px-6 py-4 text-sm font-semibold text-center">Nome</th>
-                                     <th className="px-6 py-4 text-sm font-semibold text-center">E-mail</th>
-                                     <th className="px-6 py-4 text-sm font-semibold text-center">Telefone</th>
-                                     <th className="px-6 py-4 text-sm font-semibold text-center">Documento</th>
-                                     <th className="px-6 py-4 text-sm font-semibold text-center">Ações</th>
-                                 </tr>
-                             </thead>
-
-                                                         <tbody className="bg-white divide-y divide-gray-100">
-                                 {filteredClients.map(client => (
-                                     <tr key={client.id} className="hover:bg-emerald-50/50 transition-colors duration-200">
-                                         <td className="px-6 py-4 text-sm font-medium whitespace-nowrap text-center">{client.name}</td>
- 
-                                         <td className="px-6 py-4 text-sm break-words text-emerald-700 text-center">{client.email}</td>
- 
-                                         <td className="px-6 py-4 text-sm whitespace-nowrap font-medium text-center">{formatPhoneForDisplay(client.phone)}</td>
- 
-                                         <td className="px-6 py-4 text-sm whitespace-nowrap font-mono text-center">
-                                             {client.cpfCnpj.length === 11
-                                                 ? client.cpfCnpj.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4")
-                                                 : client.cpfCnpj.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, "$1.$2.$3/$4-$5")}
-                                         </td>
- 
-                                         <td className="px-6 py-4 text-sm flex gap-3 justify-center">
-                                             <button
-                                                 onClick={() => handleEdit(client)}
-                                                 className="text-emerald-600 cursor-pointer hover:text-emerald-800 p-2 rounded-lg hover:bg-emerald-50/50 transition-all duration-200"
-                                                 aria-label="Editar cliente."
-                                                 title="Editar cliente"
-                                             >
-                                                 <FaEdit size={18} />
-                                             </button>
- 
-                                             <button
-                                                 onClick={() => handleDelete(client.id!)}
-                                                 className="text-red-600 cursor-pointer hover:text-red-800 p-2 rounded-lg hover:bg-red-50 transition-all duration-200"
-                                                 aria-label="Excluir cliente"
-                                                 title="Excluir cliente"
-                                             >
-                                                 <FaTrash size={18} />
-                                             </button>
-                                         </td>
-                                     </tr>
-                                 ))}
-                             </tbody>
-                        </table>
-                    </div>
-                </>
-            )}
+            <button
+                type="button"
+                onClick={() => {
+                    setForm(defaultClient)
+                    setEditingClientId(null)
+                    setShowForm(true)
+                    setFormErrors({})
+                }}
+                className="block mx-auto mb-8 bg-gradient-to-r from-emerald-600 to-green-600 cursor-pointer text-white px-8 py-3 rounded-xl font-semibold hover:from-emerald-700 hover:to-green-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+            >
+                ➕ Novo Cliente
+            </button>
 
             {showForm && (
                 <form onSubmit={handleSubmit} className="border-2 border-emerald-200/50 rounded-2xl p-8 bg-white/90 backdrop-blur-sm shadow-xl mb-8">
@@ -439,6 +346,102 @@ export const Clients: React.FC = () => {
                         </div>
                     )}
                 </form>
+            )}
+
+            {/* Input de Busca */}
+            <div className="mb-6">
+                <div className="flex justify-center">
+                    <div className="relative max-w-md w-full">
+                        <label htmlFor="searchInput"
+                            className="block pl-3 text-sm font-semibold text-gray-700 mb-2"
+                        >
+                            Buscar Cliente
+                        </label>
+
+                        <div className="relative">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <FaSearch className="h-5 w-5 text-gray-400" />
+                            </div>
+
+                            <input
+                                id="searchInput"
+                                type="text"
+                                placeholder="Buscar por nome ou CPF/CNPJ..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.currentTarget.value)}
+                                className="block w-full pl-10 pr-3 py-3 border-2 border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-300 bg-white/80 backdrop-blur-sm"
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                {searchTerm && (
+                    <p className="text-center text-sm text-gray-600 mt-2">
+                        {filteredClients.length} cliente{filteredClients.length !== 1 ? 's' : ''} encontrado{filteredClients.length !== 1 ? 's' : ''}
+                    </p>
+                )}
+            </div>
+
+            {clients.length > 0 && (
+                <>
+                    <h3 className="text-center mb-6 text-2xl font-bold text-emerald-800">
+                        📋 Lista de Clientes
+                    </h3>
+
+                    <div className="overflow-auto border-2 border-emerald-200/50 rounded-2xl shadow-xl mb-10 max-h-[70vh] bg-white/90 backdrop-blur-sm">
+                        <table className="min-w-full divide-y divide-gray-200">
+                            <thead className="bg-gradient-to-r from-emerald-600 to-green-600 text-white sticky top-0 z-10">
+                                <tr>
+                                    <th className="px-6 py-4 text-sm font-semibold text-center">Nome</th>
+                                    <th className="px-6 py-4 text-sm font-semibold text-center">E-mail</th>
+                                    <th className="px-6 py-4 text-sm font-semibold text-center">Telefone</th>
+                                    <th className="px-6 py-4 text-sm font-semibold text-center">Documento</th>
+                                    <th className="px-6 py-4 text-sm font-semibold text-center">Ações</th>
+                                </tr>
+                            </thead>
+
+                            <tbody className="bg-white divide-y divide-gray-100">
+                                {filteredClients.map(client => (
+                                    <tr key={client.id} className="hover:bg-emerald-50/50 transition-colors duration-200">
+                                        <td className="px-6 py-4 text-sm font-medium whitespace-nowrap text-center">{client.name}</td>
+
+                                        <td className="px-6 py-4 text-sm break-words text-emerald-700 text-center">{client.email}</td>
+
+                                        <td className="px-6 py-4 text-sm whitespace-nowrap font-medium text-center">{formatPhoneForDisplay(client.phone)}</td>
+
+                                        <td className="px-6 py-4 text-sm whitespace-nowrap font-mono text-center">
+                                            {client.cpfCnpj.length === 11
+                                                ? client.cpfCnpj.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4")
+                                                : client.cpfCnpj.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, "$1.$2.$3/$4-$5")}
+                                        </td>
+
+                                        <td className="px-6 py-4 text-sm flex justify-center">
+                                            <button
+                                                type="button"
+                                                onClick={() => handleEdit(client)}
+                                                className="text-emerald-600 cursor-pointer hover:text-emerald-800 p-2 rounded-lg hover:bg-emerald-50/50 transition-all duration-200"
+                                                aria-label="Editar cliente."
+                                                title="Editar cliente"
+                                            >
+                                                <FaEdit size={18} />
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                onClick={() => handleDelete(client.id!)}
+                                                className="text-red-600 cursor-pointer hover:text-red-800 p-2 rounded-lg hover:bg-red-50 transition-all duration-200"
+                                                aria-label="Excluir cliente"
+                                                title="Excluir cliente"
+                                            >
+                                                <FaTrash size={18} />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </>
             )}
         </main>
     )

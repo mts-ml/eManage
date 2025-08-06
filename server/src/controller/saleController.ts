@@ -11,7 +11,7 @@ import { Product } from "../model/Products.js"
 export async function getAllSales(req: Request, res: Response, next: NextFunction) {
     try {
         const sales = await Sale.find({}).sort({ date: -1 })
-        
+
         if (sales.length === 0) {
             res.sendStatus(204)
             return
@@ -129,6 +129,24 @@ export async function deleteSale(req: Request<{ id: string }>, res: Response, ne
         res.json({ message: `Venda deletada com sucesso.` })
     } catch (error) {
         console.error("Erro ao deletar venda", error)
+        next(error)
+    }
+}
+
+export async function getSalesHistory(req: Request, res: Response, next: NextFunction) {
+    try {
+        const sales = await Sale.find({})
+            .sort({ date: -1, saleNumber: -1 })
+            .select('-__v')
+
+        if (sales.length === 0) {
+            res.json([])
+            return
+        }
+
+        res.json(sales)
+    } catch (error) {
+        console.error(`getSalesHistory error: ${JSON.stringify(error)}`)
         next(error)
     }
 }

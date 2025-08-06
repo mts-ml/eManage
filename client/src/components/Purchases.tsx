@@ -24,6 +24,7 @@ export const Purchases: React.FC = () => {
     const [selectedProductId, setSelectedProductId] = useState<string>("")
     const [quantity, setQuantity] = useState<number>(1)
     const [customPrice, setCustomPrice] = useState<string>("")
+    const [invoiceNumber, setInvoiceNumber] = useState<string>("")
     const [supplierSearchTerm, setSupplierSearchTerm] = useState<string>("")
     const [productSearchTerm, setProductSearchTerm] = useState<string>("")
     const axiosPrivate = useAxiosPrivate()
@@ -105,10 +106,11 @@ export const Purchases: React.FC = () => {
     }
 
     async function submitPurchase() {
-        const purchasePayload: ItemPayload = {
+        const purchasePayload: ItemPayload & { invoiceNumber: string } = {
             clientId: selectedSupplierId,
             clientName: selectedSupplier?.name || "Fornecedor Desconhecido",
             date: today,
+            invoiceNumber,
             items: cart
                 .map(item => ({
                     productId: item.id!,
@@ -119,8 +121,8 @@ export const Purchases: React.FC = () => {
             total: Number(total),
         }
 
-        if (!selectedSupplierId || cart.length === 0) {
-            alert("Selecione um fornecedor e adicione produtos ao carrinho.")
+        if (!selectedSupplierId || cart.length === 0 || !invoiceNumber.trim()) {
+            alert("Selecione um fornecedor, adicione produtos ao carrinho e informe o número da nota.")
             return
         }
 
@@ -149,6 +151,7 @@ export const Purchases: React.FC = () => {
         setSelectedSupplierId("")
         setSelectedProductId("")
         setQuantity(1)
+        setInvoiceNumber("")
     }
 
 
@@ -246,6 +249,23 @@ export const Purchases: React.FC = () => {
                                 </option>
                             ))}
                         </select>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label htmlFor="invoiceNumber" className="block text-sm font-semibold text-gray-700 mb-2">
+                            Número da Nota <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                            id="invoiceNumber"
+                            type="text"
+                            value={invoiceNumber}
+                            onChange={e => setInvoiceNumber(e.target.value)}
+                            placeholder="Digite o número da nota fiscal"
+                            className="w-full border-2 border-gray-200 rounded-xl p-3 transition-all duration-300 bg-white/80 backdrop-blur-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                            required
+                        />
                     </div>
                 </div>
             </section>

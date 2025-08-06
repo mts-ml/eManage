@@ -1,17 +1,19 @@
 import { useEffect, useState } from "react"
-import { Users, Truck, Package, ShoppingCart, ShoppingBag, X, ArrowDownCircle, ArrowUpCircle } from "lucide-react"
+import { Users, Truck, Package, ShoppingCart, ShoppingBag, X, ArrowDownCircle, ArrowUpCircle, BarChart3, History } from "lucide-react"
 
 import { Clients } from "../components/Clients"
 import { Suppliers } from "../components/Suppliers"
 import { Products } from "../components/Products"
 import { Sales } from "../components/Sales"
+import { SalesHistory } from "../components/SalesHistory"
 import { Purchases } from "../components/Purchases"
+import { PurchasesHistory } from "../components/PurchasesHistory"
 import { Receivables } from "../components/Receivables"
 import { Expenses } from "../components/Expenses"
 import { Payables } from "../components/Payables"
 
 
-type SectionKey = "clients" | "suppliers" | "products" | "sales" | "purchases" | "receivables" | "payables" | "expenses"
+type SectionKey = "clients" | "suppliers" | "products" | "sales" | "purchases" | "receivables" | "payables" | "expenses" | "salesHistory" | "purchasesHistory"
 
 type SectionConfig = {
     section: SectionKey
@@ -51,7 +53,6 @@ const sectionsArray: SectionConfig[] = [
         icon: <ShoppingBag className="h-6 w-6 sm:h-8 sm:w-8 mb-2" />,
         component: <Purchases />
     },
-
     {
         section: "receivables",
         sectionName: "Contas a receber",
@@ -69,6 +70,18 @@ const sectionsArray: SectionConfig[] = [
         sectionName: "Despesas",
         icon: <ArrowUpCircle className="h-6 w-6 sm:h-8 sm:w-8 mb-2" />,
         component: <Expenses />
+    },
+    {
+        section: "salesHistory",
+        sectionName: "Histórico de Vendas",
+        icon: <BarChart3 className="h-6 w-6 sm:h-8 sm:w-8 mb-2" />,
+        component: <SalesHistory />
+    },
+    {
+        section: "purchasesHistory",
+        sectionName: "Histórico de Compras",
+        icon: <History className="h-6 w-6 sm:h-8 sm:w-8 mb-2" />,
+        component: <PurchasesHistory />
     }
 ]
 

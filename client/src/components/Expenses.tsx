@@ -25,6 +25,8 @@ export const Expenses: React.FC = () => {
     const [isReadyToSubmit, setIsReadyToSubmit] = useState(false)
     const [modifiedId, setModifiedId] = useState<string | null>(null)
     const [inlineErrors, setInlineErrors] = useState<Partial<Record<string, string>>>({})
+    const [repeatMonths, setRepeatMonths] = useState<number>(1)
+    const [isRepeating, setIsRepeating] = useState(false)
 
 
     const { expenses, setExpenses } = useContext(ExpenseContext)
@@ -76,7 +78,49 @@ export const Expenses: React.FC = () => {
 
         const requiredFieldsFilled = updatedForm.name.trim() !== "" && updatedForm.value !== ""
         const noErrors = Object.values(validation).every(error => !error)
-        setIsReadyToSubmit(requiredFieldsFilled && noErrors)
+        const repeatValidation = repeatMonths === 1 || (repeatMonths > 1 && !!updatedForm.dueDate)
+        setIsReadyToSubmit(requiredFieldsFilled && noErrors && repeatValidation)
+    }
+
+    function handleRepeatMonthsChange(e: React.ChangeEvent<HTMLInputElement>) {
+        const value = e.target.value
+        const numValue = parseInt(value)
+        
+        // Permitir que o usuário digite livremente
+        if (value === "") {
+            setRepeatMonths(1)
+        } else if (!isNaN(numValue)) {
+            // Limitar apenas valores muito altos para evitar problemas
+            if (numValue > 60) {
+                setRepeatMonths(60)
+            } else if (numValue <= 0) {
+                // Manter o valor como está para permitir que o usuário continue digitando
+                setRepeatMonths(numValue)
+            } else {
+                setRepeatMonths(numValue)
+            }
+        }
+
+        // Revalidar o formulário após mudança no campo de repetição
+        const validation = validateExpense(form)
+        const requiredFieldsFilled = form.name.trim() !== "" && form.value !== ""
+        const noErrors = Object.values(validation).every(error => !error)
+        const currentValue = value === "" ? 1 : (isNaN(numValue) ? 1 : numValue)
+        const repeatValidation = currentValue === 1 || (currentValue > 1 && !!form.dueDate)
+        const validRepeatValue = currentValue > 0
+        setIsReadyToSubmit(requiredFieldsFilled && noErrors && repeatValidation && validRepeatValue)
+    }
+
+    function getNextMonthDate(currentDate: string, monthsToAdd: number): string {
+        const date = new Date(currentDate)
+        date.setMonth(date.getMonth() + monthsToAdd)
+
+        // Garantir que a data seja formatada corretamente
+        const year = date.getFullYear()
+        const month = String(date.getMonth() + 1).padStart(2, '0')
+        const day = String(date.getDate()).padStart(2, '0')
+
+        return `${year}-${month}-${day}`
     }
 
     function handleEdit(expense: Expense) {
@@ -163,30 +207,51 @@ export const Expenses: React.FC = () => {
 
         if (!isReadyToSubmit) return
 
+        // Validação final do campo de repetição
+        if (repeatMonths <= 0) {
+            setErrorMessage("A quantidade de meses deve ser maior que 0")
+            return
+        }
+
         try {
+            setIsRepeating(true)
             const { name, value, description, dueDate, status, bank } = form
 
-            const payload = {
+            const basePayload = {
                 name,
                 value: String(value),
                 description: description,
-                dueDate: dueDate || null,
                 status: status === "Pago" ? "Pago" : "Em aberto",
                 bank: bank || null
             }
 
-            console.log(payload)
-
             if (editingExpenseId) {
+                // Edição de despesa existente
+                const payload = {
+                    ...basePayload,
+                    dueDate: dueDate || null
+                }
+
                 const response = await axiosPrivate.put<ExpenseFromBackend>(`/expenses/${editingExpenseId}`, payload)
                 const updated = { ...response.data, id: response.data._id }
 
                 setExpenses(prev => prev.map(exp => exp.id === editingExpenseId ? updated : exp))
             } else {
-                const response = await axiosPrivate.post<ExpenseFromBackend>(`/expenses`, payload)
+                // Criação de nova(s) despesa(s)
+                const createdExpenses: Expense[] = []
 
-                const newExpense = { ...response.data, id: response.data._id }
-                setExpenses(prev => [...prev, newExpense])
+                for (let i = 0; i < repeatMonths; i++) {
+                    const payload = {
+                        ...basePayload,
+                        dueDate: dueDate ? getNextMonthDate(dueDate, i) : null
+                    }
+
+                    const response = await axiosPrivate.post<ExpenseFromBackend>(`/expenses`, payload)
+                    const newExpense = { ...response.data, id: response.data._id }
+                    createdExpenses.push(newExpense)
+                }
+
+                setExpenses(prev => [...prev, ...createdExpenses])
             }
 
             setForm(defaultExpense)
@@ -195,7 +260,10 @@ export const Expenses: React.FC = () => {
             setFormErrors({})
             setErrorMessage(null)
             setIsReadyToSubmit(false)
+            setRepeatMonths(1)
+            setIsRepeating(false)
         } catch (error) {
+            setIsRepeating(false)
             if (axios.isAxiosError(error)) {
                 const data = error.response?.data
                 if (error.response?.status === 409 && data) {
@@ -238,6 +306,7 @@ export const Expenses: React.FC = () => {
                     setFormErrors({})
                     setErrorMessage(null)
                     setIsReadyToSubmit(false)
+                    setRepeatMonths(1)
                 }}
                 className="block mb-8 cursor-pointer bg-gradient-to-r from-emerald-600 to-green-600 text-white px-8 py-3 rounded-xl font-semibold hover:from-emerald-700 hover:to-green-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 mx-auto"
             >
@@ -295,6 +364,34 @@ export const Expenses: React.FC = () => {
                             )
                         })}
 
+                        {!editingExpenseId && (
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2" htmlFor="repeatMonths">
+                                    Repetir por (meses) <span className="text-emerald-600">🔄</span>
+                                </label>
+                                <input
+                                    type="number"
+                                    id="repeatMonths"
+                                    value={repeatMonths}
+                                    onChange={handleRepeatMonthsChange}
+                                    className="w-full rounded-xl border-2 border-gray-200 shadow-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 px-4 py-3 transition-all duration-300 bg-white/80 backdrop-blur-sm cursor-text"
+                                    placeholder="Ex: 12"
+                                />
+                                <p className="text-xs text-gray-500 mt-1">
+                                    {repeatMonths > 1 ? `Criará ${repeatMonths} despesas com datas incrementadas mensalmente` : "Criará 1 despesa"}
+                                </p>
+                                <p className="text-xs text-gray-500 mt-1">
+                                    💡 Digite um valor maior que 0 (máximo 60 meses)
+                                </p>
+                                {repeatMonths > 1 && !form.dueDate && (
+                                    <p className="text-xs text-amber-600 mt-1 flex items-center">
+                                        <span className="mr-1">⚠️</span>
+                                        Data de vencimento é necessária para repetir despesas
+                                    </p>
+                                )}
+                            </div>
+                        )}
+
                         <div className="md:col-span-2">
                             <label className="block text-sm font-semibold text-gray-700 mb-2" htmlFor="description">
                                 Descrição
@@ -328,6 +425,7 @@ export const Expenses: React.FC = () => {
                                 setEditingExpenseId(null)
                                 setFormErrors({})
                                 setIsReadyToSubmit(false)
+                                setRepeatMonths(1)
                             }}
                             className="px-8 py-3 border-2 border-gray-300 rounded-xl hover:bg-gray-50 cursor-pointer font-semibold transition-all duration-300"
                         >
@@ -336,13 +434,13 @@ export const Expenses: React.FC = () => {
 
                         <button
                             type="submit"
-                            disabled={!isReadyToSubmit}
-                            className={`px-8 py-3 rounded-xl font-semibold transition-all duration-300 ${isReadyToSubmit
+                            disabled={!isReadyToSubmit || isRepeating}
+                            className={`px-8 py-3 rounded-xl font-semibold transition-all duration-300 ${isReadyToSubmit && !isRepeating
                                 ? "bg-gradient-to-r from-emerald-600 to-green-600 cursor-pointer text-white hover:from-emerald-700 hover:to-green-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                                 : "bg-gray-400 text-gray-200 cursor-not-allowed"
                                 }`}
                         >
-                            {editingExpenseId ? "💾 Atualizar" : "💾 Salvar"} Despesa
+                            {isRepeating ? "⏳ Criando..." : editingExpenseId ? "💾 Atualizar" : "💾 Salvar"} Despesa{repeatMonths > 1 && !editingExpenseId ? "s" : ""}
                         </button>
                     </div>
 
@@ -433,6 +531,7 @@ export const Expenses: React.FC = () => {
                                             ) : (
                                                 <>
                                                     <button
+                                                        type="button"
                                                         onClick={() => handleEdit(exp)}
                                                         className="text-emerald-600 cursor-pointer hover:text-emerald-800 p-2 rounded-lg hover:bg-emerald-50/50 transition-all duration-200"
                                                         aria-label="Editar despesa"
@@ -440,6 +539,7 @@ export const Expenses: React.FC = () => {
                                                         <FaEdit size={18} />
                                                     </button>
                                                     <button
+                                                        type="button"
                                                         onClick={() => handleDelete(exp.id!)}
                                                         className="text-red-600 cursor-pointer hover:text-red-800 p-2 rounded-lg hover:bg-red-50 transition-all duration-200"
                                                         aria-label="Excluir despesa"
