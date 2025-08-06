@@ -171,12 +171,10 @@ export const Sales: React.FC = () => {
 
     return (
         <main className="p-8 max-w-6xl mx-auto">
-            <div className="text-center mb-8">
-                <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-green-600 mb-2">
-                    🛒 Vendas
-                </h2>
-                <p className="text-gray-600 font-medium">Gerencie suas vendas de forma eficiente</p>
-            </div>
+            <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-green-600 mb-2 text-center">
+                🛒 Vendas
+            </h1>
+            <p className="text-gray-600 font-medium text-center mb-8">Gerencie suas vendas de forma eficiente</p>
 
             {/* Selecionar cliente e produto */}
             <section className="border-2 border-emerald-200/50 rounded-2xl p-8 bg-white/90 backdrop-blur-sm shadow-xl mb-8">
@@ -191,7 +189,7 @@ export const Sales: React.FC = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                    <div>
+                    <article>
                         <label htmlFor="client" className="block text-sm font-semibold text-gray-700 mb-2">
                             Cliente <span className="text-red-500">*</span>
                         </label>
@@ -227,9 +225,9 @@ export const Sales: React.FC = () => {
                                 </option>
                             ))}
                         </select>
-                    </div>
+                    </article>
 
-                    <div>
+                    <article>
                         <label htmlFor="product" className="block text-sm font-semibold text-gray-700 mb-2">
                             Produto <span className="text-red-500">*</span>
                         </label>
@@ -265,7 +263,7 @@ export const Sales: React.FC = () => {
                                 </option>
                             ))}
                         </select>
-                    </div>
+                    </article>
                 </div>
             </section>
 
@@ -297,18 +295,18 @@ export const Sales: React.FC = () => {
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                            <div className="bg-emerald-50/50 p-4 rounded-xl">
+                            <article className="bg-emerald-50/50 p-4 rounded-xl">
                                 <p className="text-sm font-medium text-gray-600 mb-1">Preço Padrão</p>
 
                                 <p className="text-lg font-bold text-emerald-700">
                                     R$ {Number(selectedProduct.salePrice).toFixed(2).replace(".", ",")}
                                 </p>
-                            </div>
+                            </article>
 
-                            <div className="bg-yellow-50/50 p-4 rounded-xl">
+                            <article className="bg-yellow-50/50 p-4 rounded-xl">
                                 <p className="text-sm font-medium text-gray-600 mb-1">Preço Customizado</p>
 
-                                <div className="flex items-center gap-2">
+                                <section className="flex items-center gap-2">
                                     <label htmlFor="customPrice" className="sr-only">Preço Customizado</label>
                                     <input
                                         id="customPrice"
@@ -320,44 +318,44 @@ export const Sales: React.FC = () => {
                                         placeholder={selectedProduct.salePrice}
                                         className="w-full border-2 border-gray-200 rounded-lg p-2 text-center font-semibold focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                                     />
-                                </div>
+                                </section>
 
                                 <p className="text-xs text-gray-500 mt-1">
                                     Deixe vazio para usar o preço padrão
                                 </p>
-                            </div>
+                            </article>
 
-                            <div className="bg-blue-50 p-4 rounded-xl">
+                            <article className="bg-blue-50 p-4 rounded-xl">
                                 <p className="text-sm font-medium text-gray-600 mb-2">Estoque Disponível</p>
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                <section className="flex items-center justify-between">
+                                    <section className="flex items-center gap-2">
+                                        <section className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
                                             <span className="text-blue-600 text-sm font-bold">📦</span>
-                                        </div>
-                                        <div>
+                                        </section>
+                                        <section>
                                             <p className="text-xl font-bold text-blue-700">
                                                 {selectedProduct.stock}
                                             </p>
 
                                             <p className="text-xs text-blue-600 font-medium">unidades</p>
-                                        </div>
-                                    </div>
+                                        </section>
+                                    </section>
                                     {selectedProduct.description && selectedProduct.description.trim() !== "" && (
-                                        <div className="text-right">
+                                        <section className="text-right">
                                             <p className="text-xs text-blue-600 font-medium mb-1">Descrição</p>
 
                                             <p className="text-xs text-blue-700 italic max-w-[120px] truncate">
                                                 {selectedProduct.description}
                                             </p>
-                                        </div>
+                                        </section>
                                     )}
-                                </div>
-                            </div>
+                                </section>
+                            </article>
 
-                            <div className="bg-green-50/50 p-4 rounded-xl">
+                            <article className="bg-green-50/50 p-4 rounded-xl">
                                 <p className="text-sm font-medium text-gray-600 mb-1">Quantidade</p>
 
-                                <div className="flex items-center gap-2">
+                                <section className="flex items-center gap-2">
                                     <label htmlFor="quantity" className="sr-only">Quantidade</label>
 
                                     <input
@@ -370,8 +368,8 @@ export const Sales: React.FC = () => {
                                         placeholder="Qtd"
                                         className="w-20 border-2 border-gray-200 rounded-lg p-2 text-center font-semibold focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                                     />
-                                </div>
-                            </div>
+                                </section>
+                            </article>
                         </div>
 
                         <button
@@ -386,7 +384,7 @@ export const Sales: React.FC = () => {
             )}
 
             {selectedClientId && cart.length > 0 && (
-                <div className="border-2 border-emerald-200/50 rounded-2xl p-8 bg-white/90 backdrop-blur-sm shadow-xl mb-8">
+                <section className="border-2 border-emerald-200/50 rounded-2xl p-8 bg-white/90 backdrop-blur-sm shadow-xl mb-8">
                     <div className="text-center mb-6">
                         <h3 className="text-2xl font-bold text-emerald-800 mb-2">
                             🛒 Carrinho
@@ -458,7 +456,7 @@ export const Sales: React.FC = () => {
 
                                     {/* Controles de quantidade e remoção */}
                                     <div className="flex flex-col sm:flex-row items-center gap-3">
-                                        <div className="flex items-center gap-2 bg-white rounded-lg p-3 border-2 border-emerald-200 shadow-sm">
+                                        <section className="flex items-center gap-2 bg-white rounded-lg p-3 border-2 border-emerald-200 shadow-sm">
                                             <button
                                                 onClick={() => handleQuantityChange(item.id!, -1)}
                                                 className="w-10 h-10 flex items-center justify-center cursor-pointer border border-emerald-300 rounded-lg hover:bg-emerald-100/50 transition-all duration-200 font-bold text-emerald-700 hover:scale-105"
@@ -478,7 +476,7 @@ export const Sales: React.FC = () => {
                                             >
                                                 +
                                             </button>
-                                        </div>
+                                        </section>
 
                                         <button
                                             onClick={() => handleRemoveItem(item.id!)}
@@ -505,11 +503,11 @@ export const Sales: React.FC = () => {
                             💳 Finalizar Venda
                         </button>
                     </div>
-                </div>
+                </section>
             )}
 
             {lastSale && !selectedClientId && (
-                <div className="border-2 border-emerald-200/50 rounded-2xl p-8 bg-gradient-to-br from-emerald-50 to-green-50 backdrop-blur-sm shadow-xl">
+                <section className="border-2 border-emerald-200/50 rounded-2xl p-8 bg-gradient-to-br from-emerald-50 to-green-50 backdrop-blur-sm shadow-xl">
                     {/* Header com ícone e título */}
                     <div className="text-center mb-8">
                         <div className="inline-flex items-center justify-center w-16 h-16 bg-emerald-100 rounded-full mb-4">
@@ -619,7 +617,7 @@ export const Sales: React.FC = () => {
                             </div>
                         </div>
                     </div>
-                </div>
+                </section>
             )}
         </main>
     )

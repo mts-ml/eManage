@@ -240,13 +240,11 @@ export const Clients: React.FC = () => {
 
     return (
         <main className="p-8 max-w-6xl mx-auto">
-            <div className="text-center mb-8">
-                <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-green-600 mb-2">
-                    👥 Cadastro de Clientes
-                </h2>
+            <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-green-600 mb-2 text-center">
+                👥 Cadastro de Clientes
+            </h1>
 
-                <p className="text-gray-600 font-medium">Gerencie seus clientes de forma eficiente</p>
-            </div>
+            <p className="text-gray-600 font-medium text-center mb-8">Gerencie seus clientes de forma eficiente</p>
 
             <button
                 type="button"
@@ -262,94 +260,96 @@ export const Clients: React.FC = () => {
             </button>
 
             {showForm && (
-                <form onSubmit={handleSubmit} className="border-2 border-emerald-200/50 rounded-2xl p-8 bg-white/90 backdrop-blur-sm shadow-xl mb-8">
-                    <h3 className="text-2xl font-bold text-center mb-6 text-emerald-800">
+                <section className="border-2 border-emerald-200/50 rounded-2xl p-8 bg-white/90 backdrop-blur-sm shadow-xl mb-8">
+                    <h2 className="text-2xl font-bold text-emerald-800 text-center mb-6">
                         {editingClientId ? "✏️ Editar Cliente" : "➕ Novo Cliente"}
-                    </h3>
+                    </h2>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                        {clientFields.map(({ key, label, placeholder }) => {
-                            const fieldName = key as keyof Client
+                    <form onSubmit={handleSubmit}>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                            {clientFields.map(({ key, label, placeholder }) => {
+                                const fieldName = key as keyof Client
 
-                            return (
-                                <div key={key}>
-                                    <label htmlFor={key} className="block text-sm font-semibold text-gray-700 mb-2">
-                                        {label} <span className="text-red-500">*</span>
-                                    </label>
+                                return (
+                                    <div key={key}>
+                                        <label htmlFor={key} className="block text-sm font-semibold text-gray-700 mb-2">
+                                            {label} <span className="text-red-500">*</span>
+                                        </label>
 
-                                    <input
-                                        type="text"
-                                        name={key}
-                                        id={key}
-                                        placeholder={placeholder}
-                                        value={form[fieldName]}
-                                        onChange={handleChange}
-                                        onBlur={handleBlur}
-                                        className="w-full rounded-xl border-2 border-gray-200 shadow-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 px-4 py-3 transition-all duration-300 bg-white/80 backdrop-blur-sm"
-                                    />
+                                        <input
+                                            type="text"
+                                            name={key}
+                                            id={key}
+                                            placeholder={placeholder}
+                                            value={form[fieldName]}
+                                            onChange={handleChange}
+                                            onBlur={handleBlur}
+                                            className="w-full rounded-xl border-2 border-gray-200 shadow-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 px-4 py-3 transition-all duration-300 bg-white/80 backdrop-blur-sm"
+                                        />
 
-                                    {formErrors[fieldName] && (
-                                        <p className="text-red-500 font-medium text-sm mt-2 flex items-center">
-                                            <span className="mr-1">⚠️</span>
-                                            {formErrors[key as keyof Client]}
-                                        </p>
-                                    )}
-                                </div>
-                            )
-                        })}
+                                        {formErrors[fieldName] && (
+                                            <p className="text-red-500 font-medium text-sm mt-2 flex items-center">
+                                                <span className="mr-1">⚠️</span>
+                                                {formErrors[key as keyof Client]}
+                                            </p>
+                                        )}
+                                    </div>
+                                )
+                            })}
 
-                        <div className="md:col-span-2">
-                            <label htmlFor="notes" className="block text-sm font-semibold text-gray-700 mb-2">
-                                Observações
-                            </label>
-                            <textarea
-                                name="notes"
-                                id="notes"
-                                value={form.notes || ""}
-                                onChange={handleChange}
-                                rows={4}
-                                placeholder="Adicione observações sobre o cliente..."
-                                className="w-full rounded-xl border-2 border-gray-200 shadow-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 px-4 py-3 transition-all duration-300 bg-white/80 backdrop-blur-sm resize-none"
-                            />
+                            <div className="md:col-span-2">
+                                <label htmlFor="notes" className="block text-sm font-semibold text-gray-700 mb-2">
+                                    Observações
+                                </label>
+                                <textarea
+                                    name="notes"
+                                    id="notes"
+                                    value={form.notes || ""}
+                                    onChange={handleChange}
+                                    rows={4}
+                                    placeholder="Adicione observações sobre o cliente..."
+                                    className="w-full rounded-xl border-2 border-gray-200 shadow-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 px-4 py-3 transition-all duration-300 bg-white/80 backdrop-blur-sm resize-none"
+                                />
+                            </div>
                         </div>
-                    </div>
 
-                    <div className="flex gap-6 justify-center">
-                        <button
-                            type="button"
-                            onClick={() => {
-                                setForm(defaultClient)
-                                setShowForm(false)
-                                setEditingClientId(null)
-                                setFormErrors({})
-                            }}
-                            className="px-8 py-3 border-2 border-gray-300 rounded-xl hover:bg-gray-50 cursor-pointer font-semibold transition-all duration-300"
-                        >
-                            ❌ Cancelar
-                        </button>
+                        <div className="flex gap-6 justify-center">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setForm(defaultClient)
+                                    setShowForm(false)
+                                    setEditingClientId(null)
+                                    setFormErrors({})
+                                }}
+                                className="px-8 py-3 border-2 border-gray-300 rounded-xl hover:bg-gray-50 cursor-pointer font-semibold transition-all duration-300"
+                            >
+                                ❌ Cancelar
+                            </button>
 
-                        <button
-                            type="submit"
-                            disabled={!isReadyToSubmit}
-                            className={`px-8 py-3 rounded-xl font-semibold transition-all duration-300 ${isReadyToSubmit ? "bg-gradient-to-r from-emerald-600 to-green-600 cursor-pointer text-white hover:from-emerald-700 hover:to-green-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5" : "bg-gray-400 text-gray-200 cursor-not-allowed"}`}
-                        >
-                            {editingClientId ? "💾 Atualizar" : "💾 Salvar"} Cliente
-                        </button>
-                    </div>
-
-                    {errorMessage && (
-                        <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-xl">
-                            <p className="text-red-600 font-medium text-center flex items-center justify-center">
-                                <span className="mr-2">❌</span>
-                                {errorMessage}
-                            </p>
+                            <button
+                                type="submit"
+                                disabled={!isReadyToSubmit}
+                                className={`px-8 py-3 rounded-xl font-semibold transition-all duration-300 ${isReadyToSubmit ? "bg-gradient-to-r from-emerald-600 to-green-600 cursor-pointer text-white hover:from-emerald-700 hover:to-green-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5" : "bg-gray-400 text-gray-200 cursor-not-allowed"}`}
+                            >
+                                {editingClientId ? "💾 Atualizar" : "💾 Salvar"} Cliente
+                            </button>
                         </div>
-                    )}
-                </form>
+
+                        {errorMessage && (
+                            <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-xl">
+                                <p className="text-red-600 font-medium text-center flex items-center justify-center">
+                                    <span className="mr-2">❌</span>
+                                    {errorMessage}
+                                </p>
+                            </div>
+                        )}
+                    </form>
+                </section>
             )}
 
             {/* Input de Busca */}
-            <div className="mb-6">
+            <aside className="mb-6">
                 <div className="flex justify-center">
                     <div className="relative max-w-md w-full">
                         <label htmlFor="searchInput"
@@ -380,15 +380,15 @@ export const Clients: React.FC = () => {
                         {filteredClients.length} cliente{filteredClients.length !== 1 ? 's' : ''} encontrado{filteredClients.length !== 1 ? 's' : ''}
                     </p>
                 )}
-            </div>
+            </aside>
 
             {clients.length > 0 && (
                 <>
-                    <h3 className="text-center mb-6 text-2xl font-bold text-emerald-800">
+                    <h2 className="text-2xl font-bold text-emerald-800 text-center mb-6">
                         📋 Lista de Clientes
-                    </h3>
+                    </h2>
 
-                    <div className="overflow-auto border-2 border-emerald-200/50 rounded-2xl shadow-xl mb-10 max-h-[70vh] bg-white/90 backdrop-blur-sm">
+                    <section className="overflow-auto border-2 border-emerald-200/50 rounded-2xl shadow-xl mb-10 max-h-[70vh] bg-white/90 backdrop-blur-sm">
                         <table className="min-w-full divide-y divide-gray-200">
                             <thead className="bg-gradient-to-r from-emerald-600 to-green-600 text-white sticky top-0 z-10">
                                 <tr>
@@ -440,7 +440,7 @@ export const Clients: React.FC = () => {
                                 ))}
                             </tbody>
                         </table>
-                    </div>
+                    </section>
                 </>
             )}
         </main>

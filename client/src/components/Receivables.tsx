@@ -129,15 +129,15 @@ export const Receivables: React.FC = () => {
 
     return (
         <main className="p-8 max-w-6xl mx-auto">
-            <div className="text-center mb-8">
-                <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-green-600 mb-2">
+            <header className="text-center mb-8">
+                <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-green-600 mb-2">
                     💰 Contas a Receber
-                </h2>
+                </h1>
 
                 <p className="text-gray-600 font-medium">Gerencie seus recebimentos financeiros</p>
-            </div>
+            </header>
 
-            <div className="overflow-auto border-2 border-emerald-200/50 rounded-2xl shadow-xl mb-10 max-h-[70vh] bg-white/90 backdrop-blur-sm">
+            <section className="overflow-auto border-2 border-emerald-200/50 rounded-2xl shadow-xl mb-10 max-h-[70vh] bg-white/90 backdrop-blur-sm">
                 <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gradient-to-r from-emerald-600 to-green-600 text-white sticky top-0 z-10">
                         <tr>
@@ -199,7 +199,7 @@ export const Receivables: React.FC = () => {
                                 </td>
 
                                 <td className="px-4 py-3 text-xs text-center">
-                                    <div className="flex flex-col gap-1 items-center">
+                                    <section className="flex flex-col gap-1 items-center">
                                         {modifiedId === sale._id && (
                                             <button
                                                 type="button"
@@ -220,13 +220,13 @@ export const Receivables: React.FC = () => {
                                                 ×
                                             </button>
                                         )}
-                                    </div>
+                                    </section>
                                 </td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
-            </div>
+            </section>
         </main>
     )
 }

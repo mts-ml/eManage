@@ -160,12 +160,10 @@ export const Register: React.FC = () => {
             <div className="absolute bottom-10 right-10 w-40 h-40 bg-green-200/20 rounded-full blur-3xl"></div>
             
             <div className="relative p-6 sm:p-8 lg:p-10 rounded-3xl bg-white/90 backdrop-blur-sm shadow-2xl border border-emerald-200/50 w-full max-w-md mx-4">
-                <div className="text-center mb-8">
-                    <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-green-600 mb-2">
-                        🐼 Panda Alimentos
-                    </h1>
-                    <p className="text-gray-600 font-medium">Crie sua conta para começar</p>
-                </div>
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-green-600 mb-2 text-center">
+                    🐼 Panda Alimentos
+                </h1>
+                <p className="text-gray-600 font-medium text-center mb-8">Crie sua conta para começar</p>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {/* NOME */}

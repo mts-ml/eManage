@@ -105,23 +105,23 @@ export const SalesHistory: React.FC = () => {
 
    return (
       <main className="p-8 max-w-7xl mx-auto">
-         <div className="text-center mb-8">
-            <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-green-600 mb-2">
+         <header className="text-center mb-8">
+            <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-green-600 mb-2">
                📊 Histórico de Vendas
-            </h2>
+            </h1>
 
             <p className="text-gray-600 font-medium">Consulte todas as vendas realizadas no período</p>
-         </div>
+         </header>
 
          {/* Filtros */}
          <section className="border-2 border-emerald-200/50 rounded-2xl p-6 bg-white/90 backdrop-blur-sm shadow-xl mb-8">
-            <div className="flex items-center justify-between mb-6">
-               <h3 className="text-xl font-semibold text-emerald-800 flex items-center">
+            <header className="flex items-center justify-between mb-6">
+               <h2 className="text-xl font-semibold text-emerald-800 flex items-center">
                   <FaCalendarAlt className="mr-2" />
                   Filtros de Período
-               </h3>
+               </h2>
 
-               <div className="flex items-center gap-3">
+               <section className="flex items-center gap-3">
                   <button
                      type="button"
                      onClick={handleSearch}
@@ -137,11 +137,11 @@ export const SalesHistory: React.FC = () => {
                   >
                      Limpar Filtros
                   </button>
-               </div>
-            </div>
+               </section>
+            </header>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-               <div>
+            <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+               <article>
                   <label
                      htmlFor="startDate"
                      className="block text-sm font-semibold text-gray-700 mb-2"
@@ -156,9 +156,9 @@ export const SalesHistory: React.FC = () => {
                      onChange={e => handleFilterChange('startDate', e.target.value)}
                      className="w-full border-2 border-gray-200 rounded-lg p-3 transition-all duration-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                   />
-               </div>
+               </article>
 
-               <div>
+               <article>
                   <label
                      htmlFor="endDate"
                      className="block text-sm font-semibold text-gray-700 mb-2"
@@ -173,17 +173,17 @@ export const SalesHistory: React.FC = () => {
                      onChange={e => handleFilterChange('endDate', e.target.value)}
                      className="w-full border-2 border-gray-200 rounded-lg p-3 transition-all duration-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                   />
-               </div>
+               </article>
 
-               <div>
+               <article>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                      Buscar Cliente
                   </label>
 
-                  <div className="relative">
-                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <section className="relative">
+                     <section className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <FaSearch className="h-4 w-4 text-gray-400" />
-                     </div>
+                     </section>
 
                      <input
                         type="text"
@@ -192,10 +192,10 @@ export const SalesHistory: React.FC = () => {
                         onChange={e => handleFilterChange('clientSearch', e.target.value)}
                         className="w-full pl-10 pr-3 py-3 border-2 border-gray-200 rounded-lg transition-all duration-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                      />
-                  </div>
-               </div>
+                  </section>
+               </article>
 
-               <div>
+               <article>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                      Número da Venda
                   </label>
@@ -207,53 +207,53 @@ export const SalesHistory: React.FC = () => {
                      onChange={e => handleFilterChange('saleNumberSearch', e.target.value)}
                      className="w-full border-2 border-gray-200 rounded-lg p-3 transition-all duration-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                   />
-               </div>
-            </div>
+               </article>
+            </section>
 
             {/* Estatísticas */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-               <div className="bg-emerald-50/50 p-4 rounded-xl border border-emerald-200">
+            <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
+               <article className="bg-emerald-50/50 p-4 rounded-xl border border-emerald-200">
                   <p className="text-sm font-medium text-gray-600 mb-1">Total de Vendas</p>
 
                   <p className="text-2xl font-bold text-emerald-700">{totalSales}</p>
-               </div>
+               </article>
 
-               <div className="bg-green-50/50 p-4 rounded-xl border border-green-200">
+               <article className="bg-green-50/50 p-4 rounded-xl border border-green-200">
                   <p className="text-sm font-medium text-gray-600 mb-1">Receita Total</p>
 
                   <p className="text-2xl font-bold text-green-700">{formatCurrency(totalRevenue)}</p>
-               </div>
-            </div>
+               </article>
+            </section>
          </section>
 
          {/* Tabela de Histórico */}
          <section className="border-2 border-emerald-200/50 rounded-2xl shadow-xl bg-white/90 backdrop-blur-sm overflow-hidden">
-            <div className="bg-gradient-to-r from-emerald-600 to-green-600 px-6 py-4">
+            <header className="bg-gradient-to-r from-emerald-600 to-green-600 px-6 py-4">
                <h3 className="font-semibold text-white text-lg">
                   Vendas Realizadas ({filteredSales.length})
                </h3>
-            </div>
+            </header>
 
             {loading ? (
-               <div className="p-8 text-center">
-                  <div className="inline-flex items-center justify-center w-8 h-8 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mr-2"></div>
+               <section className="p-8 text-center">
+                  <section className="inline-flex items-center justify-center w-8 h-8 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mr-2"></section>
                   <span className="text-gray-600">Carregando histórico...</span>
-               </div>
+               </section>
             ) :
                filteredSales.length === 0 ? (
-                  <div className="p-8 text-center">
+                  <section className="p-8 text-center">
                      {salesHistory.length === 0 ? (
-                        <div>
+                        <article>
                            <p className="text-gray-500 text-lg mb-4">Nenhuma venda carregada</p>
 
                            <p className="text-gray-400 text-sm">Clique em "Buscar Vendas" para carregar o histórico</p>
-                        </div>
+                        </article>
                      ) : (
                         <p className="text-gray-500 text-lg">Nenhuma venda encontrada com os filtros aplicados</p>
                      )}
-                  </div>
+                  </section>
                ) : (
-                  <div className="overflow-x-auto max-h-[70vh]">
+                  <section className="overflow-x-auto max-h-[70vh]">
                      <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-emerald-50 sticky top-0 z-10">
                            <tr>
@@ -284,7 +284,7 @@ export const SalesHistory: React.FC = () => {
 
                                  <td className="px-4 py-3 text-xs">
                                     {sale.items.map((item, index) => (
-                                       <div key={index}
+                                       <section key={index}
                                           className="flex items-center justify-center text-gray-700"
                                        >
                                           <span className="font-medium">{item.productName} -</span>
@@ -292,7 +292,7 @@ export const SalesHistory: React.FC = () => {
                                           <span className="text-emerald-600 font-semibold ml-1">
                                              {formatCurrency(item.price)}
                                           </span>
-                                       </div>
+                                       </section>
                                     ))}
                                  </td>
 
@@ -312,7 +312,7 @@ export const SalesHistory: React.FC = () => {
                            ))}
                         </tbody>
                      </table>
-                  </div>
+                  </section>
                )}
          </section>
       </main>

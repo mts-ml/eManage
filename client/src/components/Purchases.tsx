@@ -157,36 +157,36 @@ export const Purchases: React.FC = () => {
 
     return (
         <main className="p-8 max-w-6xl mx-auto">
-            <div className="text-center mb-8">
-                <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-green-600 mb-2">
+            <header className="text-center mb-8">
+                <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-green-600 mb-2">
                     📦 Compras
-                </h2>
+                </h1>
                 <p className="text-gray-600 font-medium">Gerencie suas compras de forma eficiente</p>
-            </div>
+            </header>
 
             {/* Selecionar fornecedor e produto */}
             <section className="border-2 border-emerald-200/50 rounded-2xl p-8 bg-white/90 backdrop-blur-sm shadow-xl mb-8">
-                <div className="flex justify-between items-center mb-6">
+                <header className="flex justify-between items-center mb-6">
                     <p className="text-xl font-semibold text-emerald-800">
                         Compra Nº {lastPurchase ? lastPurchase.purchaseNumber + 1 : '1'}
                     </p>
 
-                    <div className="text-sm text-gray-600 bg-emerald-50/50 px-4 py-2 rounded-lg">
+                    <section className="text-sm text-gray-600 bg-emerald-50/50 px-4 py-2 rounded-lg">
                         Data: {today}
-                    </div>
-                </div>
+                    </section>
+                </header>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                    <div>
+                <section className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <article>
                         <label htmlFor="client" className="block text-sm font-semibold text-gray-700 mb-2">
                             Fornecedor <span className="text-red-500">*</span>
                         </label>
 
                         {/* Input de busca para fornecedores */}
-                        <div className="relative mb-2">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <section className="relative mb-2">
+                            <section className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <FaSearch className="h-4 w-4 text-gray-400" />
-                            </div>
+                            </section>
                             <input
                                 type="text"
                                 placeholder="Buscar fornecedor por nome..."
@@ -194,7 +194,7 @@ export const Purchases: React.FC = () => {
                                 onChange={(e) => setSupplierSearchTerm(e.currentTarget.value)}
                                 className="block w-full pl-10 pr-3 py-2 border-2 border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-300 bg-white/80 backdrop-blur-sm text-sm"
                             />
-                        </div>
+                        </section>
 
                         <select
                             id="client"
@@ -212,18 +212,18 @@ export const Purchases: React.FC = () => {
                                 </option>
                             ))}
                         </select>
-                    </div>
+                    </article>
 
-                    <div>
+                    <article>
                         <label htmlFor="product" className="block text-sm font-semibold text-gray-700 mb-2">
                             Produto <span className="text-red-500">*</span>
                         </label>
 
                         {/* Input de busca para produtos */}
-                        <div className="relative mb-2">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <section className="relative mb-2">
+                            <section className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <FaSearch className="h-4 w-4 text-gray-400" />
-                            </div>
+                            </section>
                             <input
                                 type="text"
                                 placeholder="Buscar produto por nome..."
@@ -231,7 +231,7 @@ export const Purchases: React.FC = () => {
                                 onChange={(e) => setProductSearchTerm(e.currentTarget.value)}
                                 className="block w-full pl-10 pr-3 py-2 border-2 border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-300 bg-white/80 backdrop-blur-sm text-sm"
                             />
-                        </div>
+                        </section>
 
                         <select
                             id="product"
@@ -249,11 +249,11 @@ export const Purchases: React.FC = () => {
                                 </option>
                             ))}
                         </select>
-                    </div>
-                </div>
+                    </article>
+                </section>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
+                <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <article>
                         <label htmlFor="invoiceNumber" className="block text-sm font-semibold text-gray-700 mb-2">
                             Número da Nota <span className="text-red-500">*</span>
                         </label>
@@ -266,22 +266,22 @@ export const Purchases: React.FC = () => {
                             className="w-full border-2 border-gray-200 rounded-xl p-3 transition-all duration-300 bg-white/80 backdrop-blur-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                             required
                         />
-                    </div>
-                </div>
+                    </article>
+                </section>
             </section>
 
             {selectedProduct && selectedSupplier && (
                 <section className="mb-8 border-2 border-emerald-200/50 rounded-2xl p-6 bg-white/90 backdrop-blur-sm shadow-xl">
-                    <div>
-                        <div className="flex items-center justify-between mb-4">
-                            <div>
+                    <article>
+                        <header className="flex items-center justify-between mb-4">
+                            <section>
                                 <p className="text-lg font-semibold text-emerald-800 mb-2">
                                     Fornecedor: <span className="text-emerald-600">{selectedSupplier.name}</span>
                                 </p>
                                 <p className="text-lg font-semibold text-emerald-800">
                                     Produto: <span className="text-emerald-600">{selectedProduct.name}</span>
                                 </p>
-                            </div>
+                            </section>
 
                             <button
                                 type="button"
@@ -294,75 +294,75 @@ export const Purchases: React.FC = () => {
                             >
                                 <X className="w-6 h-6" />
                             </button>
-                        </div>
+                        </header>
 
-                                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                             <div className="bg-emerald-50/50 p-4 rounded-xl">
-                                 <p className="text-sm font-medium text-gray-600 mb-1">Preço Padrão</p>
-                                 <p className="text-lg font-bold text-emerald-700">
-                                     R$ {Number(selectedProduct.purchasePrice).toFixed(2).replace(".", ",")}
-                                 </p>
-                             </div>
+                        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                            <article className="bg-emerald-50/50 p-4 rounded-xl">
+                                <p className="text-sm font-medium text-gray-600 mb-1">Preço Padrão</p>
+                                <p className="text-lg font-bold text-emerald-700">
+                                    R$ {Number(selectedProduct.purchasePrice).toFixed(2).replace(".", ",")}
+                                </p>
+                            </article>
 
-                             <div className="bg-yellow-50/50 p-4 rounded-xl">
-                                 <p className="text-sm font-medium text-gray-600 mb-1">Preço Customizado</p>
-                                 <div className="flex items-center gap-2">
-                                     <label htmlFor="customPrice" className="sr-only">Preço Customizado</label>
-                                     <input
-                                         id="customPrice"
-                                         type="number"
-                                         step="0.01"
-                                         min="0"
-                                         onChange={e => setCustomPrice(e.currentTarget.value)}
-                                         value={customPrice}
-                                         placeholder={selectedProduct.purchasePrice}
-                                         className="w-full border-2 border-gray-200 rounded-lg p-2 text-center font-semibold focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                                     />
-                                 </div>
-                                 <p className="text-xs text-gray-500 mt-1">Deixe vazio para usar o preço padrão</p>
-                             </div>
+                            <article className="bg-yellow-50/50 p-4 rounded-xl">
+                                <p className="text-sm font-medium text-gray-600 mb-1">Preço Customizado</p>
+                                <section className="flex items-center gap-2">
+                                    <label htmlFor="customPrice" className="sr-only">Preço Customizado</label>
+                                    <input
+                                        id="customPrice"
+                                        type="number"
+                                        step="0.01"
+                                        min="0"
+                                        onChange={e => setCustomPrice(e.currentTarget.value)}
+                                        value={customPrice}
+                                        placeholder={selectedProduct.purchasePrice}
+                                        className="w-full border-2 border-gray-200 rounded-lg p-2 text-center font-semibold focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                    />
+                                </section>
+                                <p className="text-xs text-gray-500 mt-1">Deixe vazio para usar o preço padrão</p>
+                            </article>
 
-                             <div className="bg-blue-50 p-4 rounded-xl">
-                                 <p className="text-sm font-medium text-gray-600 mb-2">Estoque Disponível</p>
-                                 <div className="flex items-center justify-between">
-                                     <div className="flex items-center gap-2">
-                                         <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                                             <span className="text-blue-600 text-sm font-bold">📦</span>
-                                         </div>
-                                         <div>
-                                             <p className="text-xl font-bold text-blue-700">
-                                                 {selectedProduct.stock}
-                                             </p>
-                                             <p className="text-xs text-blue-600 font-medium">unidades</p>
-                                         </div>
-                                     </div>
-                                     {selectedProduct.description && selectedProduct.description.trim() !== "" && (
-                                         <div className="text-right">
-                                             <p className="text-xs text-blue-600 font-medium mb-1">Descrição</p>
-                                             <p className="text-xs text-blue-700 italic max-w-[120px] truncate">
-                                                 {selectedProduct.description}
-                                             </p>
-                                         </div>
-                                     )}
-                                 </div>
-                             </div>
+                            <article className="bg-blue-50 p-4 rounded-xl">
+                                <p className="text-sm font-medium text-gray-600 mb-2">Estoque Disponível</p>
+                                <section className="flex items-center justify-between">
+                                    <section className="flex items-center gap-2">
+                                        <section className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                            <span className="text-blue-600 text-sm font-bold">📦</span>
+                                        </section>
+                                        <section>
+                                            <p className="text-xl font-bold text-blue-700">
+                                                {selectedProduct.stock}
+                                            </p>
+                                            <p className="text-xs text-blue-600 font-medium">unidades</p>
+                                        </section>
+                                    </section>
+                                    {selectedProduct.description && selectedProduct.description.trim() !== "" && (
+                                        <section className="text-right">
+                                            <p className="text-xs text-blue-600 font-medium mb-1">Descrição</p>
+                                            <p className="text-xs text-blue-700 italic max-w-[120px] truncate">
+                                                {selectedProduct.description}
+                                            </p>
+                                        </section>
+                                    )}
+                                </section>
+                            </article>
 
-                             <div className="bg-green-50/50 p-4 rounded-xl">
-                                 <p className="text-sm font-medium text-gray-600 mb-1">Quantidade</p>
-                                 <div className="flex items-center gap-2">
-                                     <label htmlFor="quantity" className="sr-only">Quantidade</label>
-                                     <input
-                                         id="quantity"
-                                         type="number"
-                                         onChange={e => setQuantity(Number(e.currentTarget.value))}
-                                         value={quantity}
-                                         min={1}
-                                         placeholder="Qtd"
-                                         className="w-20 border-2 border-gray-200 rounded-lg p-2 text-center font-semibold focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                                     />
-                                 </div>
-                             </div>
-                         </div>
+                            <article className="bg-green-50/50 p-4 rounded-xl">
+                                <p className="text-sm font-medium text-gray-600 mb-1">Quantidade</p>
+                                <section className="flex items-center gap-2">
+                                    <label htmlFor="quantity" className="sr-only">Quantidade</label>
+                                    <input
+                                        id="quantity"
+                                        type="number"
+                                        onChange={e => setQuantity(Number(e.currentTarget.value))}
+                                        value={quantity}
+                                        min={1}
+                                        placeholder="Qtd"
+                                        className="w-20 border-2 border-gray-200 rounded-lg p-2 text-center font-semibold focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                    />
+                                </section>
+                            </article>
+                        </section>
 
                         <button
                             onClick={() => handleAddToCart(selectedProduct, quantity)}
@@ -370,12 +370,12 @@ export const Purchases: React.FC = () => {
                         >
                             ➕ Adicionar ao Carrinho
                         </button>
-                    </div>
+                    </article>
                 </section>
             )}
 
             {selectedSupplierId && cart.length > 0 && (
-                <div className="border-2 border-emerald-200/50 rounded-2xl p-8 bg-white/90 backdrop-blur-sm shadow-xl mb-8">
+                <section className="border-2 border-emerald-200/50 rounded-2xl p-8 bg-white/90 backdrop-blur-sm shadow-xl mb-8">
                     <div className="text-center mb-6">
                         <h3 className="text-2xl font-bold text-emerald-800 mb-2">
                             🛒 Carrinho
@@ -385,27 +385,27 @@ export const Purchases: React.FC = () => {
                         </p>
                     </div>
 
-                    <div className="space-y-4 mb-6">
+                    <section className="space-y-4 mb-6">
                         {cart.map(item => (
-                            <div
+                            <section
                                 key={item.id}
                                 className="border-2 border-emerald-100 rounded-xl p-6 bg-gradient-to-r from-emerald-50/50 to-green-50/50 hover:from-emerald-50/70 hover:to-green-50/70 transition-all duration-200 shadow-sm hover:shadow-md"
                             >
-                                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                                <section className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                                     {/* Informações do produto */}
-                                    <div className="flex-1">
-                                        <div className="flex items-start gap-4">
-                                            <div className="flex-shrink-0 w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center">
+                                    <section className="flex-1">
+                                        <section className="flex items-start gap-4">
+                                            <section className="flex-shrink-0 w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center">
                                                 <span className="text-emerald-600 text-xl">📦</span>
-                                            </div>
+                                            </section>
                                             
-                                            <div className="flex-1 min-w-0">
+                                            <section className="flex-1 min-w-0">
                                                 <h4 className="font-bold text-emerald-800 text-lg mb-1 truncate">
                                                     {item.name}
                                                 </h4>
                                                 
-                                                <div className="space-y-1">
-                                                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                                                <section className="space-y-1">
+                                                    <section className="flex items-center gap-2 text-sm text-gray-600">
                                                         <span className="font-medium">Preço:</span>
                                                         <span className="font-semibold text-emerald-700">
                                                             {Number(item.purchasePrice).toLocaleString("pt-BR", {
@@ -413,25 +413,25 @@ export const Purchases: React.FC = () => {
                                                                 currency: "BRL"
                                                             })}
                                                         </span>
-                                                    </div>
+                                                    </section>
                                                     
-                                                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                                                    <section className="flex items-center gap-2 text-sm text-gray-600">
                                                         <span className="font-medium">Quantidade:</span>
                                                         <span className="font-semibold text-emerald-700">
                                                             {Number(item.quantity).toLocaleString("pt-BR")} (x)
                                                         </span>
-                                                    </div>
+                                                    </section>
                                                     
                                                     {item.description && item.description.trim() !== "" && (
-                                                        <div className="flex items-start gap-2 text-sm text-gray-600">
+                                                        <section className="flex items-start gap-2 text-sm text-gray-600">
                                                             <span className="font-medium mt-0.5">Descrição:</span>
                                                             <span className="italic text-gray-700 bg-gray-50 px-2 py-1 rounded-md">
                                                                 {item.description}
                                                             </span>
-                                                        </div>
+                                                        </section>
                                                     )}
                                                     
-                                                    <div className="flex items-center gap-2 text-sm">
+                                                    <section className="flex items-center gap-2 text-sm">
                                                         <span className="font-medium text-gray-600">Subtotal:</span>
                                                         <span className="font-bold text-emerald-800 text-base">
                                                             {(Number(item.purchasePrice) * Number(item.quantity)).toLocaleString("pt-BR", {
@@ -439,15 +439,15 @@ export const Purchases: React.FC = () => {
                                                                 currency: "BRL"
                                                             })}
                                                         </span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                                                    </section>
+                                                </section>
+                                            </section>
+                                        </section>
+                                    </section>
 
                                     {/* Controles de quantidade e remoção */}
-                                    <div className="flex flex-col sm:flex-row items-center gap-3">
-                                        <div className="flex items-center gap-2 bg-white rounded-lg p-3 border-2 border-emerald-200 shadow-sm">
+                                    <section className="flex flex-col sm:flex-row items-center gap-3">
+                                        <section className="flex items-center gap-2 bg-white rounded-lg p-3 border-2 border-emerald-200 shadow-sm">
                                             <button
                                                 onClick={() => handleQuantityChange(item.id!, -1)}
                                                 className="w-10 h-10 flex items-center justify-center cursor-pointer border border-emerald-300 rounded-lg hover:bg-emerald-100/50 transition-all duration-200 font-bold text-emerald-700 hover:scale-105"
@@ -467,7 +467,7 @@ export const Purchases: React.FC = () => {
                                             >
                                                 +
                                             </button>
-                                        </div>
+                                        </section>
 
                                         <button
                                             onClick={() => handleRemoveItem(item.id!)}
@@ -475,13 +475,13 @@ export const Purchases: React.FC = () => {
                                         >
                                             🗑️ Remover
                                         </button>
-                                    </div>
-                                </div>
-                            </div>
+                                    </section>
+                                </section>
+                            </section>
                         ))}
-                    </div>
+                    </section>
 
-                    <div className="text-center">
+                    <section className="text-center">
                         <p className="text-2xl font-bold text-emerald-800 mb-6">
                             Total: {Number(total).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
                         </p>
@@ -493,12 +493,12 @@ export const Purchases: React.FC = () => {
                         >
                             💳 Finalizar Compra
                         </button>
-                    </div>
-                </div>
+                    </section>
+                </section>
             )}
 
             {lastPurchase && !selectedSupplierId && (
-                <div className="border-2 border-emerald-200/50 rounded-2xl p-8 bg-gradient-to-br from-emerald-50 to-green-50 backdrop-blur-sm shadow-xl">
+                <section className="border-2 border-emerald-200/50 rounded-2xl p-8 bg-gradient-to-br from-emerald-50 to-green-50 backdrop-blur-sm shadow-xl">
                     {/* Header com ícone e título */}
                     <div className="text-center mb-8">
                         <div className="inline-flex items-center justify-center w-16 h-16 bg-emerald-100 rounded-full mb-4">
@@ -511,34 +511,34 @@ export const Purchases: React.FC = () => {
                     </div>
 
                     {/* Informações principais */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                        <div className="bg-white p-6 rounded-xl border border-emerald-200 shadow-sm hover:shadow-md transition-shadow">
+                    <section className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        <section className="bg-white p-6 rounded-xl border border-emerald-200 shadow-sm hover:shadow-md transition-shadow">
                             <div className="flex items-center mb-2">
                                 <span className="text-emerald-600 mr-2">📋</span>
                                 <p className="text-sm font-medium text-gray-600">Número da Compra</p>
                             </div>
                             <p className="text-2xl font-bold text-emerald-700">#{lastPurchase.purchaseNumber}</p>
-                        </div>
+                        </section>
 
-                        <div className="bg-white p-6 rounded-xl border border-emerald-200 shadow-sm hover:shadow-md transition-shadow">
+                        <section className="bg-white p-6 rounded-xl border border-emerald-200 shadow-sm hover:shadow-md transition-shadow">
                             <div className="flex items-center mb-2">
                                 <span className="text-emerald-600 mr-2">🏢</span>
                                 <p className="text-sm font-medium text-gray-600">Fornecedor</p>
                             </div>
                             <p className="text-xl font-bold text-emerald-700 truncate">{lastPurchase.clientName}</p>
-                        </div>
+                        </section>
 
-                        <div className="bg-white p-6 rounded-xl border border-emerald-200 shadow-sm hover:shadow-md transition-shadow">
+                        <section className="bg-white p-6 rounded-xl border border-emerald-200 shadow-sm hover:shadow-md transition-shadow">
                             <div className="flex items-center mb-2">
                                 <span className="text-emerald-600 mr-2">📅</span>
                                 <p className="text-sm font-medium text-gray-600">Data</p>
                             </div>
                             <p className="text-xl font-bold text-emerald-700">{lastPurchase.date}</p>
-                        </div>
-                    </div>
+                        </section>
+                    </section>
 
                     {/* Tabela de itens */}
-                    <div className="bg-white rounded-xl border border-emerald-200 shadow-sm overflow-hidden">
+                    <section className="bg-white rounded-xl border border-emerald-200 shadow-sm overflow-hidden">
                         <div className="bg-gradient-to-r from-emerald-600 to-green-600 px-6 py-4">
                             <h4 className="font-semibold text-white text-lg flex items-center">
                                 <span className="mr-2">📦</span>
@@ -546,7 +546,7 @@ export const Purchases: React.FC = () => {
                             </h4>
                         </div>
                         
-                        <div className="overflow-x-auto">
+                        <section className="overflow-x-auto">
                             <table className="w-full">
                                 <thead className="bg-emerald-50">
                                     <tr>
@@ -568,14 +568,14 @@ export const Purchases: React.FC = () => {
                                     {lastPurchase.items.map((item, index) => (
                                         <tr key={index} className="hover:bg-emerald-50/50 transition-colors">
                                             <td className="px-6 py-4">
-                                                <div className="flex items-center">
-                                                    <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center mr-3">
+                                                <section className="flex items-center">
+                                                    <section className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center mr-3">
                                                         <span className="text-emerald-600 text-sm font-semibold">
                                                             {index + 1}
                                                         </span>
-                                                    </div>
+                                                    </section>
                                                     <span className="text-gray-900 font-medium">{item.productName}</span>
-                                                </div>
+                                                </section>
                                             </td>
                                             <td className="px-6 py-4 text-center">
                                                 <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-emerald-100 text-emerald-800">
@@ -596,19 +596,19 @@ export const Purchases: React.FC = () => {
                                     ))}
                                 </tbody>
                             </table>
-                        </div>
+                        </section>
 
                         {/* Total */}
-                        <div className="bg-gradient-to-r from-emerald-50 to-green-50 px-6 py-4 border-t border-emerald-200">
-                            <div className="flex justify-between items-center">
+                        <section className="bg-gradient-to-r from-emerald-50 to-green-50 px-6 py-4 border-t border-emerald-200">
+                            <section className="flex justify-between items-center">
                                 <span className="text-lg font-semibold text-emerald-800">Total da Compra:</span>
                                 <span className="text-2xl font-bold text-emerald-700">
                                     {lastPurchase.total.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
                                 </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                            </section>
+                        </section>
+                    </section>
+                </section>
             )}
         </main>
     )
