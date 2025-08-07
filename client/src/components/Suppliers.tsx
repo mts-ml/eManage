@@ -1,5 +1,5 @@
 import { useContext, useState } from "react"
-import { FaTrash, FaEdit } from 'react-icons/fa'
+import { FaTrash, FaEdit, FaSearch } from 'react-icons/fa'
 
 import type { Supplier, SupplierErrors, SupplierFromBackend } from "../types/types"
 import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
@@ -31,8 +31,26 @@ export const Suppliers: React.FC = () => {
     const [isReadyToSubmit, setIsReadyToSubmit] = useState(false)
     const [editingSupplierId, setEditingSupplierId] = useState<string | null>(null)
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
+    const [searchTerm, setSearchTerm] = useState<string>("")
     const { suppliers, setSuppliers } = useContext(SupplierContext)
     const axiosPrivate = useAxiosPrivate()
+
+    // Filtrar fornecedores baseado no termo de busca (nome ou CPF/CNPJ)
+    const filteredSuppliers = suppliers.filter(supplier => {
+        if (!searchTerm.trim()) return true
+
+        const searchLower = searchTerm.toLowerCase().trim()
+        const supplierNameLower = supplier.name.toLowerCase()
+
+        // Busca por nome (exata ou parcial)
+        const nameMatch = supplierNameLower.includes(searchLower)
+
+        // Busca por CPF/CNPJ (apenas números)
+        const searchNumbers = searchTerm.replace(/\D/g, '')
+        const cpfCnpjMatch = searchNumbers && supplier.cpfCnpj.replace(/\D/g, '').includes(searchNumbers)
+
+        return nameMatch || cpfCnpjMatch
+    })
 
 
     function formValidation(form: Supplier): SupplierErrors {
@@ -334,6 +352,40 @@ export const Suppliers: React.FC = () => {
                 </section>
             )}
 
+            {/* Input de Busca */}
+            <section className="mb-6">
+                <div className="flex justify-center">
+                    <div className="relative max-w-md w-full">
+                        <label htmlFor="searchInput"
+                            className="block pl-3 text-sm font-semibold text-gray-700 mb-2"
+                        >
+                            Buscar Fornecedor
+                        </label>
+
+                        <div className="relative">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <FaSearch className="h-5 w-5 text-gray-400" />
+                            </div>
+
+                            <input
+                                id="searchInput"
+                                type="text"
+                                placeholder="Buscar por nome ou CPF/CNPJ..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.currentTarget.value)}
+                                className="block w-full pl-10 pr-3 py-3 border-2 border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-300 bg-white/80 backdrop-blur-sm"
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                {searchTerm && (
+                    <p className="text-center text-sm text-gray-600 mt-2">
+                        {filteredSuppliers.length} fornecedor{filteredSuppliers.length !== 1 ? 'es' : ''} encontrado{filteredSuppliers.length !== 1 ? 's' : ''}
+                    </p>
+                )}
+            </section>
+
             {suppliers.length > 0 && (
                 <>
                     <header className="text-center mb-6">
@@ -355,7 +407,7 @@ export const Suppliers: React.FC = () => {
                             </thead>
 
                             <tbody className="bg-white divide-y divide-gray-100">
-                                {suppliers.map(supplier => (
+                                {filteredSuppliers.map(supplier => (
                                     <tr key={supplier.id} className="hover:bg-emerald-50/50 transition-colors duration-200">
                                         <td className="px-6 py-4 text-sm font-medium whitespace-nowrap text-center">{supplier.name}</td>
 

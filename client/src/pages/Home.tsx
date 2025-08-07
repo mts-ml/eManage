@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { Users, Truck, Package, ShoppingCart, ShoppingBag, X, ArrowDownCircle, ArrowUpCircle, BarChart3, History, Building2 } from "lucide-react"
+import { Users, Truck, Package, ShoppingCart, ShoppingBag, X, ArrowDownCircle, ArrowUpCircle, BarChart3, History, Building2, FileText, AlertTriangle } from "lucide-react"
 
 import { Clients } from "../components/Clients"
 import { Suppliers } from "../components/Suppliers"
@@ -11,84 +11,112 @@ import { PurchasesHistory } from "../components/PurchasesHistory"
 import { Receivables } from "../components/Receivables"
 import { Expenses } from "../components/Expenses"
 import { Payables } from "../components/Payables"
-import { Caixa } from "../components/Caixa"
+import { Cashflow } from "../components/Cashflow"
+import { Reports } from "../components/Reports"
+import { OverduePayments } from "../components/OverduePayments"
 
 
-type SectionKey = "clients" | "suppliers" | "products" | "sales" | "purchases" | "receivables" | "payables" | "expenses" | "salesHistory" | "purchasesHistory" | "caixa"
+type SectionKey = "clients" | "suppliers" | "products" | "sales" | "purchases" | "receivables" | "payables" | "expenses" | "salesHistory" | "purchasesHistory" | "caixa" | "relatorios" | "overduePayments"
 
 type SectionConfig = {
     section: SectionKey
     sectionName: string
     icon: React.ReactNode
     component: React.ReactNode
+    description: string
 }
 
 const sectionsArray: SectionConfig[] = [
     {
         section: "clients",
         sectionName: "Clientes",
-        icon: <Users className="h-6 w-6 sm:h-8 sm:w-8 mb-2" />,
-        component: <Clients />
+        icon: <Users className="h-6 w-6 sm:h-8 sm:w-8" />,
+        component: <Clients />,
+        description: "Gerenciar cadastro de clientes"
     },
     {
         section: "suppliers",
         sectionName: "Fornecedores",
-        icon: <Truck className="h-6 w-6 sm:h-8 sm:w-8 mb-2" />,
-        component: <Suppliers />
+        icon: <Truck className="h-6 w-6 sm:h-8 sm:w-8" />,
+        component: <Suppliers />,
+        description: "Gerenciar cadastro de fornecedores"
     },
     {
         section: "products",
         sectionName: "Produtos",
-        icon: <Package className="h-6 w-6 sm:h-8 sm:w-8 mb-2" />,
-        component: <Products />
+        icon: <Package className="h-6 w-6 sm:h-8 sm:w-8" />,
+        component: <Products />,
+        description: "Catálogo de produtos"
     },
     {
         section: "sales",
         sectionName: "Vendas",
-        icon: <ShoppingCart className="h-6 w-6 sm:h-8 sm:w-8 mb-2" />,
-        component: <Sales />
+        icon: <ShoppingCart className="h-6 w-6 sm:h-8 sm:w-8" />,
+        component: <Sales />,
+        description: "Registrar novas vendas"
     },
     {
         section: "purchases",
         sectionName: "Compras",
-        icon: <ShoppingBag className="h-6 w-6 sm:h-8 sm:w-8 mb-2" />,
-        component: <Purchases />
+        icon: <ShoppingBag className="h-6 w-6 sm:h-8 sm:w-8" />,
+        component: <Purchases />,
+        description: "Registrar novas compras"
     },
     {
         section: "receivables",
         sectionName: "Contas a receber",
-        icon: <ArrowDownCircle className="h-6 w-6 sm:h-8 sm:w-8 mb-2" />,
-        component: <Receivables />
+        icon: <ArrowDownCircle className="h-6 w-6 sm:h-8 sm:w-8" />,
+        component: <Receivables />,
+        description: "Gestão de recebimentos"
     },
     {
         section: "payables",
         sectionName: "Contas a pagar",
-        icon: <ArrowUpCircle className="h-6 w-6 sm:h-8 sm:w-8 mb-2" />,
-        component: <Payables />
+        icon: <ArrowUpCircle className="h-6 w-6 sm:h-8 sm:w-8" />,
+        component: <Payables />,
+        description: "Gestão de pagamentos"
     },
     {
         section: "expenses",
         sectionName: "Despesas",
-        icon: <ArrowUpCircle className="h-6 w-6 sm:h-8 sm:w-8 mb-2" />,
-        component: <Expenses />
+        icon: <ArrowUpCircle className="h-6 w-6 sm:h-8 sm:w-8" />,
+        component: <Expenses />,
+        description: "Controle de despesas"
     },
     {
         section: "salesHistory",
         sectionName: "Histórico de Vendas",
-        icon: <BarChart3 className="h-6 w-6 sm:h-8 sm:w-8 mb-2" />,
-        component: <SalesHistory />
+        icon: <BarChart3 className="h-6 w-6 sm:h-8 sm:w-8" />,
+        component: <SalesHistory />,
+        description: "Consultar vendas"
     },
     {
         section: "purchasesHistory",
         sectionName: "Histórico de Compras",
-        icon: <History className="h-6 w-6 sm:h-8 sm:w-8 mb-2" />,
-        component: <PurchasesHistory />
+        icon: <History className="h-6 w-6 sm:h-8 sm:w-8" />,
+        component: <PurchasesHistory />,
+        description: "Consultar compras"
     },
     {
         section: "caixa",
         sectionName: "Caixa",
-        icon: <Building2 className="h-6 w-6 sm:h-8 sm:w-8 mb-2" />,
-        component: <Caixa />
+        icon: <Building2 className="h-6 w-6 sm:h-8 sm:w-8" />,
+        component: <Cashflow />,
+        description: "Controle de caixa"
+    },
+    {
+        section: "relatorios",
+        sectionName: "Relatórios PDF",
+        icon: <FileText className="h-6 w-6 sm:h-8 sm:w-8" />,
+        component: <Reports />,
+        description: "Gerar relatórios"
+    },
+    {
+        section: "overduePayments",
+        sectionName: "Pagamentos Atrasados",
+        icon: <AlertTriangle className="h-6 w-6 sm:h-8 sm:w-8" />,
+        component: <OverduePayments />,
+        description: "Visualizar pagamentos em atraso"
     }
 ]
 
@@ -114,7 +142,7 @@ export const Home: React.FC = () => {
         <main className="p-4 sm:p-6 lg:p-8 max-w-[87.5rem] mx-auto bg-gradient-to-br from-emerald-50/10 via-emerald-50/5 to-emerald-50/20 min-h-screen">
             {/* Cards */}
             <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-10">
-                {sectionsArray.map(({ section, sectionName, icon }) => {
+                {sectionsArray.map(({ section, sectionName, icon, description }) => {
                     const isOpen = openSection === section
 
                     return (
@@ -126,7 +154,7 @@ export const Home: React.FC = () => {
                                     ? "bg-gradient-to-br from-emerald-100 to-green-100 border-emerald-300 ring-4 ring-emerald-200/50 shadow-2xl"
                                     : "bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-2xl border-gray-200/50 hover:border-emerald-200"}`}
                         >
-                            <header className={`p-2 sm:p-4 rounded-full mb-2 sm:mb-4 transition-all duration-300 ${isOpen
+                            <header className={`w-12 h-12 sm:w-16 sm:h-16 rounded-full mb-2 sm:mb-4 transition-all duration-300 flex items-center justify-center ${isOpen
                                 ? "bg-gradient-to-br from-emerald-500 to-green-600 text-white shadow-lg"
                                 : "bg-gradient-to-br from-emerald-100 to-green-100 text-emerald-600 group-hover:from-emerald-200 group-hover:to-green-200"}`}>
                                 {icon}
@@ -137,7 +165,7 @@ export const Home: React.FC = () => {
                             </h2>
 
                             <p className="text-xs sm:text-sm text-gray-500 group-hover:text-gray-600 transition-colors duration-300">
-                                Cadastrar ou visualizar
+                                {description}
                             </p>
                         </article>
                     )

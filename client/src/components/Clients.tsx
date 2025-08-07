@@ -349,7 +349,7 @@ export const Clients: React.FC = () => {
             )}
 
             {/* Input de Busca */}
-            <aside className="mb-6">
+            <section className="mb-6">
                 <div className="flex justify-center">
                     <div className="relative max-w-md w-full">
                         <label htmlFor="searchInput"
@@ -380,7 +380,7 @@ export const Clients: React.FC = () => {
                         {filteredClients.length} cliente{filteredClients.length !== 1 ? 's' : ''} encontrado{filteredClients.length !== 1 ? 's' : ''}
                     </p>
                 )}
-            </aside>
+            </section>
 
             {clients.length > 0 && (
                 <>

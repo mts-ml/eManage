@@ -144,3 +144,30 @@ export interface AxiosErrorResponse {
         }
     }
 }
+
+export interface OverduePayment {
+    _id: string
+    type: 'receivable' | 'payable' | 'expense'
+    description: string
+    amount: number
+    dueDate: string
+    daysOverdue: number
+    clientName?: string
+    supplierName?: string
+    invoiceNumber?: string
+    saleNumber?: number
+    purchaseNumber?: number
+    status: "Em aberto" | "Pago"
+    paymentDate: string | null
+    bank: string
+}
+
+export interface OverduePaymentFilters {
+    type?: 'receivable' | 'payable' | 'expense' | 'all'
+    minDays?: number
+    maxDays?: number
+    minAmount?: number
+    maxAmount?: number
+    sortBy?: 'daysOverdue' | 'amount' | 'dueDate'
+    sortOrder?: 'asc' | 'desc'
+}

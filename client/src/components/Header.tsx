@@ -17,7 +17,7 @@ export const Header: React.FC = () => {
                 {/* Layout para telas pequenas */}
                 <section className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-2 sm:space-y-0">
                     <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-200 to-green-300 text-center sm:text-left">
-                        <NavLink to="/main" className="hover:from-emerald-100 hover:to-green-200 transition-all duration-300">
+                        <NavLink to="/home" className="hover:from-emerald-100 hover:to-green-200 transition-all duration-300">
                             🐼 Panda Alimentos
                         </NavLink>
                     </h1>
