@@ -11,7 +11,7 @@ import { PurchasesHistory } from "../components/PurchasesHistory"
 import { Receivables } from "../components/Receivables"
 import { Expenses } from "../components/Expenses"
 import { Payables } from "../components/Payables"
-import { Cashflow } from "../components/Cashflow"
+import { Cashflow } from "../components/CashFlow"
 import { Reports } from "../components/Reports"
 import { OverduePayments } from "../components/OverduePayments"
 
