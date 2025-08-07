@@ -26,7 +26,6 @@ export const Expenses: React.FC = () => {
     const [modifiedId, setModifiedId] = useState<string | null>(null)
     const [inlineErrors, setInlineErrors] = useState<Partial<Record<string, string>>>({})
     const [repeatMonths, setRepeatMonths] = useState<number>(1)
-    const [isRepeating, setIsRepeating] = useState(false)
 
 
     const { expenses, setExpenses } = useContext(ExpenseContext)
@@ -214,7 +213,6 @@ export const Expenses: React.FC = () => {
         }
 
         try {
-            setIsRepeating(true)
             const { name, value, description, dueDate, status, bank } = form
 
             const basePayload = {
@@ -261,9 +259,7 @@ export const Expenses: React.FC = () => {
             setErrorMessage(null)
             setIsReadyToSubmit(false)
             setRepeatMonths(1)
-            setIsRepeating(false)
         } catch (error) {
-            setIsRepeating(false)
             if (axios.isAxiosError(error)) {
                 const data = error.response?.data
                 if (error.response?.status === 409 && data) {
