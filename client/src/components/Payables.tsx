@@ -9,12 +9,90 @@ import type {
   AxiosErrorResponse
 } from "../types/types"
 
+type SortField = 'date' | 'purchaseNumber' | 'invoiceNumber' | 'clientName' | 'total' | 'paymentDate'
+type SortOrder = 'asc' | 'desc'
+
+interface SortConfig {
+  field: SortField
+  order: SortOrder
+}
 
 export const Payables: React.FC = () => {
   const [payables, setPayables] = useState<Payable[]>([])
   const [errors, setErrors] = useState<Partial<Record<string, string>>>({})
   const [modifiedId, setModifiedId] = useState<string | null>(null)
+  const [sortConfig, setSortConfig] = useState<SortConfig>({ field: 'date', order: 'desc' })
   const axiosPrivate = useAxiosPrivate()
+
+  // Função para converter data do formato DD/MM/AAAA para objeto Date
+  const parseDate = (dateStr: string) => {
+    const [day, month, year] = dateStr.split('/')
+    return new Date(parseInt(year), parseInt(month) - 1, parseInt(day))
+  }
+
+  // Função para ordenar os pagáveis
+  const sortPayables = (data: Payable[], config: SortConfig): Payable[] => {
+    return [...data].sort((a, b) => {
+      let aValue: string | number | Date
+      let bValue: string | number | Date
+
+      switch (config.field) {
+        case 'date':
+          aValue = parseDate(a.date)
+          bValue = parseDate(b.date)
+          break
+        case 'purchaseNumber':
+          aValue = a.purchaseNumber
+          bValue = b.purchaseNumber
+          break
+        case 'invoiceNumber':
+          aValue = a.invoiceNumber || ''
+          bValue = b.invoiceNumber || ''
+          break
+        case 'clientName':
+          aValue = a.clientName.toLowerCase()
+          bValue = b.clientName.toLowerCase()
+          break
+        case 'total':
+          aValue = a.total
+          bValue = b.total
+          break
+        case 'paymentDate':
+          aValue = a.paymentDate ? new Date(a.paymentDate) : new Date(0)
+          bValue = b.paymentDate ? new Date(b.paymentDate) : new Date(0)
+          break
+        default:
+          return 0
+      }
+
+      if (aValue < bValue) {
+        return config.order === 'asc' ? -1 : 1
+      }
+      if (aValue > bValue) {
+        return config.order === 'asc' ? 1 : -1
+      }
+      return 0
+    })
+  }
+
+  // Função para lidar com o clique no cabeçalho da coluna
+  const handleSort = (field: SortField) => {
+    setSortConfig(prev => ({
+      field,
+      order: prev.field === field && prev.order === 'asc' ? 'desc' : 'asc'
+    }))
+  }
+
+  // Função para obter o ícone de ordenação
+  const getSortIcon = (field: SortField) => {
+    if (sortConfig.field !== field) {
+      return '↕️'
+    }
+    return sortConfig.order === 'asc' ? '↑' : '↓'
+  }
+
+  // Pagáveis ordenados
+  const sortedPayables = sortPayables(payables, sortConfig)
 
   useEffect(() => {
     async function fetchPurchases() {
@@ -142,20 +220,74 @@ export const Payables: React.FC = () => {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gradient-to-r from-emerald-600 to-green-600 text-white sticky top-0 z-10">
             <tr>
-              <th className="px-4 py-3 text-xs font-semibold text-center">Data da Compra</th>
-              <th className="px-4 py-3 text-xs font-semibold text-center">Nº Compra</th>
-              <th className="px-4 py-3 text-xs font-semibold text-center">Nº Nota</th>
-              <th className="px-4 py-3 text-xs font-semibold text-center">Fornecedor</th>
-              <th className="px-4 py-3 text-xs font-semibold text-center">Valor Total</th>
+              <th 
+                className="px-4 py-3 text-xs font-semibold text-center cursor-pointer hover:bg-emerald-700 transition-colors duration-200 select-none"
+                onClick={() => handleSort('date')}
+                title="Clique para ordenar por data da compra"
+              >
+                <div className="flex items-center justify-center gap-1">
+                  Data da Compra
+                  <span className="text-xs">{getSortIcon('date')}</span>
+                </div>
+              </th>
+              <th 
+                className="px-4 py-3 text-xs font-semibold text-center cursor-pointer hover:bg-emerald-700 transition-colors duration-200 select-none"
+                onClick={() => handleSort('purchaseNumber')}
+                title="Clique para ordenar por número da compra"
+              >
+                <div className="flex items-center justify-center gap-1">
+                  Nº Compra
+                  <span className="text-xs">{getSortIcon('purchaseNumber')}</span>
+                </div>
+              </th>
+              <th 
+                className="px-4 py-3 text-xs font-semibold text-center cursor-pointer hover:bg-emerald-700 transition-colors duration-200 select-none"
+                onClick={() => handleSort('invoiceNumber')}
+                title="Clique para ordenar por número da nota"
+              >
+                <div className="flex items-center justify-center gap-1">
+                  Nº Nota
+                  <span className="text-xs">{getSortIcon('invoiceNumber')}</span>
+                </div>
+              </th>
+              <th 
+                className="px-4 py-3 text-xs font-semibold text-center cursor-pointer hover:bg-emerald-700 transition-colors duration-200 select-none"
+                onClick={() => handleSort('clientName')}
+                title="Clique para ordenar por fornecedor"
+              >
+                <div className="flex items-center justify-center gap-1">
+                  Fornecedor
+                  <span className="text-xs">{getSortIcon('clientName')}</span>
+                </div>
+              </th>
+              <th 
+                className="px-4 py-3 text-xs font-semibold text-center cursor-pointer hover:bg-emerald-700 transition-colors duration-200 select-none"
+                onClick={() => handleSort('total')}
+                title="Clique para ordenar por valor total"
+              >
+                <div className="flex items-center justify-center gap-1">
+                  Valor Total
+                  <span className="text-xs">{getSortIcon('total')}</span>
+                </div>
+              </th>
               <th className="px-4 py-3 text-xs font-semibold text-center">Status</th>
-              <th className="px-4 py-3 text-xs font-semibold text-center">Data Pagamento</th>
+              <th 
+                className="px-4 py-3 text-xs font-semibold text-center cursor-pointer hover:bg-emerald-700 transition-colors duration-200 select-none"
+                onClick={() => handleSort('paymentDate')}
+                title="Clique para ordenar por data de pagamento"
+              >
+                <div className="flex items-center justify-center gap-1">
+                  Data Pagamento
+                  <span className="text-xs">{getSortIcon('paymentDate')}</span>
+                </div>
+              </th>
               <th className="px-4 py-3 text-xs font-semibold text-center">Banco</th>
               <th className="px-4 py-3 text-xs font-semibold text-center">Ações</th>
             </tr>
           </thead>
 
           <tbody className="bg-white divide-y divide-gray-100">
-            {payables.map(purchase => (
+            {sortedPayables.map(purchase => (
               <tr key={purchase._id} className="hover:bg-emerald-50/50 transition-colors duration-200">
                 <td className="px-4 py-3 text-xs font-medium text-center">{purchase.date}</td>
 
