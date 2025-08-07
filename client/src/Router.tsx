@@ -50,7 +50,7 @@ export const router = createBrowserRouter([
          {
             element: <RouteAuthentication allowedRoles={[ROLES_LIST.Admin, ROLES_LIST.Editor, ROLES_LIST.User]} />,
             children: [
-               { path: "main", element: <Home />, // loader: mainLoader, // loader opcional
+               { path: "home", element: <Home />, // loader: mainLoader, // loader opcional
                },
                { path: "unauthorized", element: <Unauthorized /> }
             ]
