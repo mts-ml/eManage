@@ -18,6 +18,7 @@ export const SalesHistory: React.FC = () => {
    const [salesHistory, setSalesHistory] = useState<Receivable[]>([])
    const [filteredSales, setFilteredSales] = useState<Receivable[]>([])
    const [loading, setLoading] = useState<boolean>(false)
+   const [hasSearched, setHasSearched] = useState<boolean>(false)
    const [filters, setFilters] = useState<SalesHistoryFilters>({
       startDate: "",
       endDate: "",
@@ -26,20 +27,30 @@ export const SalesHistory: React.FC = () => {
    })
    const axiosPrivate = useAxiosPrivate()
 
-   async function fetchSalesHistory() {
-      setLoading(true)
-      try {
-         const response: AxiosResponse<Receivable[]> = await axiosPrivate.get('/sales/history')
-         setSalesHistory(response.data)
-         // Aplicar filtros após buscar dados
-         applyFilters(response.data)
-      } catch (error) {
-         console.error("Erro ao buscar histórico de vendas:", error)
-         alert("Erro ao carregar histórico de vendas")
-      } finally {
-         setLoading(false)
-      }
-   }
+               async function fetchSalesHistory() {
+        setLoading(true)
+        setHasSearched(true)
+        try {
+           const response: AxiosResponse<Receivable[]> = await axiosPrivate.get('/sales/history')
+           
+           // Verifica se a resposta tem status 204 (sem conteúdo) ou se data é null/undefined
+           if (response.status === 204 || !response.data) {
+              setSalesHistory([])
+              setFilteredSales([])
+              return
+           }
+           
+           setSalesHistory(response.data)
+           // Aplicar filtros após buscar dados
+           applyFilters(response.data)
+        } catch (error) {
+           console.error("Erro ao buscar histórico de vendas:", error)
+           setSalesHistory([])
+           setFilteredSales([])
+        } finally {
+           setLoading(false)
+        }
+     }
 
    function applyFilters(data: Receivable[] = salesHistory) {
       let filtered = [...data]
@@ -242,14 +253,21 @@ export const SalesHistory: React.FC = () => {
             ) :
                filteredSales.length === 0 ? (
                   <section className="p-8 text-center">
-                     {salesHistory.length === 0 ? (
+                     {!hasSearched ? (
                         <article>
                            <p className="text-gray-500 text-lg mb-4">Nenhuma venda carregada</p>
 
                            <p className="text-gray-400 text-sm">Clique em "Buscar Vendas" para carregar o histórico</p>
                         </article>
                      ) : (
-                        <p className="text-gray-500 text-lg">Nenhuma venda encontrada com os filtros aplicados</p>
+                        <article>
+                           <div className="text-6xl mb-4">📊</div>
+                           <h3 className="text-xl font-semibold text-gray-700 mb-2">Nenhuma venda registrada</h3>
+
+                           <p className="text-gray-500 text-center mx-auto max-w-md">
+                              Não há vendas registradas no sistema ainda. As vendas aparecerão aqui quando você criar novas vendas.
+                           </p>
+                        </article>
                      )}
                   </section>
                ) : (

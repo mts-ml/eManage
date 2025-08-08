@@ -40,7 +40,7 @@ export const OverduePayments: React.FC = () => {
         try {
             const [receivablesRes, payablesRes, expensesRes] = await Promise.all([
                 axiosPrivate.get<Receivable[]>("/sales"),
-                axiosPrivate.get<Payable[]>("/purchases"),
+                axiosPrivate.get<Payable[]>("/payables"),
                 axiosPrivate.get<ExpenseFromBackend[]>("/expenses")
             ])
 
@@ -77,64 +77,75 @@ export const OverduePayments: React.FC = () => {
                 })
 
             // Processar pagáveis atrasados
-            payablesRes.data
-                .filter(item => item.status === "Em aberto")
-                .forEach(item => {
-                    // Converter data DD/MM/YYYY para Date object
-                    const [day, month, year] = item.date.split('/')
-                    const purchaseDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day))
-                    
-                    // Assumir que o prazo padrão é 30 dias após a compra
-                    const dueDate = new Date(purchaseDate.getTime() + (30 * 24 * 60 * 60 * 1000))
-                    const daysOverdue = Math.floor((today.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24))
-                    
-                    if (daysOverdue > 0) {
-                        overdueItems.push({
-                            _id: item._id,
-                            type: 'payable',
-                            description: `Compra #${item.purchaseNumber} - ${item.clientName}`,
-                            amount: item.total,
-                            dueDate: dueDate.toISOString().split('T')[0], // Formato YYYY-MM-DD
-                            daysOverdue,
-                            supplierName: item.clientName,
-                            purchaseNumber: item.purchaseNumber,
-                            invoiceNumber: item.invoiceNumber,
-                            status: item.status,
-                            paymentDate: item.paymentDate,
-                            bank: item.bank
-                        })
-                    }
-                })
+            if (payablesRes.status !== 204 && Array.isArray(payablesRes.data)) {
+                payablesRes.data
+                    .filter(item => item.status === "Em aberto")
+                    .forEach(item => {
+                        // Converter data DD/MM/YYYY para Date object
+                        const [day, month, year] = item.date.split('/')
+                        const purchaseDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day))
+                        
+                        // Assumir que o prazo padrão é 30 dias após a compra
+                        const dueDate = new Date(purchaseDate.getTime() + (30 * 24 * 60 * 60 * 1000))
+                        const daysOverdue = Math.floor((today.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24))
+                        
+                        if (daysOverdue > 0) {
+                            overdueItems.push({
+                                _id: item._id,
+                                type: 'payable',
+                                description: `Compra #${item.purchaseNumber} - ${item.clientName}`,
+                                amount: item.total,
+                                dueDate: dueDate.toISOString().split('T')[0], // Formato YYYY-MM-DD
+                                daysOverdue,
+                                supplierName: item.clientName, // clientName representa o nome do fornecedor
+                                purchaseNumber: item.purchaseNumber,
+                                invoiceNumber: item.invoiceNumber,
+                                status: item.status,
+                                paymentDate: item.paymentDate,
+                                bank: item.bank
+                            })
+                        }
+                    })
+            }
 
             // Processar despesas atrasadas
-            expensesRes.data
-                .filter(item => item.status === "Em aberto" && item.dueDate)
-                .forEach(item => {
-                    if (!item.dueDate) return
-                    
-                    const dueDate = new Date(item.dueDate)
-                    const daysOverdue = Math.floor((today.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24))
-                    
-                    if (daysOverdue > 0) {
-                        overdueItems.push({
-                            _id: item._id,
-                            type: 'expense',
-                            description: item.name,
-                            amount: parseFloat(item.value),
-                            dueDate: item.dueDate,
-                            daysOverdue,
-                            status: item.status || "Em aberto",
-                            paymentDate: null,
-                            bank: item.bank || ""
-                        })
-                    }
-                })
+            if (expensesRes.status !== 204 && Array.isArray(expensesRes.data)) {
+                expensesRes.data
+                    .filter(item => item.status === "Em aberto" && item.dueDate)
+                    .forEach(item => {
+                        if (!item.dueDate) return
+                        
+                        const dueDate = new Date(item.dueDate)
+                        const daysOverdue = Math.floor((today.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24))
+                        
+                        if (daysOverdue > 0) {
+                            overdueItems.push({
+                                _id: item._id,
+                                type: 'expense',
+                                description: item.name,
+                                amount: parseFloat(item.value),
+                                dueDate: item.dueDate,
+                                daysOverdue,
+                                status: item.status || "Em aberto",
+                                paymentDate: null,
+                                bank: item.bank || ""
+                            })
+                        }
+                    })
+            }
 
             setOverduePayments(overdueItems)
         } catch (error) {
             const axiosError = error as AxiosErrorResponse
-            setError(axiosError.response?.data?.message || "Erro ao buscar pagamentos atrasados")
             console.error("Erro ao buscar pagamentos atrasados:", error)
+            
+            if (axiosError.response?.status === 500) {
+                setError("Erro interno do servidor. Tente novamente mais tarde.")
+            } else if (axiosError.response?.status === 401) {
+                setError("Sessão expirada. Faça login novamente.")
+            } else {
+                setError(axiosError.response?.data?.message || "Erro ao buscar pagamentos atrasados")
+            }
         } finally {
             setLoading(false)
         }
@@ -254,7 +265,7 @@ export const OverduePayments: React.FC = () => {
     }
 
     return (
-        <section className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+        <main className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
             <header className="mb-8">
                 <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
                     Pagamentos Atrasados
@@ -265,16 +276,16 @@ export const OverduePayments: React.FC = () => {
             </header>
 
             {error && (
-                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <section className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg" role="alert" aria-live="polite">
                     <p className="text-red-800">{error}</p>
-                </div>
+                </section>
             )}
 
-            <div className="mb-6 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+            <section className="mb-6 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
                 <div className="flex items-center gap-4">
                     <button
                         onClick={() => setShowFilters(!showFilters)}
-                        className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors"
+                        className="cursor-pointer flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors"
                     >
                         <Filter className="h-4 w-4" />
                         Filtros
@@ -282,13 +293,13 @@ export const OverduePayments: React.FC = () => {
                     
                     <button
                         onClick={fetchOverduePayments}
-                        className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
+                        className="cursor-pointer px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
                     >
                         Atualizar
                     </button>
                 </div>
 
-                <div className="flex items-center gap-2 text-sm text-gray-600">
+                <div className="flex items-center gap-2 text-sm text-gray-600" role="note" aria-label="Legenda de cores">
                     <AlertTriangle className="h-4 w-4 text-yellow-500" />
                     <span>≤ 14 dias</span>
                     <AlertTriangle className="h-4 w-4 text-orange-500" />
@@ -296,21 +307,26 @@ export const OverduePayments: React.FC = () => {
                     <AlertTriangle className="h-4 w-4 text-red-500" />
                     <span>≥ 30 dias</span>
                 </div>
-            </div>
+            </section>
 
             {showFilters && (
-                <div className="mb-6 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                <section 
+                    id="filters-panel"
+                    className="mb-6 p-4 bg-gray-50 border border-gray-200 rounded-lg"
+                    aria-label="Painel de filtros"
+                >
                     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label htmlFor="type-filter" className="block text-sm font-medium text-gray-700 mb-1">
                                 Tipo
                             </label>
-                                                         <select
-                                 value={filters.type}
-                                 onChange={(e) => setFilters(prev => ({ ...prev, type: e.target.value as 'receivable' | 'payable' | 'expense' | 'all' }))}
-                                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                                 aria-label="Filtrar por tipo de pagamento"
-                             >
+                            <select
+                                id="type-filter"
+                                value={filters.type}
+                                onChange={(e) => setFilters(prev => ({ ...prev, type: e.target.value as 'receivable' | 'payable' | 'expense' | 'all' }))}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                aria-label="Filtrar por tipo de pagamento"
+                            >
                                 <option value="all">Todos</option>
                                 <option value="receivable">A Receber</option>
                                 <option value="payable">A Pagar</option>
@@ -319,15 +335,16 @@ export const OverduePayments: React.FC = () => {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label htmlFor="sort-by" className="block text-sm font-medium text-gray-700 mb-1">
                                 Ordenar por
                             </label>
-                                                         <select
-                                 value={filters.sortBy}
-                                 onChange={(e) => setFilters(prev => ({ ...prev, sortBy: e.target.value as 'daysOverdue' | 'amount' | 'dueDate' }))}
-                                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                                 aria-label="Ordenar pagamentos por"
-                             >
+                            <select
+                                id="sort-by"
+                                value={filters.sortBy}
+                                onChange={(e) => setFilters(prev => ({ ...prev, sortBy: e.target.value as 'daysOverdue' | 'amount' | 'dueDate' }))}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                aria-label="Ordenar pagamentos por"
+                            >
                                 <option value="daysOverdue">Dias de Atraso</option>
                                 <option value="amount">Valor</option>
                                 <option value="dueDate">Data de Vencimento</option>
@@ -338,7 +355,7 @@ export const OverduePayments: React.FC = () => {
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Ordem
                             </label>
-                            <div className="flex">
+                            <div className="flex" role="group" aria-label="Ordenação">
                                 <button
                                     onClick={() => setFilters(prev => ({ ...prev, sortOrder: 'asc' }))}
                                     className={`flex-1 px-3 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
@@ -349,6 +366,7 @@ export const OverduePayments: React.FC = () => {
                                 >
                                     <SortAsc className="h-4 w-4" />
                                 </button>
+
                                 <button
                                     onClick={() => setFilters(prev => ({ ...prev, sortOrder: 'desc' }))}
                                     className={`flex-1 px-3 py-2 border border-gray-300 rounded-r-md focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
@@ -362,46 +380,51 @@ export const OverduePayments: React.FC = () => {
                             </div>
                         </div>
 
-                                                 <div>
-                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                 Dias de Atraso
-                             </label>
-                             <div className="grid grid-cols-2 gap-2">
-                                 <input
-                                     type="number"
-                                     placeholder="Mín"
-                                     value={filters.minDays || ''}
-                                     onChange={(e) => setFilters(prev => ({ ...prev, minDays: e.target.value ? parseInt(e.target.value) : undefined }))}
-                                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                                 />
-                                 <input
-                                     type="number"
-                                     placeholder="Máx"
-                                     value={filters.maxDays || ''}
-                                     onChange={(e) => setFilters(prev => ({ ...prev, maxDays: e.target.value ? parseInt(e.target.value) : undefined }))}
-                                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                                 />
-                             </div>
-                         </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Dias de Atraso
+                            </label>
+
+                            <div className="grid grid-cols-2 gap-2">
+                                <input
+                                    type="number"
+                                    placeholder="Mín"
+                                    value={filters.minDays || ''}
+                                    onChange={(e) => setFilters(prev => ({ ...prev, minDays: e.target.value ? parseInt(e.target.value) : undefined }))}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                    aria-label="Dias mínimos de atraso"
+                                />
+
+                                <input
+                                    type="number"
+                                    placeholder="Máx"
+                                    value={filters.maxDays || ''}
+                                    onChange={(e) => setFilters(prev => ({ ...prev, maxDays: e.target.value ? parseInt(e.target.value) : undefined }))}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                    aria-label="Dias máximos de atraso"
+                                />
+                            </div>
+                        </div>
                     </div>
-                </div>
+                </section>
             )}
 
             {filteredPayments.length === 0 ? (
-                <div className="text-center py-12">
+                <section className="text-center py-12" aria-label="Estado vazio">
                     <AlertTriangle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    <h2 className="text-lg font-medium text-gray-900 mb-2">
                         Nenhum pagamento atrasado encontrado
-                    </h3>
+                    </h2>
+                    
                     <p className="text-gray-600">
                         {overduePayments.length === 0 
                             ? "Não há pagamentos atrasados no sistema."
                             : "Nenhum pagamento atende aos filtros aplicados."
                         }
                     </p>
-                </div>
+                </section>
             ) : (
-                <div className="grid gap-4">
+                <section className="grid gap-4" aria-label="Lista de pagamentos atrasados">
                     {filteredPayments.map((payment) => (
                         <article
                             key={payment._id}
@@ -409,7 +432,7 @@ export const OverduePayments: React.FC = () => {
                         >
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                 <div className="flex-1">
-                                    <div className="flex items-center gap-3 mb-2">
+                                    <header className="flex items-center gap-3 mb-2">
                                         {getTypeIcon(payment.type)}
                                         <span className="text-sm font-medium text-gray-600">
                                             {getTypeLabel(payment.type)}
@@ -417,7 +440,7 @@ export const OverduePayments: React.FC = () => {
                                         <span className="text-sm text-gray-500">
                                             #{payment.saleNumber || payment.purchaseNumber || payment._id.slice(-6)}
                                         </span>
-                                    </div>
+                                    </header>
                                     
                                     <h3 className="font-medium text-gray-900 mb-1">
                                         {payment.description}
@@ -453,8 +476,8 @@ export const OverduePayments: React.FC = () => {
                             </div>
                         </article>
                     ))}
-                </div>
+                </section>
             )}
-        </section>
+        </main>
     )
 }

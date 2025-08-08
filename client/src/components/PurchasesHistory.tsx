@@ -18,6 +18,7 @@ export const PurchasesHistory: React.FC = () => {
    const [purchasesHistory, setPurchasesHistory] = useState<Payable[]>([])
    const [filteredPurchases, setFilteredPurchases] = useState<Payable[]>([])
    const [loading, setLoading] = useState<boolean>(false)
+   const [hasSearched, setHasSearched] = useState<boolean>(false)
    const [filters, setFilters] = useState<PurchasesHistoryFilters>({
       startDate: "",
       endDate: "",
@@ -28,14 +29,24 @@ export const PurchasesHistory: React.FC = () => {
 
    async function fetchPurchasesHistory() {
       setLoading(true)
+      setHasSearched(true)
       try {
          const response: AxiosResponse<Payable[]> = await axiosPrivate.get('/purchases/history')
+
+         // Verifica se a resposta tem status 204 (sem conteúdo) ou se data é null/undefined
+         if (response.status === 204 || !response.data) {
+            setPurchasesHistory([])
+            setFilteredPurchases([])
+            return
+         }
+
          setPurchasesHistory(response.data)
          // Aplicar filtros após buscar dados
          applyFilters(response.data)
       } catch (error) {
          console.error("Erro ao buscar histórico de compras:", error)
-         alert("Erro ao carregar histórico de compras")
+         setPurchasesHistory([])
+         setFilteredPurchases([])
       } finally {
          setLoading(false)
       }
@@ -52,7 +63,7 @@ export const PurchasesHistory: React.FC = () => {
             // Criar data no formato YYYY-MM-DD para evitar problemas de fuso horário
             const purchaseDateStr = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
             const purchaseDate = new Date(purchaseDateStr + 'T00:00:00')
-            
+
             const startDate = new Date(filters.startDate + 'T00:00:00')
             const endDate = new Date(filters.endDate + 'T23:59:59')
 
@@ -210,23 +221,23 @@ export const PurchasesHistory: React.FC = () => {
                </article>
             </section>
 
-                         {/* Estatísticas */}
-             <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <article className="bg-emerald-50/50 p-4 rounded-xl border border-emerald-200">
-                   <p className="text-sm font-medium text-gray-600 mb-1">Total de Compras</p>
+            {/* Estatísticas */}
+            <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
+               <article className="bg-emerald-50/50 p-4 rounded-xl border border-emerald-200">
+                  <p className="text-sm font-medium text-gray-600 mb-1">Total de Compras</p>
 
-                   <p className="text-2xl font-bold text-emerald-700">{totalPurchases}</p>
-                </article>
+                  <p className="text-2xl font-bold text-emerald-700">{totalPurchases}</p>
+               </article>
 
-                <article className="bg-green-50/50 p-4 rounded-xl border border-green-200">
-                   <p className="text-sm font-medium text-gray-600 mb-1">Despesa Total</p>
+               <article className="bg-green-50/50 p-4 rounded-xl border border-green-200">
+                  <p className="text-sm font-medium text-gray-600 mb-1">Despesa Total</p>
 
-                   <p className="text-2xl font-bold text-green-700">{formatCurrency(totalExpenses)}</p>
-                </article>
-             </section>
+                  <p className="text-2xl font-bold text-green-700">{formatCurrency(totalExpenses)}</p>
+               </article>
+            </section>
          </section>
 
-                   {/* Tabela de Histórico */}
+         {/* Tabela de Histórico */}
          <section className="border-2 border-emerald-200/50 rounded-2xl shadow-xl bg-white/90 backdrop-blur-sm overflow-hidden">
             <header className="bg-gradient-to-r from-emerald-600 to-green-600 px-6 py-4">
                <h3 className="font-semibold text-white text-lg">
@@ -242,14 +253,21 @@ export const PurchasesHistory: React.FC = () => {
             ) :
                filteredPurchases.length === 0 ? (
                   <section className="p-8 text-center">
-                     {purchasesHistory.length === 0 ? (
+                     {!hasSearched ? (
                         <article>
                            <p className="text-gray-500 text-lg mb-4">Nenhuma compra carregada</p>
 
                            <p className="text-gray-400 text-sm">Clique em "Buscar Compras" para carregar o histórico</p>
                         </article>
                      ) : (
-                        <p className="text-gray-500 text-lg">Nenhuma compra encontrada com os filtros aplicados</p>
+                        <article>
+                           <div className="text-6xl mb-4">📋</div>
+                           <h3 className="text-xl font-semibold text-gray-700 mb-2">Nenhuma compra registrada</h3>
+
+                           <p className="text-gray-500 text-center mx-auto max-w-md">
+                              Não há compras registradas no sistema ainda. As compras aparecerão aqui quando você criar novas compras.
+                           </p>
+                        </article>
                      )}
                   </section>
                ) : (
@@ -270,50 +288,50 @@ export const PurchasesHistory: React.FC = () => {
                            {filteredPurchases.map(purchase => (
                               <tr key={purchase._id} className="hover:bg-emerald-50/50 transition-colors duration-200">
 
-                                <td className="px-4 py-3 text-xs font-medium text-center">
-                                   {purchase.date}
-                                </td>
+                                 <td className="px-4 py-3 text-xs font-medium text-center">
+                                    {purchase.date}
+                                 </td>
 
-                                <td className="px-4 py-3 text-xs font-bold text-emerald-700 text-center">
-                                   #{purchase.purchaseNumber}
-                                </td>
+                                 <td className="px-4 py-3 text-xs font-bold text-emerald-700 text-center">
+                                    #{purchase.purchaseNumber}
+                                 </td>
 
-                                <td className="px-4 py-3 text-xs text-center">
-                                   {purchase.clientName}
-                                </td>
+                                 <td className="px-4 py-3 text-xs text-center">
+                                    {purchase.clientName}
+                                 </td>
 
-                                <td className="px-4 py-3 text-xs">
-                                   {purchase.items.map((item, index) => (
-                                      <section key={index}
-                                         className="flex items-center justify-center text-gray-700"
-                                      >
-                                         <span className="font-medium">{item.productName} -</span>
-                                         <span className="text-gray-600 ml-1">{item.quantity}(x) -</span>
-                                         <span className="text-emerald-600 font-semibold ml-1">
-                                            {formatCurrency(item.price)}
-                                         </span>
-                                      </section>
-                                   ))}
-                                </td>
+                                 <td className="px-4 py-3 text-xs">
+                                    {purchase.items.map((item, index) => (
+                                       <section key={index}
+                                          className="flex items-center justify-center text-gray-700"
+                                       >
+                                          <span className="font-medium">{item.productName} -</span>
+                                          <span className="text-gray-600 ml-1">{item.quantity}(x) -</span>
+                                          <span className="text-emerald-600 font-semibold ml-1">
+                                             {formatCurrency(item.price)}
+                                          </span>
+                                       </section>
+                                    ))}
+                                 </td>
 
-                                <td className="px-4 py-3 text-xs font-bold text-emerald-700 text-center">
-                                   {formatCurrency(purchase.total)}
-                                </td>
+                                 <td className="px-4 py-3 text-xs font-bold text-emerald-700 text-center">
+                                    {formatCurrency(purchase.total)}
+                                 </td>
 
-                                <td className="px-4 py-3 text-xs text-center">
-                                   <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold ${purchase.status === "Pago"
-                                      ? "bg-green-100 text-green-800"
-                                      : "bg-yellow-100 text-yellow-800"
-                                      }`}>
-                                      {purchase.status}
-                                   </span>
-                                </td>
-                             </tr>
-                          ))}
-                       </tbody>
-                    </table>
-                 </section>
-              )}
+                                 <td className="px-4 py-3 text-xs text-center">
+                                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold ${purchase.status === "Pago"
+                                       ? "bg-green-100 text-green-800"
+                                       : "bg-yellow-100 text-yellow-800"
+                                       }`}>
+                                       {purchase.status}
+                                    </span>
+                                 </td>
+                              </tr>
+                           ))}
+                        </tbody>
+                     </table>
+                  </section>
+               )}
          </section>
       </main>
    )

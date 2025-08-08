@@ -51,29 +51,36 @@ export const Cashflow: React.FC = () => {
         const allBanks = new Set<string>()
 
         // Bancos das vendas
-        salesResponse.data.forEach(sale => {
-          if (sale.bank && sale.bank.trim()) {
-            allBanks.add(sale.bank.trim())
-          }
-        })
+        if (salesResponse.status !== 204 && salesResponse.data) {
+          salesResponse.data.forEach(sale => {
+            if (sale.bank && sale.bank.trim()) {
+              allBanks.add(sale.bank.trim())
+            }
+          })
+        }
 
         // Bancos das compras
-        purchasesResponse.data.forEach(purchase => {
-          if (purchase.bank && purchase.bank.trim()) {
-            allBanks.add(purchase.bank.trim())
-          }
-        })
+        if (purchasesResponse.status !== 204 && purchasesResponse.data) {
+          purchasesResponse.data.forEach(purchase => {
+            if (purchase.bank && purchase.bank.trim()) {
+              allBanks.add(purchase.bank.trim())
+            }
+          })
+        }
 
         // Bancos das despesas
-        expensesResponse.data.forEach(expense => {
-          if (expense.bank && expense.bank.trim()) {
-            allBanks.add(expense.bank.trim())
-          }
-        })
+        if (expensesResponse.status !== 204 && expensesResponse.data) {
+          expensesResponse.data.forEach(expense => {
+            if (expense.bank && expense.bank.trim()) {
+              allBanks.add(expense.bank.trim())
+            }
+          })
+        }
 
         setAvailableBanks(Array.from(allBanks).sort())
       } catch (error) {
         console.error("Erro ao buscar bancos:", error)
+        setAvailableBanks([])
       }
     }
 
@@ -95,7 +102,7 @@ export const Cashflow: React.FC = () => {
       // Processar todas as transações usando map e flat
       const allTransactions: Transaction[] = [
         // Vendas (créditos)
-        ...salesResponse.data
+        ...(salesResponse.status !== 204 && salesResponse.data ? salesResponse.data
           .filter(sale =>
             sale.bank === selectedBank &&
             sale.status === "Pago" &&
@@ -112,10 +119,10 @@ export const Cashflow: React.FC = () => {
             clientName: sale.clientName,
             transactionNumber: `V${sale.saleNumber}`,
             category: "Venda" as const
-          })),
+          })) : []),
 
         // Compras (débitos)
-        ...purchasesResponse.data
+        ...(purchasesResponse.status !== 204 && purchasesResponse.data ? purchasesResponse.data
           .filter(purchase =>
             purchase.bank === selectedBank &&
             purchase.status === "Pago" &&
@@ -132,10 +139,10 @@ export const Cashflow: React.FC = () => {
             clientName: purchase.clientName,
             transactionNumber: `C${purchase.purchaseNumber}`,
             category: "Compra" as const
-          })),
+          })) : []),
 
         // Despesas (débitos) - usar dueDate como data de pagamento
-        ...expensesResponse.data
+        ...(expensesResponse.status !== 204 && expensesResponse.data ? expensesResponse.data
           .filter(expense =>
             expense.bank === selectedBank &&
             expense.status === "Pago" &&
@@ -152,7 +159,7 @@ export const Cashflow: React.FC = () => {
             clientName: expense.description || "Despesa",
             transactionNumber: `D${expense._id.slice(-6)}`,
             category: "Despesa" as const
-          }))
+          })) : [])
       ]
 
       // Ordenar por data
