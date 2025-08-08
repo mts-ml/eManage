@@ -72,25 +72,31 @@ export const Reports: React.FC = () => {
             const allBanks = new Set<string>()
 
             // Bancos das vendas
-            salesResponse.data.forEach(sale => {
-               if (sale.bank && sale.bank.trim()) {
-                  allBanks.add(sale.bank.trim())
-               }
-            })
+            if (salesResponse.data && Array.isArray(salesResponse.data)) {
+               salesResponse.data.forEach(sale => {
+                  if (sale.bank && sale.bank.trim()) {
+                     allBanks.add(sale.bank.trim())
+                  }
+               })
+            }
 
             // Bancos das compras
-            purchasesResponse.data.forEach(purchase => {
-               if (purchase.bank && purchase.bank.trim()) {
-                  allBanks.add(purchase.bank.trim())
-               }
-            })
+            if (purchasesResponse.data && Array.isArray(purchasesResponse.data)) {
+               purchasesResponse.data.forEach(purchase => {
+                  if (purchase.bank && purchase.bank.trim()) {
+                     allBanks.add(purchase.bank.trim())
+                  }
+               })
+            }
 
             // Bancos das despesas
-            expensesResponse.data.forEach(expense => {
-               if (expense.bank && expense.bank.trim()) {
-                  allBanks.add(expense.bank.trim())
-               }
-            })
+            if (expensesResponse.data && Array.isArray(expensesResponse.data)) {
+               expensesResponse.data.forEach(expense => {
+                  if (expense.bank && expense.bank.trim()) {
+                     allBanks.add(expense.bank.trim())
+                  }
+               })
+            }
 
             setAvailableBanks(Array.from(allBanks).sort())
          } catch (error) {
@@ -148,7 +154,7 @@ export const Reports: React.FC = () => {
          // Processar todas as transações
          const allTransactions: Transaction[] = [
             // Vendas (créditos)
-            ...salesResponse.data
+            ...(salesResponse.data && Array.isArray(salesResponse.data) ? salesResponse.data
                .filter(sale =>
                   (!filters.selectedBank || sale.bank === filters.selectedBank) &&
                   sale.status === "Pago" &&
@@ -166,10 +172,10 @@ export const Reports: React.FC = () => {
                   transactionNumber: `V${sale.saleNumber}`,
                   category: "Venda" as const,
                   bank: sale.bank
-               })),
+               })) : []),
 
             // Compras (débitos)
-            ...purchasesResponse.data
+            ...(purchasesResponse.data && Array.isArray(purchasesResponse.data) ? purchasesResponse.data
                .filter(purchase =>
                   (!filters.selectedBank || purchase.bank === filters.selectedBank) &&
                   purchase.status === "Pago" &&
@@ -187,10 +193,10 @@ export const Reports: React.FC = () => {
                   transactionNumber: `C${purchase.purchaseNumber}`,
                   category: "Compra" as const,
                   bank: purchase.bank
-               })),
+               })) : []),
 
             // Despesas (débitos)
-            ...expensesResponse.data
+            ...(expensesResponse.data && Array.isArray(expensesResponse.data) ? expensesResponse.data
                .filter(expense =>
                   (!filters.selectedBank || expense.bank === filters.selectedBank) &&
                   expense.status === "Pago" &&
@@ -208,7 +214,7 @@ export const Reports: React.FC = () => {
                   transactionNumber: `D${expense._id.slice(-6)}`,
                   category: "Despesa" as const,
                   bank: expense.bank || "Não informado"
-               }))
+               })) : [])
          ]
 
          // Ordenar por data
