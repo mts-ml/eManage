@@ -211,21 +211,31 @@ export const Receivables: React.FC = () => {
                 <p className="text-gray-600 font-medium">Gerencie seus recebimentos financeiros</p>
             </header>
 
-            <section className="overflow-auto border-2 border-emerald-200/50 rounded-2xl shadow-xl mb-10 max-h-[70vh] bg-white/90 backdrop-blur-sm">
-                <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gradient-to-r from-emerald-600 to-green-600 text-white sticky top-0 z-10">
-                        <tr>
-                            <th 
-                                className="px-4 py-3 text-xs font-semibold text-center cursor-pointer hover:bg-emerald-700 transition-colors duration-200 select-none"
-                                onClick={() => handleSort('date')}
-                                title="Clique para ordenar por data da venda"
-                            >
-                                <div className="flex items-center justify-center gap-1">
-                                    Data da Venda
-                                    <span className="text-xs">{getSortIcon('date')}</span>
-                                </div>
-                            </th>
-                                                         <th 
+            {sortedReceivables.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-16 px-8 border-2 border-emerald-200/50 rounded-2xl shadow-xl bg-white/90 backdrop-blur-sm">
+                    <div className="text-6xl mb-4">💰</div>
+                    <h3 className="text-xl font-semibold text-gray-700 mb-2">Nenhuma conta a receber encontrada</h3>
+
+                    <p className="text-gray-500 text-center max-w-md">
+                        Não há vendas registradas no sistema.
+                    </p>
+                </div>
+            ) : (
+                <section className="overflow-auto border-2 border-emerald-200/50 rounded-2xl shadow-xl mb-10 max-h-[70vh] bg-white/90 backdrop-blur-sm">
+                    <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gradient-to-r from-emerald-600 to-green-600 text-white sticky top-0 z-10">
+                            <tr>
+                                <th 
+                                    className="px-4 py-3 text-xs font-semibold text-center cursor-pointer hover:bg-emerald-700 transition-colors duration-200 select-none"
+                                    onClick={() => handleSort('date')}
+                                    title="Clique para ordenar por data da venda"
+                                >
+                                    <div className="flex items-center justify-center gap-1">
+                                        Data da Venda
+                                        <span className="text-xs">{getSortIcon('date')}</span>
+                                    </div>
+                                </th>
+                                                             <th 
                                  className="px-4 py-3 text-xs font-semibold text-center cursor-pointer hover:bg-emerald-700 transition-colors duration-200 select-none"
                                  onClick={() => handleSort('saleNumber')}
                                  title="Clique para ordenar por número da venda"
@@ -235,117 +245,118 @@ export const Receivables: React.FC = () => {
                                      <span className="text-xs">{getSortIcon('saleNumber')}</span>
                                  </div>
                              </th>
-                            <th 
-                                className="px-4 py-3 text-xs font-semibold text-center cursor-pointer hover:bg-emerald-700 transition-colors duration-200 select-none"
-                                onClick={() => handleSort('clientName')}
-                                title="Clique para ordenar por cliente"
-                            >
-                                <div className="flex items-center justify-center gap-1">
-                                    Cliente
-                                    <span className="text-xs">{getSortIcon('clientName')}</span>
-                                </div>
-                            </th>
-                            <th 
-                                className="px-4 py-3 text-xs font-semibold text-center cursor-pointer hover:bg-emerald-700 transition-colors duration-200 select-none"
-                                onClick={() => handleSort('total')}
-                                title="Clique para ordenar por valor total"
-                            >
-                                <div className="flex items-center justify-center gap-1">
-                                    Valor Total
-                                    <span className="text-xs">{getSortIcon('total')}</span>
-                                </div>
-                            </th>
-                            <th className="px-4 py-3 text-xs font-semibold text-center">Status</th>
-                            <th 
-                                className="px-4 py-3 text-xs font-semibold text-center cursor-pointer hover:bg-emerald-700 transition-colors duration-200 select-none"
-                                onClick={() => handleSort('paymentDate')}
-                                title="Clique para ordenar por data de pagamento"
-                            >
-                                <div className="flex items-center justify-center gap-1">
-                                    Data Pagamento
-                                    <span className="text-xs">{getSortIcon('paymentDate')}</span>
-                                </div>
-                            </th>
-                            <th className="px-4 py-3 text-xs font-semibold text-center">Banco</th>
-                            <th className="px-4 py-3 text-xs font-semibold text-center">Ações</th>
-                        </tr>
-                    </thead>
-
-                    <tbody className="bg-white divide-y divide-gray-100">
-                        {sortedReceivables.map(sale => (
-                            <tr key={sale._id} className="hover:bg-emerald-50/50 transition-colors duration-200">
-                                <td className="px-4 py-3 text-xs font-medium text-center">{sale.date}</td>
-
-                                <td className="px-4 py-3 text-xs font-bold text-emerald-700 text-center">#{sale.saleNumber}</td>
-
-                                <td className="px-4 py-3 text-xs text-center">{sale.clientName}</td>
-
-                                <td className="px-4 py-3 text-xs font-bold text-emerald-700 text-center">
-                                    {sale.total.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-                                </td>
-
-                                <td className="px-4 py-3 text-xs text-center">
-                                    <select
-                                        aria-label="Sale status"
-                                        className={`border-2 rounded-lg p-1 text-xs cursor-pointer transition-all duration-200 ${sale.status === "Pago" ? "bg-green-50 text-green-700 border-green-400" : "border-gray-200"}`}
-                                        value={sale.status}
-                                        onChange={e => handleStatusChange(sale._id, e.target.value as "Em aberto" | "Pago")}
-                                    >
-                                        <option value="Em aberto">Em aberto</option>
-                                        <option value="Pago">Pago</option>
-                                    </select>
-                                </td>
-
-                                <td className="px-4 py-3 text-xs text-center">
-                                    {sale.paymentDate ? new Date(sale.paymentDate).toLocaleDateString("pt-BR") : "--"}
-                                </td>
-
-                                <td className="px-4 py-3 text-xs text-center">
-                                    <input
-                                        type="text"
-                                        value={sale.bank}
-                                        onChange={e => handleBankChange(sale._id, e.target.value)}
-                                        placeholder="Banco"
-                                        className="border-2 border-gray-200 rounded-lg p-1 w-full text-xs focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200"
-                                    />
-
-                                    {errors[sale._id] && (
-                                        <p className="text-red-500 text-xs mt-1 flex items-center justify-center">
-                                            <span className="mr-1">⚠️</span>
-                                            {errors[sale._id]}
-                                        </p>
-                                    )}
-                                </td>
-
-                                <td className="px-4 py-3 text-xs text-center">
-                                    <section className="flex flex-col gap-1 items-center">
-                                        {modifiedId === sale._id && (
-                                            <button
-                                                type="button"
-                                                onClick={() => handleSave(sale._id)}
-                                                className="bg-gradient-to-r from-emerald-600 to-green-600 cursor-pointer text-white px-3 py-1 rounded-lg text-xs font-semibold hover:from-emerald-700 hover:to-green-700 transition-all duration-300 shadow-md hover:shadow-lg"
-                                            >
-                                                💾 Salvar
-                                            </button>
-                                        )}
-
-                                        {sale.status === "Em aberto" && (
-                                            <button
-                                                type="button"
-                                                onClick={() => handleDeleteSale(sale._id)}
-                                                className="text-red-500 hover:text-red-700 cursor-pointer text-lg font-bold transition-colors duration-200"
-                                                title="Excluir venda"
-                                            >
-                                                ×
-                                            </button>
-                                        )}
-                                    </section>
-                                </td>
+                                <th 
+                                    className="px-4 py-3 text-xs font-semibold text-center cursor-pointer hover:bg-emerald-700 transition-colors duration-200 select-none"
+                                    onClick={() => handleSort('clientName')}
+                                    title="Clique para ordenar por cliente"
+                                >
+                                    <div className="flex items-center justify-center gap-1">
+                                        Cliente
+                                        <span className="text-xs">{getSortIcon('clientName')}</span>
+                                    </div>
+                                </th>
+                                <th 
+                                    className="px-4 py-3 text-xs font-semibold text-center cursor-pointer hover:bg-emerald-700 transition-colors duration-200 select-none"
+                                    onClick={() => handleSort('total')}
+                                    title="Clique para ordenar por valor total"
+                                >
+                                    <div className="flex items-center justify-center gap-1">
+                                        Valor Total
+                                        <span className="text-xs">{getSortIcon('total')}</span>
+                                    </div>
+                                </th>
+                                <th className="px-4 py-3 text-xs font-semibold text-center">Status</th>
+                                <th 
+                                    className="px-4 py-3 text-xs font-semibold text-center cursor-pointer hover:bg-emerald-700 transition-colors duration-200 select-none"
+                                    onClick={() => handleSort('paymentDate')}
+                                    title="Clique para ordenar por data de pagamento"
+                                >
+                                    <div className="flex items-center justify-center gap-1">
+                                        Data Pagamento
+                                        <span className="text-xs">{getSortIcon('paymentDate')}</span>
+                                    </div>
+                                </th>
+                                <th className="px-4 py-3 text-xs font-semibold text-center">Banco</th>
+                                <th className="px-4 py-3 text-xs font-semibold text-center">Ações</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </section>
+                        </thead>
+
+                        <tbody className="bg-white divide-y divide-gray-100">
+                            {sortedReceivables.map(sale => (
+                                <tr key={sale._id} className="hover:bg-emerald-50/50 transition-colors duration-200">
+                                    <td className="px-4 py-3 text-xs font-medium text-center">{sale.date}</td>
+
+                                    <td className="px-4 py-3 text-xs font-bold text-emerald-700 text-center">#{sale.saleNumber}</td>
+
+                                    <td className="px-4 py-3 text-xs text-center">{sale.clientName}</td>
+
+                                    <td className="px-4 py-3 text-xs font-bold text-emerald-700 text-center">
+                                        {sale.total.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                                    </td>
+
+                                    <td className="px-4 py-3 text-xs text-center">
+                                        <select
+                                            aria-label="Sale status"
+                                            className={`border-2 rounded-lg p-1 text-xs cursor-pointer transition-all duration-200 ${sale.status === "Pago" ? "bg-green-50 text-green-700 border-green-400" : "border-gray-200"}`}
+                                            value={sale.status}
+                                            onChange={e => handleStatusChange(sale._id, e.target.value as "Em aberto" | "Pago")}
+                                        >
+                                            <option value="Em aberto">Em aberto</option>
+                                            <option value="Pago">Pago</option>
+                                        </select>
+                                    </td>
+
+                                    <td className="px-4 py-3 text-xs text-center">
+                                        {sale.paymentDate ? new Date(sale.paymentDate).toLocaleDateString("pt-BR") : "--"}
+                                    </td>
+
+                                    <td className="px-4 py-3 text-xs text-center">
+                                        <input
+                                            type="text"
+                                            value={sale.bank}
+                                            onChange={e => handleBankChange(sale._id, e.target.value)}
+                                            placeholder="Banco"
+                                            className="border-2 border-gray-200 rounded-lg p-1 w-full text-xs focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200"
+                                        />
+
+                                        {errors[sale._id] && (
+                                            <p className="text-red-500 text-xs mt-1 flex items-center justify-center">
+                                                <span className="mr-1">⚠️</span>
+                                                {errors[sale._id]}
+                                            </p>
+                                        )}
+                                    </td>
+
+                                    <td className="px-4 py-3 text-xs text-center">
+                                        <section className="flex flex-col gap-1 items-center">
+                                            {modifiedId === sale._id && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleSave(sale._id)}
+                                                    className="bg-gradient-to-r from-emerald-600 to-green-600 cursor-pointer text-white px-3 py-1 rounded-lg text-xs font-semibold hover:from-emerald-700 hover:to-green-700 transition-all duration-300 shadow-md hover:shadow-lg"
+                                                >
+                                                    💾 Salvar
+                                                </button>
+                                            )}
+
+                                            {sale.status === "Em aberto" && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleDeleteSale(sale._id)}
+                                                    className="text-red-500 hover:text-red-700 cursor-pointer text-lg font-bold transition-colors duration-200"
+                                                    title="Excluir venda"
+                                                >
+                                                    ×
+                                                </button>
+                                            )}
+                                        </section>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </section>
+            )}
         </main>
     )
 }
