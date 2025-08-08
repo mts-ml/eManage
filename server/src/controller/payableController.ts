@@ -4,6 +4,22 @@ import { TransactionUpdatePayload } from '../types/types.js'
 import { Purchase } from '../model/Purchases.js'
 
 
+export async function getAllPayables(req: Request, res: Response) {
+    try {
+        const payables = await Purchase.find({ status: "Em aberto" }).sort({ date: -1 })
+        
+        if (payables.length === 0) {
+            res.sendStatus(204)
+            return
+        }
+
+        res.json(payables)
+    } catch (error) {
+        console.error('Erro ao buscar payables:', error)
+        res.status(500).json({ message: 'Erro interno do servidor' })
+    }
+}
+
 export async function payableController(req: Request<{ id: string }, {}, TransactionUpdatePayload>, res: Response) {
     try {
         const { id } = req.params
