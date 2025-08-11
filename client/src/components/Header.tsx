@@ -30,44 +30,33 @@ export const Header: React.FC = () => {
                         )}
 
                         <ul className="flex gap-3 sm:gap-6 items-center order-2 sm:order-none">
-                        {!auth.accessToken && (
-                            <>
-                                <li>
-                                    <NavLink
-                                        to="/"
-                                        className={({ isActive }) => `hover:text-emerald-200 transition-all duration-300 ease-in-out font-medium ${isActive ? navLinkClass : "text-emerald-100"}`}
-                                    >
-                                        Login
-                                    </NavLink>
-                                </li>
+                            {!auth.accessToken && (
+                                <>
+                                    <li>
+                                        <NavLink
+                                            to="/"
+                                            className={({ isActive }) => `hover:text-emerald-200 transition-all duration-300 ease-in-out font-medium ${isActive ? navLinkClass : "text-emerald-100"}`}
+                                        >
+                                            Login
+                                        </NavLink>
+                                    </li>
 
-                                <li>
-                                    <NavLink
-                                        to="register"
-                                        className={({ isActive }) => `hover:text-emerald-200 transition-all duration-300 ease-in-out font-medium ${isActive ? navLinkClass : "text-emerald-100"}`}
-                                    >
-                                        Registrar
-                                    </NavLink>
-                                </li>
-                            </>
-                        )}
+                                    <li>
+                                        <NavLink
+                                            to="register"
+                                            className={({ isActive }) => `hover:text-emerald-200 transition-all duration-300 ease-in-out font-medium ${isActive ? navLinkClass : "text-emerald-100"}`}
+                                        >
+                                            Registrar
+                                        </NavLink>
+                                    </li>
+                                </>
+                            )}
 
-                        {auth.email && (
-                            <>
-                                <li>
-                                    <NavLink
-                                        to="main"
-                                        className={({ isActive }) => `hover:text-emerald-200 transition-all duration-300 ease-in-out font-medium ${isActive ? navLinkClass : "text-emerald-100"}`}
-                                    >
-                                        Menu
-                                    </NavLink>
-                                </li>
-
+                            {auth.email && (
                                 <li>
                                     <LogoutButton />
                                 </li>
-                            </>
-                        )}
+                            )}
                         </ul>
                     </nav>
                 </section>
