@@ -6,13 +6,16 @@ import { axiosInstance } from "../api/axios"
 
 
 export const LogoutButton: React.FC = () => {
-    const { setAuth } = useContext(AuthContext)
+    const { auth, setAuth } = useContext(AuthContext)
     const navigate = useNavigate()
 
     async function handleLogout() {
         try {
             await axiosInstance.get('/logout',
-                { withCredentials: true }
+                {
+                    withCredentials: true,
+                    headers: { "Authorization": `Bearer ${auth.accessToken}` }
+                }
             )
             setAuth({
                 name: "",

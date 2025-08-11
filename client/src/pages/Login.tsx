@@ -104,7 +104,7 @@ export const Login: React.FC = () => {
 
             setTimeout(() => {
                 navigate('home')
-            }, 1500)
+            }, 500)
         } catch (error) {
             if (axios.isAxiosError(error)) {
                 if (!error.response) {
