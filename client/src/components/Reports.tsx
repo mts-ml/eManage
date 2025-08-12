@@ -398,6 +398,7 @@ export const Reports: React.FC = () => {
       fetchTransactions()
    }
 
+   
    return (
       <main className="p-6 bg-white rounded-lg shadow-lg">
          <header className="mb-6">
