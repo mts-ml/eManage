@@ -1,5 +1,7 @@
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, Tray } from 'electron'
 import path from 'path'
+
+import { getAssetPath, isDev } from './util.js'
 
 
 app.on("ready", () => {
@@ -9,9 +11,17 @@ app.on("ready", () => {
       maximizable: true,
       webPreferences: {
          nodeIntegration: false,
-         contextIsolation: true
+         contextIsolation: true,
       }
    })
+
+   if (isDev()) {
+      mainWindow.loadURL('http://localhost:5173');
+   } else {
+      mainWindow.loadFile(path.join(app.getAppPath(), '/dist-react/index.html'))
+   }
+
+   new Tray(path.join(getAssetPath(), 'panda.ico'))
 
    // Remover barra de menu
    mainWindow.setMenu(null)
@@ -25,6 +35,4 @@ app.on("ready", () => {
          mainWindow.webContents.toggleDevTools()
       }
    })
-
-   mainWindow.loadFile(path.join(app.getAppPath(), '/dist-react/index.html'))
 })
