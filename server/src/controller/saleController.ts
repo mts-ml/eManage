@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express"
 import mongoose from "mongoose"
 
 import { Sale } from "../model/Sales.js"
-import { SalePayload } from "../types/types.js"
+import { SalePayload, PaymentStatus } from "../types/types.js"
 import { getNextSaleNumber } from "../utils/utils.js"
 import { Client } from "../model/Clients.js"
 import { Product } from "../model/Products.js"
@@ -28,25 +28,35 @@ export async function createNewSale(req: Request<{}, {}, Omit<SalePayload, "sale
     try {
         const saleProps = req.body
 
-        const client = await Client.findById(saleProps.clientId)
-        const productIds = saleProps.items.map(item => new mongoose.Types.ObjectId(item.productId))
+        // Buscar produtos para obter nomes
+        const productIds = saleProps.items.map(item => item.productId)
         const products = await Product.find({ _id: { $in: productIds } })
 
-        const newSale = {
-            ...saleProps,
-            saleNumber: await getNextSaleNumber(),
-            clientName: client?.name || "Cliente Desconhecido",
-            status: "Em aberto",
-            paymentDate: null,
-            bank: "",
+        const saleNumber = await getNextSaleNumber()
+
+        // Criar nova venda
+        const newSale = new Sale({
+            saleNumber: saleNumber,
+            clientName: saleProps.clientName,
+            date: saleProps.date,
             items: saleProps.items.map(item => {
-                const product = products.find(p => p.id === item.productId)
+                const product = products.find(p => p._id.toString() === item.productId)
                 return {
                     ...item,
                     productName: product?.name || "Produto Desconhecido"
                 }
-            })
-        }
+            }),
+            total: saleProps.total,
+            status: saleProps.status || PaymentStatus.PENDING,
+            totalPaid: saleProps.totalPaid || 0,
+            remainingAmount: saleProps.remainingAmount || saleProps.total,
+            firstPaymentDate: saleProps.firstPaymentDate || null,
+            finalPaymentDate: saleProps.finalPaymentDate || null,
+            bank: saleProps.bank || '',
+            observations: saleProps.observations || '',
+            payments: saleProps.payments || []
+        });
+
         const createdSale = await Sale.create(newSale)
 
         // Atualiza o estoque dos produtos
