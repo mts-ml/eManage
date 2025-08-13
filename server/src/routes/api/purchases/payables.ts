@@ -1,13 +1,9 @@
-import express from 'express'
+import { Router } from "express"
+import { handleTransactionUpdateValidation } from "../../../middleware/transactionUpdateValidation.js"
+import { updatePayable } from "../../../controller/payableController.js"
 
-import { handleTransactionUpdateValidation } from '../../../middleware/transactionUpdateValidation.js'
-import { payableController, getAllPayables } from '../../../controller/payableController.js'
+const router = Router()
 
-
-const router = express.Router()
-
-router.route('/')
-    .get(getAllPayables)
-router.patch('/:id', handleTransactionUpdateValidation, payableController)
+router.patch('/:id', handleTransactionUpdateValidation, updatePayable)
 
 export default router
