@@ -18,6 +18,7 @@ import products from './routes/api/products.js'
 import sales from './routes/api/sales/sales.js'
 import lastSale from './routes/api/sales/lastSale.js'
 import receivables from './routes/api/sales/receivables.js'
+import installments from './routes/api/sales/installments.js'
 import lastPurchase from './routes/api/purchases/lastPurchase.js'
 import purchases from './routes/api/purchases/purchases.js'
 import payables from './routes/api/purchases/payables.js'
@@ -59,6 +60,7 @@ app.use('/products', products)
 app.use('/sales/last', lastSale)
 app.use('/sales', sales)
 app.use('/receivables', receivables)
+app.use('/installments', installments)
 app.use('/purchases/last', lastPurchase)
 app.use('/purchases', purchases)
 app.use('/payables', payables)

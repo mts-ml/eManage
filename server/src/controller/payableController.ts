@@ -20,30 +20,43 @@ export async function getAllPayables(req: Request, res: Response) {
     }
 }
 
-export async function payableController(req: Request<{ id: string }, {}, TransactionUpdatePayload>, res: Response) {
+export const updatePayable = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { id } = req.params
-        const { status, paymentDate, bank, invoiceNumber } = req.body
+        const { id } = req.params;
+        const { status, bank } = req.body;
 
-        // Monta objeto para atualizar somente os campos que vieram (inclusive null para limpar)
-        const updateFields: Partial<TransactionUpdatePayload> = {}
-
-        if ('status' in req.body) updateFields.status = status
-        if ('paymentDate' in req.body) updateFields.paymentDate = paymentDate
-        if ('bank' in req.body) updateFields.bank = bank
-        if ('invoiceNumber' in req.body) updateFields.invoiceNumber = invoiceNumber
-
-        // Atualiza e retorna novo documento (new: true)
-        const updatePurchase = await Purchase.findByIdAndUpdate(id, updateFields, { new: true })
-
-        if (!updatePurchase) {
-            res.status(404).json({ message: 'Compra não encontrada' })
-            return
+        // Validar se a compra existe
+        const purchase = await Purchase.findById(id);
+        if (!purchase) {
+            res.status(404).json({ message: 'Compra não encontrada' });
+            return;
         }
 
-        res.json(updatePurchase)
+        // Preparar campos para atualização
+        const updateFields: Partial<TransactionUpdatePayload> = {};
+
+        if (status !== undefined) updateFields.status = status;
+        if (bank !== undefined) updateFields.bank = bank;
+
+        // Atualizar a compra
+        const updatedPurchase = await Purchase.findByIdAndUpdate(
+            id,
+            updateFields,
+            { new: true, runValidators: true }
+        );
+
+        if (!updatedPurchase) {
+            res.status(500).json({ message: 'Erro ao atualizar compra' });
+            return;
+        }
+
+        res.json({
+            message: 'Compra atualizada com sucesso',
+            data: updatedPurchase
+        });
+
     } catch (error) {
-        console.error('Erro ao atualizar payable:', error)
-        res.status(500).json({ message: 'Erro interno do servidor' })
+        console.error('Erro ao atualizar compra:', error);
+        res.status(500).json({ message: 'Erro interno do servidor' });
     }
-}
+};

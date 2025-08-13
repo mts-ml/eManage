@@ -9,6 +9,34 @@ export interface CustomJwtPayload extends JwtPayload {
     }
 }
 
+// Enum para status de pagamento
+export const PaymentStatus = {
+    PENDING: "Em aberto",
+    PARTIALLY_PAID: "Parcialmente pago",
+    PAID: "Pago"
+} as const
+
+export type PaymentStatus = typeof PaymentStatus[keyof typeof PaymentStatus]
+
+// Interfaces para sistema de parcelas
+export interface PaymentRecord {
+    _id?: string;
+    amount: number;
+    paymentDate: string;
+    createdAt?: string;
+}
+
+export interface Installment {
+    id: string
+    installmentNumber: number
+    dueDate: string
+    amount: number
+    status: "Pendente" | "Pago"
+    paymentDate?: string | null
+    bank?: string
+    notes?: string
+}
+
 
 export interface Client {
     id?: string
@@ -68,36 +96,72 @@ export interface ItemPayload {
     items: Item[]
     total: number
     invoiceNumber?: string
+    // Novos campos para sistema de parcelas
+
+    totalPaid?: number
+    remainingAmount?: number
+    status?: PaymentStatus
+    paymentHistory?: PaymentRecord[] | null
+    installments?: Installment[] | null
+    paymentDate?: string | null
+    bank?: string
 }
 
 
 export interface SaleResponse {
-    sale: ItemPayload & { _id: string, saleNumber: number, status: "Em aberto" | "Pago" }
+    sale: ItemPayload & { 
+        _id: string, 
+        saleNumber: number, 
+        status: PaymentStatus,
+
+        totalPaid: number,
+        remainingAmount: number,
+        paymentHistory: PaymentRecord[] | null,
+        installments: Installment[] | null
+    }
     updatedProducts: Product[]
 }
 
 
 export interface PurchaseResponse {
-    purchase: ItemPayload & { _id: string, purchaseNumber: number, status: "Em aberto" | "Pago" }
+    purchase: ItemPayload & { _id: string, purchaseNumber: number, status: PaymentStatus }
     updatedProducts: Product[]
 }
 
 
 export interface Receivable extends ItemPayload {
-    _id: string
-    saleNumber: number
-    status: "Em aberto" | "Pago"
-    paymentDate: string | null
-    bank: string
+    _id: string;
+    saleNumber: string;
+    clientName: string;
+    date: string;
+    total: number;
+    status: PaymentStatus;
+    totalPaid: number;
+    remainingAmount: number;
+    firstPaymentDate: string | null;
+    finalPaymentDate: string | null;
+    bank: string;
+    observations: string;
+    payments: PaymentRecord[];
 }
 
-export interface Payable extends ItemPayload {
+export interface Payable {
     _id: string
     purchaseNumber: number
     invoiceNumber: string
-    status: "Em aberto" | "Pago"
+    clientId: string
+    clientName: string
+    date: string
+    items: Item[]
+    total: number
+    status: PaymentStatus
     paymentDate: string | null
     bank: string
+
+    totalPaid: number
+    remainingAmount: number
+    paymentHistory: PaymentRecord[] | null
+    installments: Installment[] | null
 }
 
 export interface Expense {
@@ -113,13 +177,18 @@ export type ExpenseFromBackend = Expense & { _id: string }
 export type ExpenseErrors = Partial<Record<keyof Expense, string>>
 
 export interface UpdateReceivableRequest {
-    status: "Em aberto" | "Pago"
-    paymentDate: string | null
-    bank: string
+    status: PaymentStatus;
+    totalPaid: number;
+    remainingAmount: number;
+    firstPaymentDate?: string | null;
+    finalPaymentDate?: string | null;
+    bank: string;
+    observations: string;
+    payments: PaymentRecord[];
 }
 
 export interface UpdatePayableRequest {
-    status: "Em aberto" | "Pago"
+    status: PaymentStatus
     paymentDate: string | null
     bank: string
     invoiceNumber?: string
@@ -157,7 +226,7 @@ export interface OverduePayment {
     invoiceNumber?: string
     saleNumber?: number
     purchaseNumber?: number
-    status: "Em aberto" | "Pago"
+    status: PaymentStatus
     paymentDate: string | null
     bank: string
 }
@@ -170,4 +239,20 @@ export interface OverduePaymentFilters {
     maxAmount?: number
     sortBy?: 'daysOverdue' | 'amount' | 'dueDate'
     sortOrder?: 'asc' | 'desc'
+}
+
+// Interfaces para requisições de parcelas
+export interface PaymentRequest {
+    amount: number
+    paymentDate: string
+    bank?: string
+    notes?: string
+    paymentType: "Entrada" | "Parcela" | "Pagamento parcial"
+    installmentId?: string
+}
+
+export interface CreateInstallmentsRequest {
+    numberOfInstallments: number
+    firstDueDate: string
+    installmentAmount?: number
 }

@@ -3,12 +3,10 @@ import { X } from "lucide-react"
 import { FaSearch } from 'react-icons/fa'
 import type { AxiosResponse } from "axios"
 
-
 import ProductsContext from "../Context/ProductsContext"
 import ClientContext from "../Context/ClientContext"
 import type { Product, ItemPayload, SaleResponse } from "../types/types"
 import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
-
 
 interface CartItem extends Product {
     quantity: number
@@ -133,7 +131,7 @@ export const Sales: React.FC = () => {
                     price: Number(item.salePrice)
                 }),
                 ),
-            total,
+            total
         }
 
         if (!selectedClientId || cart.length === 0) {
@@ -167,7 +165,6 @@ export const Sales: React.FC = () => {
         setSelectedProductId("")
         setQuantity(1)
     }
-
 
     return (
         <main className="p-8 max-w-6xl mx-auto">
@@ -326,7 +323,7 @@ export const Sales: React.FC = () => {
                             </article>
 
                             <article className="bg-blue-50 p-4 rounded-xl">
-                                <p className="text-sm font-medium text-gray-600 mb-2">Estoque Disponível</p>
+                                <div className="text-sm font-medium text-gray-600 mb-2">Estoque Disponível</div>
                                 <section className="flex items-center justify-between">
                                     <section className="flex items-center gap-2">
                                         <section className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
@@ -526,7 +523,7 @@ export const Sales: React.FC = () => {
                                 <span className="text-emerald-600 mr-2">📋</span>
                                 <p className="text-sm font-medium text-gray-600">Número da Venda</p>
                             </div>
-                            <p className="text-2xl font-bold text-emerald-700">#{lastSale.saleNumber}</p>
+                            <p className="text-2xl font-bold text-emerald-700">#{lastSale.saleNumber || '-'}</p>
                         </div>
 
                         <div className="bg-white p-6 rounded-xl border border-emerald-200 shadow-sm hover:shadow-md transition-shadow">
@@ -534,7 +531,7 @@ export const Sales: React.FC = () => {
                                 <span className="text-emerald-600 mr-2">👤</span>
                                 <p className="text-sm font-medium text-gray-600">Cliente</p>
                             </div>
-                            <p className="text-xl font-bold text-emerald-700 truncate">{lastSale.clientName}</p>
+                            <p className="text-xl font-bold text-emerald-700 truncate">{lastSale.clientName || 'N/A'}</p>
                         </div>
 
                         <div className="bg-white p-6 rounded-xl border border-emerald-200 shadow-sm hover:shadow-md transition-shadow">
@@ -542,7 +539,7 @@ export const Sales: React.FC = () => {
                                 <span className="text-emerald-600 mr-2">📅</span>
                                 <p className="text-sm font-medium text-gray-600">Data</p>
                             </div>
-                            <p className="text-xl font-bold text-emerald-700">{lastSale.date}</p>
+                            <p className="text-xl font-bold text-emerald-700">{lastSale.date || 'N/A'}</p>
                         </div>
                     </div>
 
@@ -574,7 +571,7 @@ export const Sales: React.FC = () => {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-emerald-100">
-                                    {lastSale.items.map((item, index) => (
+                                    {(lastSale.items || []).map((item, index) => (
                                         <tr key={index} className="hover:bg-emerald-50/50 transition-colors">
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center">
@@ -612,7 +609,7 @@ export const Sales: React.FC = () => {
                             <div className="flex justify-between items-center">
                                 <span className="text-lg font-semibold text-emerald-800">Total da Venda:</span>
                                 <span className="text-2xl font-bold text-emerald-700">
-                                    {lastSale.total.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                                    {(lastSale.total || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
                                 </span>
                             </div>
                         </div>

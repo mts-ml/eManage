@@ -1,5 +1,31 @@
 import { JwtPayload } from "jsonwebtoken"
 
+// Enum para status de pagamento
+export enum PaymentStatus {
+    PENDING = "Em aberto",
+    PARTIALLY_PAID = "Parcialmente pago",
+    PAID = "Pago"
+}
+
+// Interface para registro de cada pagamento individual
+export interface PaymentRecord {
+    _id?: string;
+    amount: number;
+    paymentDate: string;
+    createdAt?: Date;
+}
+
+// Interface para parcelas
+export interface Installment {
+    id: string
+    installmentNumber: number
+    dueDate: string
+    amount: number
+    status: "Pendente" | "Pago"
+    paymentDate?: string | null
+    bank?: string
+    notes?: string
+}
 
 export interface RegisterProps {
     name: string
@@ -84,16 +110,19 @@ export interface Item {
 
 
 export interface SalePayload {
-    clientId: string
-    clientName: string
-    saleNumber: number
-    date: string
-    items: Item[]
-    total: number
-    paid?: boolean
-    status: "Em aberto" | "Pago"
-    paymentDate?: string | null
-    bank?: string
+    saleNumber: number;
+    clientName: string;
+    date: string;
+    items: Item[];
+    total: number;
+    status: PaymentStatus;
+    totalPaid: number;
+    remainingAmount: number;
+    firstPaymentDate: string | null;
+    finalPaymentDate: string | null;
+    bank: string;
+    observations: string;
+    payments: PaymentRecord[];
 }
 export type SaleErrors = Partial<Record<keyof SalePayload | string, string[]>>
 
@@ -118,11 +147,14 @@ export type CommonTransactionPayload = Omit<SalePayload, "saleNumber"> & Omit<Pu
 
 
 export interface TransactionUpdatePayload {
-    status?: "Em aberto" | "Pago"
-    paymentDate?: string | null
-    bank?: string
-    invoiceNumber?: string
-    [key: string]: unknown
+    status?: PaymentStatus;
+    totalPaid?: number;
+    remainingAmount?: number;
+    firstPaymentDate?: string | null;
+    finalPaymentDate?: string | null;
+    bank?: string;
+    observations?: string;
+    payments?: PaymentRecord[];
 }
 
 
@@ -136,3 +168,20 @@ export interface ExpenseProps {
     [key: string]: unknown
 }
 export type ExpenseErrors = Partial<Record<keyof ExpenseProps, string>>
+
+// Interface para requisição de pagamento
+export interface PaymentRequest {
+    amount: number
+    paymentDate: string
+    bank?: string
+    notes?: string
+    paymentType: "Entrada" | "Parcela" | "Pagamento parcial"
+    installmentId?: string
+}
+
+// Interface para criação de parcelas
+export interface CreateInstallmentsRequest {
+    numberOfInstallments: number
+    firstDueDate: string
+    installmentAmount?: number
+}
