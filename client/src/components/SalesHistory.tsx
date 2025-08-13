@@ -4,6 +4,7 @@ import type { AxiosResponse } from "axios"
 
 import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
 import type { Receivable } from "../types/types"
+import { PaymentStatus } from "../types/types"
 
 
 interface SalesHistoryFilters {
@@ -222,17 +223,29 @@ export const SalesHistory: React.FC = () => {
             </section>
 
             {/* Estatísticas */}
-            <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <section className="grid grid-cols-1 md:grid-cols-4 gap-4">
                <article className="bg-emerald-50/50 p-4 rounded-xl border border-emerald-200">
                   <p className="text-sm font-medium text-gray-600 mb-1">Total de Vendas</p>
-
                   <p className="text-2xl font-bold text-emerald-700">{totalSales}</p>
                </article>
 
                <article className="bg-green-50/50 p-4 rounded-xl border border-green-200">
                   <p className="text-sm font-medium text-gray-600 mb-1">Receita Total</p>
-
                   <p className="text-2xl font-bold text-green-700">{formatCurrency(totalRevenue)}</p>
+               </article>
+
+               <article className="bg-blue-50/50 p-4 rounded-xl border border-blue-200">
+                  <p className="text-sm font-medium text-gray-600 mb-1">Total Recebido</p>
+                  <p className="text-2xl font-bold text-blue-700">
+                     {formatCurrency(filteredSales.reduce((sum, sale) => sum + sale.totalPaid, 0))}
+                  </p>
+               </article>
+
+               <article className="bg-red-50/50 p-4 rounded-xl border border-red-200">
+                  <p className="text-sm font-medium text-gray-600 mb-1">Total Pendente</p>
+                  <p className="text-2xl font-bold text-red-700">
+                     {formatCurrency(filteredSales.reduce((sum, sale) => sum + sale.remainingAmount, 0))}
+                  </p>
                </article>
             </section>
          </section>
@@ -280,6 +293,9 @@ export const SalesHistory: React.FC = () => {
                               <th className="px-4 py-3 text-xs font-semibold text-emerald-700 text-center">Cliente</th>
                               <th className="px-4 py-3 text-xs font-semibold text-emerald-700 text-center">Itens</th>
                               <th className="px-4 py-3 text-xs font-semibold text-emerald-700 text-center">Total</th>
+
+                              <th className="px-4 py-3 text-xs font-semibold text-emerald-700 text-center">Pago</th>
+                              <th className="px-4 py-3 text-xs font-semibold text-emerald-700 text-center">Pendente</th>
                               <th className="px-4 py-3 text-xs font-semibold text-emerald-700 text-center">Status</th>
                            </tr>
                         </thead>
@@ -318,11 +334,24 @@ export const SalesHistory: React.FC = () => {
                                     {formatCurrency(sale.total)}
                                  </td>
 
+
+
+                                 <td className="px-4 py-3 text-xs font-bold text-green-700 text-center">
+                                    {formatCurrency(sale.totalPaid)}
+                                 </td>
+
+                                 <td className="px-4 py-3 text-xs font-bold text-red-700 text-center">
+                                    {formatCurrency(sale.remainingAmount)}
+                                 </td>
+
                                  <td className="px-4 py-3 text-xs text-center">
-                                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold ${sale.status === "Pago"
-                                       ? "bg-green-100 text-green-800"
-                                       : "bg-yellow-100 text-yellow-800"
-                                       }`}>
+                                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold ${
+                                       sale.status === PaymentStatus.PAID
+                                          ? "bg-green-100 text-green-800"
+                                          : sale.status === PaymentStatus.PARTIALLY_PAID
+                                          ? "bg-yellow-100 text-yellow-800"
+                                          : "bg-red-100 text-red-800"
+                                    }`}>
                                        {sale.status}
                                     </span>
                                  </td>
