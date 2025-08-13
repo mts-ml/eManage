@@ -22,7 +22,7 @@ export const OverduePayments: React.FC = () => {
         sortBy: 'daysOverdue',
         sortOrder: 'desc'
     })
-    
+
     const axiosPrivate = useAxiosPrivate()
 
     useEffect(() => {
@@ -36,7 +36,7 @@ export const OverduePayments: React.FC = () => {
     async function fetchOverduePayments() {
         setLoading(true)
         setError("")
-        
+
         try {
             const [receivablesRes, payablesRes, expensesRes] = await Promise.all([
                 axiosPrivate.get<Receivable[]>("/sales"),
@@ -54,11 +54,11 @@ export const OverduePayments: React.FC = () => {
                     // Converter data DD/MM/YYYY para Date object
                     const [day, month, year] = item.date.split('/')
                     const saleDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day))
-                    
+
                     // Assumir que o prazo padrão é 30 dias após a venda
                     const dueDate = new Date(saleDate.getTime() + (30 * 24 * 60 * 60 * 1000))
                     const daysOverdue = Math.floor((today.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24))
-                    
+
                     if (daysOverdue > 0) {
                         overdueItems.push({
                             _id: item._id,
@@ -68,9 +68,9 @@ export const OverduePayments: React.FC = () => {
                             dueDate: dueDate.toISOString().split('T')[0], // Formato YYYY-MM-DD
                             daysOverdue,
                             clientName: item.clientName,
-                            saleNumber: item.saleNumber,
+                            saleNumber: Number(item.saleNumber),
                             status: item.status,
-                            paymentDate: item.paymentDate,
+                            paymentDate: item.paymentDate || null,
                             bank: item.bank
                         })
                     }
@@ -84,11 +84,11 @@ export const OverduePayments: React.FC = () => {
                         // Converter data DD/MM/YYYY para Date object
                         const [day, month, year] = item.date.split('/')
                         const purchaseDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day))
-                        
+
                         // Assumir que o prazo padrão é 30 dias após a compra
                         const dueDate = new Date(purchaseDate.getTime() + (30 * 24 * 60 * 60 * 1000))
                         const daysOverdue = Math.floor((today.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24))
-                        
+
                         if (daysOverdue > 0) {
                             overdueItems.push({
                                 _id: item._id,
@@ -101,7 +101,7 @@ export const OverduePayments: React.FC = () => {
                                 purchaseNumber: item.purchaseNumber,
                                 invoiceNumber: item.invoiceNumber,
                                 status: item.status,
-                                paymentDate: item.paymentDate,
+                                paymentDate: item.paymentDate || null,
                                 bank: item.bank
                             })
                         }
@@ -114,10 +114,10 @@ export const OverduePayments: React.FC = () => {
                     .filter(item => item.status === "Em aberto" && item.dueDate)
                     .forEach(item => {
                         if (!item.dueDate) return
-                        
+
                         const dueDate = new Date(item.dueDate)
                         const daysOverdue = Math.floor((today.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24))
-                        
+
                         if (daysOverdue > 0) {
                             overdueItems.push({
                                 _id: item._id,
@@ -138,7 +138,7 @@ export const OverduePayments: React.FC = () => {
         } catch (error) {
             const axiosError = error as AxiosErrorResponse
             console.error("Erro ao buscar pagamentos atrasados:", error)
-            
+
             if (axiosError.response?.status === 500) {
                 setError("Erro interno do servidor. Tente novamente mais tarde.")
             } else if (axiosError.response?.status === 401) {
@@ -178,7 +178,7 @@ export const OverduePayments: React.FC = () => {
         // Ordenação
         filtered.sort((a, b) => {
             let comparison = 0
-            
+
             switch (filters.sortBy) {
                 case 'daysOverdue':
                     comparison = a.daysOverdue - b.daysOverdue
@@ -244,13 +244,13 @@ export const OverduePayments: React.FC = () => {
             const [day, month, year] = dateString.split('/')
             return `${day}/${month}/${year}`
         }
-        
+
         // Para datas ISO ou outras formatos
         const date = new Date(dateString)
         if (isNaN(date.getTime())) {
             return dateString // Retornar como está se não conseguir parsear
         }
-        
+
         return date.toLocaleDateString('pt-BR')
     }
 
@@ -290,7 +290,7 @@ export const OverduePayments: React.FC = () => {
                         <Filter className="h-4 w-4" />
                         Filtros
                     </button>
-                    
+
                     <button
                         onClick={fetchOverduePayments}
                         className="cursor-pointer px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
@@ -310,7 +310,7 @@ export const OverduePayments: React.FC = () => {
             </section>
 
             {showFilters && (
-                <section 
+                <section
                     id="filters-panel"
                     className="mb-6 p-4 bg-gray-50 border border-gray-200 rounded-lg"
                     aria-label="Painel de filtros"
@@ -358,9 +358,8 @@ export const OverduePayments: React.FC = () => {
                             <div className="flex" role="group" aria-label="Ordenação">
                                 <button
                                     onClick={() => setFilters(prev => ({ ...prev, sortOrder: 'asc' }))}
-                                    className={`flex-1 px-3 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
-                                        filters.sortOrder === 'asc' ? 'bg-emerald-100 border-emerald-500' : 'bg-white'
-                                    }`}
+                                    className={`flex-1 px-3 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-emerald-500 ${filters.sortOrder === 'asc' ? 'bg-emerald-100 border-emerald-500' : 'bg-white'
+                                        }`}
                                     aria-label="Ordenar em ordem crescente"
                                     title="Ordenar em ordem crescente"
                                 >
@@ -369,9 +368,8 @@ export const OverduePayments: React.FC = () => {
 
                                 <button
                                     onClick={() => setFilters(prev => ({ ...prev, sortOrder: 'desc' }))}
-                                    className={`flex-1 px-3 py-2 border border-gray-300 rounded-r-md focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
-                                        filters.sortOrder === 'desc' ? 'bg-emerald-100 border-emerald-500' : 'bg-white'
-                                    }`}
+                                    className={`flex-1 px-3 py-2 border border-gray-300 rounded-r-md focus:outline-none focus:ring-2 focus:ring-emerald-500 ${filters.sortOrder === 'desc' ? 'bg-emerald-100 border-emerald-500' : 'bg-white'
+                                        }`}
                                     aria-label="Ordenar em ordem decrescente"
                                     title="Ordenar em ordem decrescente"
                                 >
@@ -415,9 +413,9 @@ export const OverduePayments: React.FC = () => {
                     <h2 className="text-lg font-medium text-gray-900 mb-2">
                         Nenhum pagamento atrasado encontrado
                     </h2>
-                    
+
                     <p className="text-gray-600">
-                        {overduePayments.length === 0 
+                        {overduePayments.length === 0
                             ? "Não há pagamentos atrasados no sistema."
                             : "Nenhum pagamento atende aos filtros aplicados."
                         }
@@ -441,11 +439,11 @@ export const OverduePayments: React.FC = () => {
                                             #{payment.saleNumber || payment.purchaseNumber || payment._id.slice(-6)}
                                         </span>
                                     </header>
-                                    
+
                                     <h3 className="font-medium text-gray-900 mb-1">
                                         {payment.description}
                                     </h3>
-                                    
+
                                     <div className="flex flex-wrap gap-4 text-sm text-gray-600">
                                         <div className="flex items-center gap-1">
                                             <Calendar className="h-4 w-4" />
@@ -463,13 +461,12 @@ export const OverduePayments: React.FC = () => {
                                 </div>
 
                                 <div className="flex items-center gap-2">
-                                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                                        payment.daysOverdue >= 30 
-                                            ? 'bg-red-100 text-red-800' 
-                                            : payment.daysOverdue >= 15 
+                                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${payment.daysOverdue >= 30
+                                        ? 'bg-red-100 text-red-800'
+                                        : payment.daysOverdue >= 15
                                             ? 'bg-orange-100 text-orange-800'
                                             : 'bg-yellow-100 text-yellow-800'
-                                    }`}>
+                                        }`}>
                                         {payment.daysOverdue} dias
                                     </span>
                                 </div>
