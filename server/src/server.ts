@@ -1,5 +1,5 @@
 import 'dotenv/config'
-import express from 'express'
+import express, { Request, Response } from 'express'
 import cors from 'cors'
 import mongoose from 'mongoose'
 import cookieParser from 'cookie-parser'
@@ -42,6 +42,10 @@ app.use(cors({
     origin: allowedOrigins,
     credentials: true
 }))
+
+app.get('/', (req: Request, res: Response) => {
+    res.json({ message: "API funcionando" })
+})
 
 app.use("/login", login)
 app.use('/register', register)
