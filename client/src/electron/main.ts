@@ -1,7 +1,8 @@
-import { app, BrowserWindow, Tray } from 'electron'
+import { app, BrowserWindow } from 'electron'
 import path from 'path'
 
-import { getAssetPath, isDev } from './util.js'
+import { isDev } from './util.js'
+import { createTray } from './tray.js'
 
 
 app.on("ready", () => {
@@ -21,13 +22,10 @@ app.on("ready", () => {
       mainWindow.loadFile(path.join(app.getAppPath(), '/dist-react/index.html'))
    }
 
-   new Tray(path.join(getAssetPath(), 'panda.ico'))
-
-   // Remover barra de menu
-   mainWindow.setMenu(null)
-
-   // Maximizar janela
-   mainWindow.maximize()
+   createTray(mainWindow) // Ícone na barra de tarefas
+   
+   mainWindow.setMenu(null) // Remover barra de menu
+   mainWindow.maximize() // Maximizar janela
 
    // Manter DevTools acessível via teclado
    mainWindow.webContents.on('before-input-event', (event, input) => {
@@ -35,4 +33,28 @@ app.on("ready", () => {
          mainWindow.webContents.toggleDevTools()
       }
    })
+
+   function handleCloseEvents(mainWindow: BrowserWindow) {
+      let willClose = false
+
+      mainWindow.on('close', (event) => {
+         if (willClose) return
+
+         event.preventDefault()
+         mainWindow.hide()
+
+         if (app.dock) app.dock.hide() // Para MacOs
+      })
+
+      app.on("before-quit", () => {
+         willClose = true
+      })
+
+      mainWindow.on('show', () => {
+         willClose = false
+      })
+   }
+
+   handleCloseEvents(mainWindow)
+
 })
