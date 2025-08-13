@@ -1,7 +1,6 @@
 import mongoose from "mongoose"
 
-import { SalePayload } from "../types/types.js"
-
+import { SalePayload, PaymentStatus } from "../types/types.js"
 
 const itemSchema = new mongoose.Schema({
     productId: {
@@ -22,7 +21,29 @@ const itemSchema = new mongoose.Schema({
     }
 })
 
+// Schema para pagamentos individuais
+const paymentSchema = new mongoose.Schema({
+  amount: {
+    type: Number,
+    required: true,
+    min: 0
+  },
+  paymentDate: {
+    type: String,
+    required: true
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
+});
+
 const saleSchema = new mongoose.Schema({
+    id: {
+        type: String,
+        required: true,
+        unique: true
+    },
     saleNumber: {
         type: Number,
         required: true,
@@ -44,21 +65,41 @@ const saleSchema = new mongoose.Schema({
     total: {
         type: Number,
         required: true
-    },   
+    },
+    // Campos para controle de pagamento
+    totalPaid: {
+        type: Number,
+        default: 0,
+        min: 0
+    },
+    remainingAmount: {
+        type: Number,
+        default: 0
+    },
     status: {
         type: String,
-        enum: ["Em aberto", "Pago"],
+        enum: ["Em aberto", "Parcialmente pago", "Pago"],
         default: "Em aberto"
     },
-    paymentDate: {
-        type: Date,
+    firstPaymentDate: {
+        type: String,
+        default: null
+    },
+    finalPaymentDate: {
+        type: String,
         default: null
     },
     bank: {
         type: String,
         default: ""
-    }
-})
-
+    },
+    observations: {
+        type: String,
+        default: ""
+    },
+    payments: [paymentSchema]
+}, {
+  timestamps: true
+});
 
 export const Sale = mongoose.model<SalePayload>("Sale", saleSchema)
