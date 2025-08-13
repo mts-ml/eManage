@@ -73,7 +73,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             } catch (error) {
                 if (isMounted) {
                     setAuth(emptyAuth)
-                    console.log(`Erro verificando autenticação ${error}`)
                 }
 
                 if (error instanceof Error) {

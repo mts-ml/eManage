@@ -1,16 +1,18 @@
 import { CircleLoader } from "react-spinners";
 
+
 export function Loading() {
+
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center gap-4">
-      <CircleLoader 
-        color="#10b981"  // cor verde esmeralda
+    <div className="loading-critical">
+      <CircleLoader
+        color="#10b981"
         loading={true}
-        size={60}        // tamanho maior
+        size={60}
         aria-label="Loading Spinner"
         data-testid="loader"
       />
-      <p className="text-black font-medium text-lg tracking-wide">
+      <p className="loading-text">
         Loading...
       </p>
     </div>

@@ -6,7 +6,7 @@
    ],
    "extraResources": [
       "dist-electron/preload.cjs",
-      "src/assets/**"
+      "public/assets/images/**"
    ],
    "icon": "./public/assets/images/panda.png",
    "mac": {
