@@ -1,25 +1,25 @@
 import { NextFunction, Request, Response } from "express"
 
-import { Item, SalePayload, PurchasePayload } from "../types/types.js"
+import { Item, SalePayload, PurchasePayload, PaymentStatus } from "../types/types.js"
 import { rejectExtraFields } from "../utils/utils.js"
 
 // Middleware para validação de vendas
 export function handleSaleValidation(req: Request<{}, {}, Omit<SalePayload, "saleNumber">>, res: Response, next: NextFunction) {
     const payload = req.body
+    
     if (!payload) {
         res.status(400).json({ message: "Dados ausentes no corpo da requisição." })
         return
     }
 
     const allowedFields = [
-        "clientId",
         "clientName",
         "date",
         "items",
         "total",
-        "paid",
+        "totalPaid",
+        "remainingAmount",
         "status",
-        "paymentDate",
         "bank"
     ]
     if (rejectExtraFields(req.body, allowedFields, res)) return
@@ -41,10 +41,6 @@ export function handleSaleValidation(req: Request<{}, {}, Omit<SalePayload, "sal
 
     if (!payload.clientName || typeof payload.clientName !== "string" || payload.clientName.length === 0) {
         errors.clientName = ["Nome do cliente é obrigatório"]
-    }
-
-    if (!payload.clientId || typeof payload.clientId !== "string" || payload.clientId.trim().length === 0) {
-        errors.clientId = ["Campo obrigatório"]
     }
 
     if (!payload.date || typeof payload.date !== "string" || payload.date.trim().length < 8) {
@@ -71,6 +67,20 @@ export function handleSaleValidation(req: Request<{}, {}, Omit<SalePayload, "sal
         errors.total = ["Total inválido"]
     }
 
+
+
+    if (payload.status && !Object.values(PaymentStatus).includes(payload.status)) {
+        errors.status = ["Status de pagamento inválido"]
+    }
+
+    if (payload.totalPaid !== undefined && (typeof payload.totalPaid !== "number" || payload.totalPaid < 0)) {
+        errors.totalPaid = ["Valor pago inválido"]
+    }
+
+    if (payload.remainingAmount !== undefined && (typeof payload.remainingAmount !== "number" || payload.remainingAmount < 0)) {
+        errors.remainingAmount = ["Valor restante inválido"]
+    }
+
     if (Object.keys(errors).length > 0) {
         res.status(400).json({ message: errors })
         return
@@ -88,7 +98,6 @@ export function handlePurchaseValidation(req: Request<{}, {}, Omit<PurchasePaylo
     }
 
     const allowedFields = [
-        "clientId",
         "clientName",
         "date",
         "invoiceNumber",
@@ -118,10 +127,6 @@ export function handlePurchaseValidation(req: Request<{}, {}, Omit<PurchasePaylo
 
     if (!payload.clientName || typeof payload.clientName !== "string" || payload.clientName.length === 0) {
         errors.clientName = ["Nome do fornecedor é obrigatório"]
-    }
-
-    if (!payload.clientId || typeof payload.clientId !== "string" || payload.clientId.trim().length === 0) {
-        errors.clientId = ["Campo obrigatório"]
     }
 
     if (!payload.date || typeof payload.date !== "string" || payload.date.trim().length < 8) {
