@@ -20,8 +20,8 @@ const expenseSchema = new Schema<ExpenseProps>({
     },
     status: {
         type: String,
-        enum: ["Em aberto", "Pago"],
-        default: "Em aberto"
+        enum: ["Pendente", "Pago"],
+        default: "Pendente"
     },
     bank: {
         type: String,
