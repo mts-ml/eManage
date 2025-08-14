@@ -4,7 +4,6 @@ import mongoose from "mongoose"
 import { Sale } from "../model/Sales.js"
 import { SalePayload, PaymentStatus } from "../types/types.js"
 import { getNextSaleNumber } from "../utils/utils.js"
-import { Client } from "../model/Clients.js"
 import { Product } from "../model/Products.js"
 
 
@@ -32,12 +31,26 @@ export async function createNewSale(req: Request<{}, {}, Omit<SalePayload, "sale
         const productIds = saleProps.items.map(item => item.productId)
         const products = await Product.find({ _id: { $in: productIds } })
 
+        // Verificar se há estoque suficiente
+        const insufficientStock = saleProps.items.some(item => {
+            const product = products.find(p => p._id.toString() === item.productId)
+
+            return !product || product.stock < item.quantity
+        })
+
+        if (insufficientStock) {
+            return res.status(400).json({
+                message: "Estoque insuficiente para um ou mais produtos"
+            })
+        }
+
         const saleNumber = await getNextSaleNumber()
 
         // Criar nova venda
         const newSale = new Sale({
             saleNumber: saleNumber,
             clientName: saleProps.clientName,
+            clientId: saleProps.clientId,
             date: saleProps.date,
             items: saleProps.items.map(item => {
                 const product = products.find(p => p._id.toString() === item.productId)
@@ -62,19 +75,23 @@ export async function createNewSale(req: Request<{}, {}, Omit<SalePayload, "sale
         // Atualiza o estoque dos produtos
         await Promise.all(
             saleProps.items.map(async item => {
-                const product = products.find(p => p.id === item.productId)
+                const result = await Product.updateOne(
+                    { _id: item.productId, stock: { $gte: item.quantity } },
+                    { $inc: { stock: -item.quantity } }
+                )
 
-                if (product) {
-                    product.stock -= item.quantity
-                    await product.save()
+                if (result.matchedCount === 0) {
+                    throw new Error(`Estoque insuficiente para produto ${item.productName}`)
                 }
             })
         )
 
+        const updatedProducts = await Product.find({ _id: { $in: productIds } })
+
         res.status(201).json({
             sale: createdSale,
-            updatedProducts: products.map(product => ({
-                id: product.id,
+            updatedProducts: updatedProducts.map(product => ({
+                id: product._id,
                 name: product.name,
                 stock: product.stock,
                 salePrice: product.salePrice,
