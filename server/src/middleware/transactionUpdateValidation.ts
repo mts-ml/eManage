@@ -9,71 +9,67 @@ export const handleTransactionUpdateValidation = (req: Request, res: Response, n
   
   const allowedFields = ['status', 'totalPaid', 'remainingAmount', 'firstPaymentDate', 'finalPaymentDate', 'bank', 'observations', 'payments'];
   
-  // Verificar se todos os campos enviados são permitidos
   const invalidFields = Object.keys(req.body).filter(field => !allowedFields.includes(field));
   if (invalidFields.length > 0) {
     res.status(400).json({ message: `Campos não permitidos: ${invalidFields.join(', ')}` });
     return;
   }
 
-  // Validações específicas baseadas no status
   if (status !== undefined) {
-    const validStatus = ['Pendente', 'Parcialmente pago', 'Pago'];
+    const validStatus = ['Pendente', 'Parcialmente pago', 'Pago']
     if (!validStatus.includes(status)) {
-      res.status(400).json({ message: 'Status inválido' });
-      return;
+      res.status(400).json({ message: 'Status inválido' })
+      return
     }
   }
 
-  // Validação para status "Pago"
   if (status === 'Pago') {
     if (finalPaymentDate === undefined || finalPaymentDate === null || finalPaymentDate === '') {
-      res.status(400).json({ message: 'Data do pagamento total é obrigatória quando status é Pago' });
-      return;
+      res.status(400).json({ message: 'Data do pagamento total é obrigatória quando status é Pago' })
+      return
     }
   }
 
-  // Validação para status "Em aberto"
   if (status === 'Pendente') {
     if (finalPaymentDate !== undefined && finalPaymentDate !== null && finalPaymentDate !== '') {
-      res.status(400).json({ message: 'Data do pagamento total não deve ser definida quando status é Pendente' });
-      return;
+      res.status(400).json({ message: 'Data do pagamento total não deve ser definida quando status é Pendente' })
+      return
     }
   }
 
   // Validação de datas
   if (firstPaymentDate !== undefined && firstPaymentDate !== null && firstPaymentDate !== '') {
     if (isNaN(Date.parse(firstPaymentDate))) {
-      res.status(400).json({ message: 'Data do primeiro pagamento inválida' });
-      return;
+      res.status(400).json({ message: 'Data do primeiro pagamento inválida' })
+      return
     }
   }
 
   if (finalPaymentDate !== undefined && finalPaymentDate !== null && finalPaymentDate !== '') {
     if (isNaN(Date.parse(finalPaymentDate))) {
-      res.status(400).json({ message: 'Data do pagamento total inválida' });
-      return;
+      res.status(400).json({ message: 'Data do pagamento total inválida' })
+      return
     }
   }
 
   // Validação de pagamentos
   if (payments !== undefined) {
     if (!Array.isArray(payments)) {
-      res.status(400).json({ message: 'Pagamentos deve ser um array' });
-      return;
+      res.status(400).json({ message: 'Pagamentos deve ser um array' })
+      return
     }
     
     for (const payment of payments) {
       if (typeof payment.amount !== 'number' || payment.amount <= 0) {
-        res.status(400).json({ message: 'Valor do pagamento deve ser um número positivo' });
-        return;
+        res.status(400).json({ message: 'Valor do pagamento deve ser um número positivo' })
+        return
       }
       if (typeof payment.paymentDate !== 'string' || isNaN(Date.parse(payment.paymentDate))) {
-        res.status(400).json({ message: 'Data do pagamento inválida' });
-        return;
+        res.status(400).json({ message: 'Data do pagamento inválida' })
+        return
       }
     }
   }
 
-  next();
-};
+  next()
+}
