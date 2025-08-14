@@ -49,7 +49,7 @@ export const OverduePayments: React.FC = () => {
 
             // Processar recebíveis atrasados
             receivablesRes.data
-                .filter(item => item.status === "Em aberto")
+                .filter(item => item.status === "Pendente")
                 .forEach(item => {
                     // Converter data DD/MM/YYYY para Date object
                     const [day, month, year] = item.date.split('/')
@@ -79,7 +79,7 @@ export const OverduePayments: React.FC = () => {
             // Processar pagáveis atrasados
             if (payablesRes.status !== 204 && Array.isArray(payablesRes.data)) {
                 payablesRes.data
-                    .filter(item => item.status === "Em aberto")
+                    .filter(item => item.status === "Pendente")
                     .forEach(item => {
                         // Converter data DD/MM/YYYY para Date object
                         const [day, month, year] = item.date.split('/')
@@ -111,7 +111,7 @@ export const OverduePayments: React.FC = () => {
             // Processar despesas atrasadas
             if (expensesRes.status !== 204 && Array.isArray(expensesRes.data)) {
                 expensesRes.data
-                    .filter(item => item.status === "Em aberto" && item.dueDate)
+                    .filter(item => item.status === "Pendente" && item.dueDate)
                     .forEach(item => {
                         if (!item.dueDate) return
 
@@ -126,7 +126,7 @@ export const OverduePayments: React.FC = () => {
                                 amount: parseFloat(item.value),
                                 dueDate: item.dueDate,
                                 daysOverdue,
-                                status: item.status || "Em aberto",
+                                status: item.status || "Pendente",
                                 paymentDate: null,
                                 bank: item.bank || ""
                             })
