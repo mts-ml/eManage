@@ -3,6 +3,8 @@ import { X } from "lucide-react"
 import { FaTrash, FaEdit } from 'react-icons/fa'
 
 import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
+
+
 import type {
     Receivable,
     UpdateReceivableRequest,
@@ -11,9 +13,12 @@ import type {
     AxiosErrorResponse,
     PaymentRecord
 } from "../types/types"
+
 import { PaymentStatus } from "../types/types"
 
+
 type SortField = 'date' | 'saleNumber' | 'clientName' | 'total' | 'firstPaymentDate' | 'finalPaymentDate'
+
 type SortOrder = 'asc' | 'desc'
 
 interface SortConfig {
@@ -32,12 +37,10 @@ interface EditFormData {
     payments: PaymentRecord[]
 }
 
+
 export const Receivables: React.FC = () => {
     const [receivables, setReceivables] = useState<Receivable[]>([])
-    const [errors, setErrors] = useState<Partial<Record<string, string>>>({})
-    const [modifiedId, setModifiedId] = useState<string | null>(null)
     const [sortConfig, setSortConfig] = useState<SortConfig>({ field: 'date', order: 'desc' })
-    // Estado para edição inline
     const [editingSale, setEditingSale] = useState<Receivable | null>(null)
     const [editFormData, setEditFormData] = useState<EditFormData>({
         status: PaymentStatus.PENDING,
@@ -52,7 +55,6 @@ export const Receivables: React.FC = () => {
     const [editErrors, setEditErrors] = useState<Partial<Record<string, string>>>({})
     const [isSaving, setIsSaving] = useState(false)
     const axiosPrivate = useAxiosPrivate()
-
 
 
     // Função para converter data do formato DD/MM/AAAA para objeto Date
@@ -84,14 +86,14 @@ export const Receivables: React.FC = () => {
                     aValue = a.total
                     bValue = b.total
                     break
-                                 case 'firstPaymentDate':
-                     aValue = a.firstPaymentDate ? new Date(a.firstPaymentDate) : new Date(0)
-                     bValue = b.firstPaymentDate ? new Date(b.firstPaymentDate) : new Date(0)
-                     break
-                 case 'finalPaymentDate':
-                     aValue = a.finalPaymentDate ? new Date(a.finalPaymentDate) : new Date(0)
-                     bValue = b.finalPaymentDate ? new Date(b.finalPaymentDate) : new Date(0)
-                     break
+                case 'firstPaymentDate':
+                    aValue = a.firstPaymentDate ? new Date(a.firstPaymentDate) : new Date(0)
+                    bValue = b.firstPaymentDate ? new Date(b.firstPaymentDate) : new Date(0)
+                    break
+                case 'finalPaymentDate':
+                    aValue = a.finalPaymentDate ? new Date(a.finalPaymentDate) : new Date(0)
+                    bValue = b.finalPaymentDate ? new Date(b.finalPaymentDate) : new Date(0)
+                    break
                 default:
                     return 0
             }
@@ -131,7 +133,7 @@ export const Receivables: React.FC = () => {
                 const response = await axiosPrivate.get<Receivable[]>("/sales")
                 const salesWithReceivableInfo: Receivable[] = response.data.map((sale: Receivable) => ({
                     ...sale,
-                    status: sale.status || "Em aberto",
+                    status: sale.status || "Pendente",
                     paymentDate: sale.paymentDate || null,
                     bank: sale.bank || ""
                 }))
@@ -143,94 +145,11 @@ export const Receivables: React.FC = () => {
         fetchSales()
     }, [axiosPrivate])
 
-    function handleStatusChange(id: string, newStatus: "Em aberto" | "Parcialmente pago" | "Pago") {
-        setReceivables(prev =>
-            prev.map(sale =>
-                sale._id === id
-                    ? {
-                        ...sale,
-                        status: newStatus,
-                        finalPaymentDate: newStatus === "Pago" ? new Date().toISOString() : null,
-                        // Se mudou para "Pago", definir data do pagamento total
-                        ...(newStatus === "Pago" && {
-                            finalPaymentDate: new Date().toISOString(),
-                            // Se não tem primeira data de pagamento, usar a data atual
-                            firstPaymentDate: sale.firstPaymentDate || new Date().toISOString()
-                        })
-                    }
-                    : sale
-            )
-        )
-        setModifiedId(id)
-    }
-
-    function handleBankChange(id: string, bank: string) {
-        setReceivables(prev =>
-            prev.map(sale => (sale._id === id ? { ...sale, bank } : sale))
-        )
-
-        setModifiedId(id)
-    }
-
-    async function handleSave(id: string): Promise<void> {
-        const saleToSave = receivables.find(sale => sale._id === id)
-        if (!saleToSave) return
-
-        // Calcular status automaticamente baseado no valor pago
-        const calculatedStatus = calculateStatus(saleToSave.totalPaid || 0, saleToSave.total)
-        const finalStatus = calculatedStatus === PaymentStatus.PAID ? saleToSave.status : calculatedStatus
-
-        if (finalStatus === "Pago" && !saleToSave.bank.trim()) {
-            setErrors(prev => ({ ...prev, [id]: "Informe o banco." }))
-            return
-        }
-
-        // Definir datas automaticamente baseado no status
-        const today = new Date().toISOString()
-        let firstPaymentDate = saleToSave.firstPaymentDate
-        let finalPaymentDate = saleToSave.finalPaymentDate
-
-        if (finalStatus === "Pago") {
-            finalPaymentDate = today
-            if (!firstPaymentDate) {
-                firstPaymentDate = today
-            }
-        } else if (finalStatus === "Parcialmente pago" && !firstPaymentDate) {
-            firstPaymentDate = today
-        }
-
-        const updateData: UpdateReceivableRequest = {
-            status: finalStatus,
-            firstPaymentDate: firstPaymentDate,
-            finalPaymentDate: finalPaymentDate,
-            bank: saleToSave.bank,
-            totalPaid: saleToSave.totalPaid || 0,
-            remainingAmount: saleToSave.remainingAmount || saleToSave.total,
-            observations: saleToSave.observations || '',
-            payments: []
-        }
-
-        try {
-            await axiosPrivate.patch<ApiResponse<Receivable>>(`/receivables/${id}`, updateData)
-
-            setErrors(prev => {
-                const copy = { ...prev }
-                delete copy[id]
-                return copy
-            })
-
-            setModifiedId(null)
-        } catch (error) {
-            setErrors(prev => ({ ...prev, [id]: "Erro ao atualizar recebível" }))
-            console.error("Erro ao atualizar recebível:", error)
-        }
-    }
-
-    // Função para iniciar edição inline
+    // Função para iniciar edição no modal
     const handleStartEdit = (sale: Receivable) => {
         const calculatedStatus = calculateStatus(sale.totalPaid || 0, sale.total)
         setEditingSale(sale)
-        
+
         setEditFormData({
             status: calculatedStatus,
             totalPaid: sale.totalPaid || 0,
@@ -270,72 +189,102 @@ export const Receivables: React.FC = () => {
     // Função para atualizar valor restante quando total pago mudar
     const handleTotalPaidChange = (value: number) => {
         if (editingSale) {
+            // Calcular novo status baseado no valor pago
             const newStatus = calculateStatus(value, editingSale.total);
             const today = new Date().toISOString().split('T')[0];
-            
-            // Se o valor aumentou, definir data do primeiro pagamento se não existir
+
+            // LÓGICA: Se valor > 0, definir data do primeiro pagamento automaticamente
+            // (usuário não precisa escolher, é sempre a data atual)
             if (value > 0 && !editFormData.firstPaymentDate) {
                 setEditFormData(prev => ({
                     ...prev,
                     firstPaymentDate: today
                 }));
             }
-            
-            // Se o valor atingiu o total, definir data do pagamento total
-            if (value >= editingSale.total) {
-                setEditFormData(prev => ({
-                    ...prev,
-                    finalPaymentDate: today
-                }));
-            } else {
-                // Se o valor não atingiu o total, limpar a data do pagamento total
+
+            // LÓGICA: NÃO definir data do pagamento total automaticamente
+            // Deixar o usuário escolher quando quiser
+            // Apenas limpar se o valor não atingiu o total
+            if (value < editingSale.total) {
                 setEditFormData(prev => ({
                     ...prev,
                     finalPaymentDate: ""
                 }));
             }
-            
+
+            // Atualizar dados do formulário
             setEditFormData(prev => ({
                 ...prev,
                 totalPaid: value,
                 remainingAmount: editingSale.total - value,
                 status: newStatus
             }));
-            
-            // Atualizar também o status na tabela para refletir a mudança
+
+            // LÓGICA: Limpar erros relacionados quando o valor pago muda
+            // (banco e data do pagamento total podem não ser mais obrigatórios)
+            if (value === 0) {
+                setEditErrors(prev => ({
+                    ...prev,
+                    bank: undefined,
+                    finalPaymentDate: undefined
+                }))
+            }
+
+            // Atualizar também na tabela para refletir mudanças em tempo real
             setReceivables(prev =>
                 prev.map(sale =>
                     sale._id === editingSale._id
-                        ? { 
-                            ...sale, 
-                            status: newStatus, 
-                            totalPaid: value, 
+                        ? {
+                            ...sale,
+                            status: newStatus,
+                            totalPaid: value,
                             remainingAmount: editingSale.total - value,
                             firstPaymentDate: value > 0 && !sale.firstPaymentDate ? today : sale.firstPaymentDate,
-                            finalPaymentDate: value >= editingSale.total ? today : null
+                            // NÃO definir finalPaymentDate automaticamente
+                            finalPaymentDate: sale.finalPaymentDate
                         }
                         : sale
                 )
-            );
+            )
         }
-    };
-
-
+    }
 
     // Função para validar formulário de edição
     const validateEditForm = (): boolean => {
         const errors: Partial<Record<string, string>> = {}
 
-        if (!editFormData.bank || editFormData.bank.trim().length === 0) {
-            errors.bank = "Banco é obrigatório"
+        // LÓGICA: Banco é obrigatório apenas quando há valor pago
+        // (venda com pagamento parcial ou total)
+        if (editFormData.totalPaid > 0 && (!editFormData.bank || editFormData.bank.trim().length === 0)) {
+            errors.bank = "Banco é obrigatório quando há valor pago"
         }
 
-        if (editFormData.status === "Pago" && (!editFormData.finalPaymentDate || editFormData.finalPaymentDate.trim().length === 0)) {
-            errors.finalPaymentDate = "Data do pagamento total é obrigatória quando status é Pago"
+        // LÓGICA: Data do pagamento é obrigatória quando há valor pago
+        if (editFormData.totalPaid > 0 && (!editFormData.finalPaymentDate || editFormData.finalPaymentDate.trim().length === 0)) {
+            errors.finalPaymentDate = "Data do pagamento é obrigatória quando há valor pago"
         }
 
         setEditErrors(errors)
         return Object.keys(errors).length === 0
+    }
+
+    // Função para verificar se o formulário pode ser salvo
+    const canSaveForm = (): boolean => {
+        // Se status é "Pendente", não deve ter valor pago, data de pagamento e banco
+        if (editFormData.status === PaymentStatus.PENDING) {
+            return editFormData.totalPaid === 0 &&
+                !editFormData.finalPaymentDate &&
+                !editFormData.bank.trim()
+        }
+
+        // Se status é "Pago" ou "Parcialmente pago", campos são obrigatórios
+        if (editFormData.status === PaymentStatus.PAID || editFormData.status === PaymentStatus.PARTIALLY_PAID) {
+            return editFormData.totalPaid > 0 &&
+                Boolean(editFormData.finalPaymentDate) &&
+                editFormData.bank.trim().length > 0
+        }
+
+        return false
     }
 
     // Função para salvar edição
@@ -345,9 +294,7 @@ export const Receivables: React.FC = () => {
         setIsSaving(true)
 
         try {
-            // Calcular status automaticamente baseado no valor pago
-            const calculatedStatus = calculateStatus(editFormData.totalPaid, editingSale.total)
-            const finalStatus = calculatedStatus === PaymentStatus.PAID ? editFormData.status : calculatedStatus
+            const finalStatus = editFormData.status
 
             const updateData: UpdateReceivableRequest = {
                 status: finalStatus,
@@ -360,15 +307,11 @@ export const Receivables: React.FC = () => {
                 payments: []
             }
 
-            console.log("Dados sendo enviados:", updateData)
-            console.log("ID da venda:", editingSale._id)
-
             await axiosPrivate.patch<ApiResponse<Receivable>>(
                 `/receivables/${editingSale._id}`,
                 updateData
             )
 
-            // Atualizar a venda local
             const updatedSale = { ...editingSale, ...updateData }
             setReceivables(prev =>
                 prev.map(sale =>
@@ -380,7 +323,6 @@ export const Receivables: React.FC = () => {
         } catch (error) {
             console.error("Erro ao atualizar venda:", error)
 
-            // Log detalhado do erro
             if (error && typeof error === 'object' && 'response' in error) {
                 const axiosError = error as AxiosErrorResponse
                 console.error("Status do erro:", axiosError.response?.status)
@@ -452,6 +394,7 @@ export const Receivables: React.FC = () => {
                     </p>
                 </div>
             ) : (
+                // Tabela
                 <section className="overflow-auto border-2 border-emerald-200/50 rounded-2xl shadow-xl mb-10 max-h-[70vh] bg-white/90 backdrop-blur-sm">
                     <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gradient-to-r from-emerald-600 to-green-600 text-white sticky top-0 z-10">
@@ -466,6 +409,7 @@ export const Receivables: React.FC = () => {
                                         <span className="text-xs">{getSortIcon('date')}</span>
                                     </div>
                                 </th>
+
                                 <th
                                     className="px-4 py-3 text-xs font-semibold text-center cursor-pointer hover:bg-emerald-700 transition-colors duration-200 select-none"
                                     onClick={() => handleSort('saleNumber')}
@@ -476,6 +420,7 @@ export const Receivables: React.FC = () => {
                                         <span className="text-xs">{getSortIcon('saleNumber')}</span>
                                     </div>
                                 </th>
+
                                 <th
                                     className="px-4 py-3 text-xs font-semibold text-center cursor-pointer hover:bg-emerald-700 transition-colors duration-200 select-none"
                                     onClick={() => handleSort('clientName')}
@@ -486,6 +431,7 @@ export const Receivables: React.FC = () => {
                                         <span className="text-xs">{getSortIcon('clientName')}</span>
                                     </div>
                                 </th>
+
                                 <th
                                     className="px-4 py-3 text-xs font-semibold text-center cursor-pointer hover:bg-emerald-700 transition-colors duration-200 select-none"
                                     onClick={() => handleSort('total')}
@@ -496,18 +442,24 @@ export const Receivables: React.FC = () => {
                                         <span className="text-xs">{getSortIcon('total')}</span>
                                     </div>
                                 </th>
+
+                                <th className="px-4 py-3 text-xs font-semibold text-center">Valor Pago</th>
+
                                 <th className="px-4 py-3 text-xs font-semibold text-center">Status</th>
-                                <th 
-                                     className="px-4 py-3 text-xs font-semibold text-center cursor-pointer hover:bg-emerald-700 transition-colors duration-200 select-none"
-                                     onClick={() => handleSort('finalPaymentDate')}
-                                     title="Clique para ordenar por data do pagamento total"
-                                 >
-                                     <div className="flex items-center justify-center gap-1">
-                                         Pagamento Total
-                                         <span className="text-xs">{getSortIcon('finalPaymentDate')}</span>
-                                     </div>
-                                 </th>
+
+                                <th
+                                    className="px-4 py-3 text-xs font-semibold text-center cursor-pointer hover:bg-emerald-700 transition-colors duration-200 select-none"
+                                    onClick={() => handleSort('finalPaymentDate')}
+                                    title="Clique para ordenar por data do pagamento total"
+                                >
+                                    <div className="flex items-center justify-center gap-1">
+                                        Pagamento Total
+                                        <span className="text-xs">{getSortIcon('finalPaymentDate')}</span>
+                                    </div>
+                                </th>
+
                                 <th className="px-4 py-3 text-xs font-semibold text-center">Banco</th>
+
                                 <th className="px-4 py-3 text-xs font-semibold text-center">Ações</th>
                             </tr>
                         </thead>
@@ -525,42 +477,31 @@ export const Receivables: React.FC = () => {
                                         {sale.total.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
                                     </td>
 
-                                    <td className="px-4 py-3 text-xs text-center">
-                                                                                 <select
-                                             aria-label="Sale status"
-                                             className={`border-2 rounded-lg p-1 text-xs cursor-pointer transition-all duration-200 ${
-                                                 sale.status === "Pago" ? "bg-green-50 text-green-700 border-green-400" 
-                                                 : sale.status === "Parcialmente pago" ? "bg-yellow-50 text-yellow-700 border-yellow-400"
-                                                 : "border-gray-200"
-                                             }`}
-                                             value={sale.status}
-                                             onChange={e => handleStatusChange(sale._id, e.target.value as "Em aberto" | "Parcialmente pago" | "Pago")}
-                                         >
-                                             <option value="Em aberto">Em aberto</option>
-                                             <option value="Parcialmente pago">Parcialmente pago</option>
-                                             <option value="Pago">Pago</option>
-                                         </select>
+                                    <td className="px-4 py-3 text-xs font-bold text-green-700 text-center">
+                                        {sale.totalPaid ? sale.totalPaid.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) : "R$ 0,00"}
                                     </td>
 
-                                     <td className="px-4 py-3 text-xs text-center">
-                                         {sale.finalPaymentDate ? new Date(sale.finalPaymentDate).toLocaleDateString("pt-BR") : "--"}
-                                     </td>
+                                    <td className="px-4 py-3 text-xs text-center">
+                                        <span
+                                            className={`inline-block px-3 py-1 rounded-lg text-xs font-medium border-2 transition-all duration-200 ${sale.status === "Pago"
+                                                ? "bg-green-50 text-green-700 border-green-400"
+                                                : sale.status === "Parcialmente pago"
+                                                    ? "bg-yellow-50 text-yellow-700 border-yellow-400"
+                                                    : "bg-red-50 text-red-600 border-red-300"
+                                                }`}
+                                        >
+                                            {sale.status}
+                                        </span>
+                                    </td>
 
                                     <td className="px-4 py-3 text-xs text-center">
-                                        <input
-                                            type="text"
-                                            value={sale.bank}
-                                            onChange={e => handleBankChange(sale._id, e.target.value)}
-                                            placeholder="Banco"
-                                            className="border-2 border-gray-200 rounded-lg p-1 w-full text-xs focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200"
-                                        />
+                                        {sale.finalPaymentDate ? new Date(sale.finalPaymentDate).toLocaleDateString("pt-BR") : "--"}
+                                    </td>
 
-                                        {errors[sale._id] && (
-                                            <p className="text-red-500 text-xs mt-1 flex items-center justify-center">
-                                                <span className="mr-1">⚠️</span>
-                                                {errors[sale._id]}
-                                            </p>
-                                        )}
+                                    <td className="px-4 py-3 text-xs text-center">
+                                        <span className="text-gray-700 font-medium">
+                                            {sale.bank || "--"}
+                                        </span>
                                     </td>
 
                                     <td className="px-4 py-3 text-xs text-center">
@@ -576,27 +517,17 @@ export const Receivables: React.FC = () => {
                                                 <FaEdit size={18} />
                                             </button>
 
-                                            {modifiedId === sale._id && (
+                                            {sale.status === "Pendente" && (
                                                 <button
                                                     type="button"
-                                                    onClick={() => handleSave(sale._id)}
-                                                    className="bg-gradient-to-r from-emerald-600 to-green-600 cursor-pointer text-white px-3 py-1 rounded-lg text-xs font-semibold hover:from-emerald-700 hover:to-green-700 transition-all duration-300 shadow-md hover:shadow-lg"
+                                                    onClick={() => handleDeleteSale(sale._id)}
+                                                    className="text-red-600 cursor-pointer hover:text-red-800 p-2 rounded-lg hover:bg-red-50/50 transition-all duration-200"
+                                                    title="Excluir venda"
+                                                    aria-label="Excluir venda"
                                                 >
-                                                    💾 Salvar
+                                                    <FaTrash size={18} />
                                                 </button>
                                             )}
-
-                                                                                         {sale.status === "Em aberto" && (
-                                                 <button
-                                                     type="button"
-                                                     onClick={() => handleDeleteSale(sale._id)}
-                                                     className="text-red-600 cursor-pointer hover:text-red-800 p-2 rounded-lg hover:bg-red-50/50 transition-all duration-200"
-                                                     title="Excluir venda"
-                                                     aria-label="Excluir venda"
-                                                 >
-                                                     <FaTrash size={18} />
-                                                 </button>
-                                             )}
                                         </section>
                                     </td>
                                 </tr>
@@ -606,7 +537,7 @@ export const Receivables: React.FC = () => {
                 </section>
             )}
 
-            {/* Formulário de Edição Inline */}
+            {/* Modal de Edição */}
             {editingSale && (
                 <section className="fixed inset-0 bg-white/95 backdrop-blur-sm flex items-start justify-center z-50 p-4 overflow-y-auto">
                     <div className="bg-white rounded-2xl shadow-2xl w-full max-w-7xl max-h-[95vh] overflow-y-auto border-2 border-emerald-200/50">
@@ -615,13 +546,15 @@ export const Receivables: React.FC = () => {
                             <div className="flex items-center justify-between">
                                 <div>
                                     <h2 className="text-2xl font-bold">✏️ Editar Venda #{editingSale.saleNumber}</h2>
+
                                     <p className="text-emerald-100 mt-1">
                                         Cliente: {editingSale.clientName} | Total: {editingSale.total.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
                                     </p>
                                 </div>
+
                                 <button
                                     onClick={handleCancelEdit}
-                                    className="text-white hover:text-emerald-200 transition-colors duration-200"
+                                    className="text-white hover:text-emerald-200 hover:bg-white/10 rounded-lg p-2 transition-all duration-200 cursor-pointer"
                                     aria-label="Fechar edição"
                                     title="Fechar edição"
                                 >
@@ -669,7 +602,98 @@ export const Receivables: React.FC = () => {
 
                                         <select
                                             value={editFormData.status}
-                                            onChange={(e) => setEditFormData(prev => ({ ...prev, status: e.target.value as PaymentStatus }))}
+                                            onChange={(e) => {
+                                                const newStatus = e.target.value as PaymentStatus;
+                                                setEditFormData(prev => ({ ...prev, status: newStatus }));
+
+                                                // LÓGICA: Quando status muda para "Pendente", limpar dados de pagamento
+                                                if (newStatus === PaymentStatus.PENDING) {
+                                                    setEditFormData(prev => ({
+                                                        ...prev,
+                                                        totalPaid: 0,
+                                                        remainingAmount: editingSale.total,
+                                                        firstPaymentDate: "",
+                                                        finalPaymentDate: "",
+                                                        bank: ""
+                                                    }));
+
+                                                    // Limpar erros relacionados
+                                                    setEditErrors(prev => ({
+                                                        ...prev,
+                                                        bank: undefined,
+                                                        finalPaymentDate: undefined
+                                                    }));
+
+                                                    // Atualizar UI em tempo real com todos os campos
+                                                    setReceivables(prev =>
+                                                        prev.map(sale =>
+                                                            sale._id === editingSale._id
+                                                                ? {
+                                                                    ...sale,
+                                                                    status: newStatus,
+                                                                    totalPaid: 0,
+                                                                    remainingAmount: editingSale.total,
+                                                                    firstPaymentDate: null,
+                                                                    finalPaymentDate: null,
+                                                                    bank: ""
+                                                                }
+                                                                : sale
+                                                        )
+                                                    );
+                                                }
+
+                                                // LÓGICA: Quando status muda para "Pago", definir valor pago como total da venda
+                                                if (newStatus === PaymentStatus.PAID) {
+                                                    setEditFormData(prev => ({
+                                                        ...prev,
+                                                        totalPaid: editingSale.total,
+                                                        remainingAmount: 0
+                                                    }));
+
+                                                    // Atualizar UI em tempo real com todos os campos
+                                                    setReceivables(prev =>
+                                                        prev.map(sale =>
+                                                            sale._id === editingSale._id
+                                                                ? {
+                                                                    ...sale,
+                                                                    status: newStatus,
+                                                                    totalPaid: editingSale.total,
+                                                                    remainingAmount: 0
+                                                                }
+                                                                : sale
+                                                        )
+                                                    );
+                                                }
+
+                                                // LÓGICA: Quando status muda para "Parcialmente pago"
+                                                if (newStatus === PaymentStatus.PARTIALLY_PAID) {
+                                                    // Resetar data de pagamento para usuário escolher
+                                                    // Garantir que valor pago não seja igual ao total (seria "Pago")
+                                                    const newTotalPaid = Math.min(editFormData.totalPaid > 0 ? editFormData.totalPaid : editingSale.total * 0.5, editingSale.total - 0.01);
+
+                                                    setEditFormData(prev => ({
+                                                        ...prev,
+                                                        finalPaymentDate: "",
+                                                        totalPaid: newTotalPaid,
+                                                        remainingAmount: editingSale.total - newTotalPaid
+                                                    }));
+
+                                                    // Atualizar UI em tempo real com todos os campos
+                                                    setReceivables(prev =>
+                                                        prev.map(sale =>
+                                                            sale._id === editingSale._id
+                                                                ? {
+                                                                    ...sale,
+                                                                    status: newStatus,
+                                                                    totalPaid: newTotalPaid,
+                                                                    remainingAmount: editingSale.total - newTotalPaid,
+                                                                    finalPaymentDate: null
+                                                                }
+                                                                : sale
+                                                        )
+                                                    );
+                                                }
+                                            }}
                                             className="w-full border-2 border-gray-200 rounded-lg p-3 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200"
                                             aria-label="Status do pagamento"
                                             title="Status do pagamento"
@@ -680,63 +704,63 @@ export const Receivables: React.FC = () => {
                                         </select>
                                     </div>
 
-                                                                         <div>
-                                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                                             Valor Já Pago <span className="text-red-500">*</span>
-                                         </label>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Valor Pago <span className="text-red-500">*</span>
+                                        </label>
 
-                                         <input
-                                             type="number"
-                                             step="0.01"
-                                             min="0"
-                                             max={editingSale.total}
-                                             value={editFormData.totalPaid}
-                                             onChange={(e) => {
-                                                 const value = Number(e.target.value);
-                                                 // Atualizar temporariamente para permitir digitação
-                                                 setEditFormData(prev => ({
-                                                     ...prev,
-                                                     totalPaid: value,
-                                                     remainingAmount: editingSale.total - value
-                                                 }));
-                                             }}
-                                             onBlur={(e) => {
-                                                 const value = Number(e.target.value);
-                                                 const currentTotal = editFormData.payments.reduce((sum, payment) => sum + payment.amount, 0);
-                                                 if (value !== currentTotal) {
-                                                     handleTotalPaidChange(value);
-                                                 }
-                                             }}
-                                             className="w-full border-2 border-green-200 rounded-lg p-3 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-green-50/30 text-green-800 placeholder-green-600/60"
-                                             placeholder="0,00"
-                                         />
-                                         {editErrors.totalPaid && (
-                                             <p className="text-red-500 text-sm mt-1">{editErrors.totalPaid}</p>
-                                         )}
-                                         <p className="text-green-600 text-sm mt-1 font-medium">
-                                             {editFormData.totalPaid.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-                                         </p>
-                                     </div>
+                                        <input
+                                            type="number"
+                                            step="0.01"
+                                            min="0"
+                                            max={editingSale.total}
+                                            value={editFormData.totalPaid}
+                                            onChange={(e) => {
+                                                const value = Number(e.target.value);
+                                                // Atualizar temporariamente para permitir digitação
+                                                setEditFormData(prev => ({
+                                                    ...prev,
+                                                    totalPaid: value,
+                                                    remainingAmount: editingSale.total - value
+                                                }));
+                                            }}
+                                            onBlur={(e) => {
+                                                const value = Number(e.target.value);
+                                                const currentTotal = editFormData.payments.reduce((sum, payment) => sum + payment.amount, 0);
+                                                if (value !== currentTotal) {
+                                                    handleTotalPaidChange(value);
+                                                }
+                                            }}
+                                            className="w-full border-2 border-green-200 rounded-lg p-3 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-green-50/30 text-green-800 placeholder-green-600/60"
+                                            placeholder="0,00"
+                                        />
+                                        {editErrors.totalPaid && (
+                                            <p className="text-red-500 text-sm mt-1">{editErrors.totalPaid}</p>
+                                        )}
+                                        <p className="text-green-600 text-sm mt-1 font-medium">
+                                            {editFormData.totalPaid.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                                        </p>
+                                    </div>
 
-                                     <div>
-                                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                                             Valor Restante
-                                         </label>
-                                         <input
-                                             type="number"
-                                             value={editFormData.remainingAmount}
-                                             disabled
-                                             className="w-full border-2 border-red-200 rounded-lg p-3 bg-red-50/30 text-red-800"
-                                             aria-label="Valor restante"
-                                             title="Valor restante"
-                                         />
-                                         <p className="text-red-600 text-sm mt-1 font-medium">
-                                             {editFormData.remainingAmount.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-                                         </p>
-                                     </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Valor Restante
+                                        </label>
+
+                                        <input
+                                            type="number"
+                                            value={editFormData.remainingAmount}
+                                            disabled
+                                            className="w-full border-2 border-red-200 rounded-lg p-3 bg-red-50/30 text-red-800"
+                                            aria-label="Valor restante"
+                                            title="Valor restante"
+                                        />
+
+                                        <p className="text-red-600 text-sm mt-1 font-medium">
+                                            {editFormData.remainingAmount.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                                        </p>
+                                    </div>
                                 </div>
-
-
                             </section>
 
                             {/* Informações de pagamento */}
@@ -748,36 +772,54 @@ export const Receivables: React.FC = () => {
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Data do Pagamento Total <span className="text-red-500">*</span>
+                                            Data do Pagamento
+                                            {/* LÓGICA: Obrigatório apenas quando há valor pago */}
+                                            {editFormData.totalPaid > 0 && <span className="text-red-500">*</span>}
                                         </label>
 
                                         <input
                                             type="date"
-                                            value={editFormData.finalPaymentDate}
-                                            onChange={(e) => setEditFormData(prev => ({ ...prev, finalPaymentDate: e.target.value }))}
-                                            disabled={editFormData.status !== "Pago"}
-                                            className={`w-full border-2 border-gray-200 rounded-lg p-3 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200 ${
-                                                editFormData.status === "Pago" 
-                                                    ? "bg-white" 
-                                                    : "bg-gray-100 text-gray-500 cursor-not-allowed"
-                                            }`}
-                                            aria-label="Data do pagamento total"
-                                            title="Data do pagamento total"
+                                            value={editFormData.finalPaymentDate ? editFormData.finalPaymentDate.split('T')[0] : ""}
+                                            onChange={(e) => {
+                                                setEditFormData(prev => ({ ...prev, finalPaymentDate: e.target.value }))
+                                                // LÓGICA: Limpar erro da data quando usuário escolhe
+                                                if (editErrors.finalPaymentDate) {
+                                                    setEditErrors(prev => ({ ...prev, finalPaymentDate: undefined }))
+                                                }
+                                            }}
+                                            // LÓGICA: Campo ativo quando há valor pago > 0
+                                            disabled={editFormData.totalPaid === 0}
+                                            className={`w-full border-2 border-gray-200 rounded-lg p-3 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200 ${editFormData.totalPaid > 0
+                                                ? "bg-white"
+                                                : "bg-gray-100 text-gray-500 cursor-not-allowed"
+                                                }`}
+                                            aria-label="Data do pagamento"
+                                            title="Data do pagamento"
                                         />
-                                        {editFormData.status === "Pago" && !editFormData.finalPaymentDate && (
-                                            <p className="text-red-500 text-sm mt-1">Data do pagamento total é obrigatória quando status é Pago</p>
+
+                                        {/* LÓGICA: Mostrar erro de validação */}
+                                        {editErrors.finalPaymentDate && (
+                                            <p className="text-red-500 text-sm mt-1">{editErrors.finalPaymentDate}</p>
                                         )}
                                     </div>
 
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Banco <span className="text-red-500">*</span>
+                                            Banco
+                                            {/* LÓGICA: Obrigatório apenas quando há valor pago */}
+                                            {editFormData.totalPaid > 0 && <span className="text-red-500">*</span>}
                                         </label>
 
                                         <input
                                             type="text"
                                             value={editFormData.bank}
-                                            onChange={(e) => setEditFormData(prev => ({ ...prev, bank: e.target.value }))}
+                                            onChange={(e) => {
+                                                setEditFormData(prev => ({ ...prev, bank: e.target.value }))
+                                                // LÓGICA: Limpar erro do banco quando usuário digita
+                                                if (editErrors.bank) {
+                                                    setEditErrors(prev => ({ ...prev, bank: undefined }))
+                                                }
+                                            }}
                                             className="w-full border-2 border-gray-200 rounded-lg p-3 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200"
                                             placeholder="Nome do banco"
                                             aria-label="Nome do banco"
@@ -786,9 +828,6 @@ export const Receivables: React.FC = () => {
 
                                         {editErrors.bank && (
                                             <p className="text-red-500 text-sm mt-1">{editErrors.bank}</p>
-                                        )}
-                                        {!editFormData.bank && (
-                                            <p className="text-red-500 text-sm mt-1">Banco é obrigatório</p>
                                         )}
                                     </div>
 
@@ -810,8 +849,6 @@ export const Receivables: React.FC = () => {
 
                             </section>
 
-
-
                             {/* Erro geral */}
                             {editErrors.submit && (
                                 <div className="bg-red-50 border border-red-200 rounded-lg p-4">
@@ -820,27 +857,44 @@ export const Receivables: React.FC = () => {
                             )}
 
                             {/* Botões */}
-                            <div className="flex justify-end gap-4 pt-4 border-t border-gray-200">
-                                <button
-                                    onClick={handleCancelEdit}
-                                    className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all duration-200 font-medium"
-                                >
-                                    Cancelar
-                                </button>
-                                <button
-                                    onClick={handleSaveEdit}
-                                    disabled={isSaving}
-                                    className="px-6 py-3 bg-gradient-to-r from-emerald-600 to-green-600 text-white rounded-lg hover:from-emerald-700 hover:to-green-700 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    {isSaving ? 'Salvando...' : '💾 Salvar Alterações'}
-                                </button>
+                            <div className="flex flex-col gap-4 pt-4 border-t border-gray-200">
+                                {/* Indicador de validação */}
+                                {!canSaveForm() && (
+                                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                                        <p className="text-yellow-700 text-sm font-medium">
+                                            ⚠️ Campos obrigatórios não preenchidos:
+                                        </p>
+                                        <ul className="text-yellow-600 text-sm mt-2 ml-4 list-disc">
+                                            {editFormData.status === PaymentStatus.PENDING && (
+                                                <li>Status "Pendente" não deve ter valor pago, data de pagamento ou banco</li>
+                                            )}
+                                            {(editFormData.status === PaymentStatus.PAID || editFormData.status === PaymentStatus.PARTIALLY_PAID) && (
+                                                <li>Status "{editFormData.status}" deve ter valor pago, data de pagamento e banco</li>
+                                            )}
+                                        </ul>
+                                    </div>
+                                )}
+
+                                <div className="flex justify-end gap-4">
+                                    <button
+                                        onClick={handleCancelEdit}
+                                        className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 hover:border-gray-400 hover:text-gray-800 transition-all duration-200 font-medium cursor-pointer"
+                                    >
+                                        Cancelar
+                                    </button>
+                                    <button
+                                        onClick={handleSaveEdit}
+                                        disabled={isSaving || !canSaveForm()}
+                                        className="px-6 py-3 bg-gradient-to-r from-emerald-600 to-green-600 text-white rounded-lg hover:from-emerald-700 hover:to-green-700 hover:shadow-lg transform hover:scale-105 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                                    >
+                                        {isSaving ? 'Salvando...' : '💾 Salvar Alterações'}
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </section>
             )}
-
-
         </main>
     )
 }
