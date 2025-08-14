@@ -38,12 +38,7 @@ const paymentSchema = new mongoose.Schema({
   }
 });
 
-const saleSchema = new mongoose.Schema({
-    id: {
-        type: String,
-        required: true,
-        unique: true
-    },
+const saleSchema = new mongoose.Schema({    
     saleNumber: {
         type: Number,
         required: true,
@@ -78,8 +73,8 @@ const saleSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ["Em aberto", "Parcialmente pago", "Pago"],
-        default: "Em aberto"
+        enum: ["Pendente", "Parcialmente pago", "Pago"],
+        default: "Pendente"
     },
     firstPaymentDate: {
         type: String,

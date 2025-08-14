@@ -46,8 +46,8 @@ export const Sales: React.FC = () => {
     useEffect(() => {
         async function getLastSale() {
             try {
-                const response = await axiosPrivate.get('/sales/last')
-                setLastSale(response.data.sale)
+                const response = await axiosPrivate.get('/sales/last')                
+                setLastSale( response.status === 204 ? null : response.data.sale )
             } catch (error) {
                 console.log("Erro ao buscar a última venda:", error)
                 return
@@ -177,7 +177,7 @@ export const Sales: React.FC = () => {
             <section className="border-2 border-emerald-200/50 rounded-2xl p-8 bg-white/90 backdrop-blur-sm shadow-xl mb-8">
                 <div className="flex justify-between items-center mb-6">
                     <p className="text-xl font-semibold text-emerald-800">
-                        Venda Nº {lastSale ? lastSale.saleNumber + 1 : '-'}
+                        Venda Nº {lastSale ? lastSale.saleNumber + 1 : '1'}
                     </p>
 
                     <div className="text-sm text-gray-600 bg-emerald-50/50 px-4 py-2 rounded-lg">

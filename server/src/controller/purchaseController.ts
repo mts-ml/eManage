@@ -4,7 +4,7 @@ import mongoose from "mongoose"
 import { Purchase } from "../model/Purchases.js"
 import { PurchasePayload } from "../types/types.js"
 import { getNextPurchaseNumber } from "../utils/utils.js"
-import { Client } from "../model/Clients.js"
+import { Supplier } from "../model/Suppliers.js"
 import { Product } from "../model/Products.js"
 
 
@@ -28,7 +28,7 @@ export async function createNewPurchase(req: Request<{}, {}, Omit<PurchasePayloa
     try {
         const purchaseProps = req.body
 
-        const client = await Client.findById(purchaseProps.clientId)
+        const supplier = await Supplier.findById(purchaseProps.supplierId)
         
         const productIds = purchaseProps.items.map(item => new mongoose.Types.ObjectId(item.productId))
         
@@ -36,13 +36,19 @@ export async function createNewPurchase(req: Request<{}, {}, Omit<PurchasePayloa
 
         const newPurchase = {
             ...purchaseProps,
+            supplierId: purchaseProps.supplierId,
+            supplierName: supplier?.name || "Fornecedor Desconhecido",
             purchaseNumber: await getNextPurchaseNumber(),
-            clientName: client?.name || "Cliente Desconhecido",
-            status: "Em aberto",
-            paymentDate: null,
+            totalPaid: 0,
+            remainingAmount: purchaseProps.total,
+            status: "Pendente",
+            firstPaymentDate: null,
+            finalPaymentDate: null,
             bank: "",
+            observations: "",
+            payments: [],
             items: purchaseProps.items.map(item => {
-                const product = products.find(p => p.id === item.productId)
+                const product = products.find(p => p._id.toString() === item.productId)
                 return {
                     ...item,
                     productName: product?.name || "Produto Desconhecido"
@@ -63,10 +69,12 @@ export async function createNewPurchase(req: Request<{}, {}, Omit<PurchasePayloa
             })
         )
 
+        const updatedProducts = await Product.find({ _id: { $in: productIds } })
+
         res.status(201).json({
             purchase: createdPurchase,
-            updatedProducts: products.map(product => ({
-                id: product.id,
+            updatedProducts: updatedProducts.map(product => ({
+                id: product._id,
                 name: product.name,
                 stock: product.stock,
                 salePrice: product.salePrice,

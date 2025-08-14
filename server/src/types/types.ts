@@ -2,17 +2,17 @@ import { JwtPayload } from "jsonwebtoken"
 
 // Enum para status de pagamento
 export enum PaymentStatus {
-    PENDING = "Em aberto",
+    PENDING = "Pendente",
     PARTIALLY_PAID = "Parcialmente pago",
     PAID = "Pago"
 }
 
 // Interface para registro de cada pagamento individual
 export interface PaymentRecord {
-    _id?: string;
-    amount: number;
-    paymentDate: string;
-    createdAt?: Date;
+    _id?: string
+    amount: number
+    paymentDate: string
+    createdAt?: Date
 }
 
 // Interface para parcelas
@@ -110,35 +110,40 @@ export interface Item {
 
 
 export interface SalePayload {
-    saleNumber: number;
-    clientName: string;
-    date: string;
-    items: Item[];
-    total: number;
-    status: PaymentStatus;
-    totalPaid: number;
+    saleNumber: number
+    clientId: string
+    clientName: string
+    date: string
+    items: Item[]
+    total: number
+    status: PaymentStatus
+    totalPaid: number
     remainingAmount: number;
-    firstPaymentDate: string | null;
-    finalPaymentDate: string | null;
-    bank: string;
-    observations: string;
-    payments: PaymentRecord[];
+    firstPaymentDate: string | null
+    finalPaymentDate: string | null
+    bank: string
+    observations: string
+    payments: PaymentRecord[]
 }
 export type SaleErrors = Partial<Record<keyof SalePayload | string, string[]>>
 
 
 export interface PurchasePayload {
-    clientId: string
-    clientName: string
+    supplierId: string
+    supplierName: string
     purchaseNumber: number
     invoiceNumber: string
     date: string
     items: Item[]
     total: number
-    paid?: boolean
-    status: "Em aberto" | "Pago"
-    paymentDate?: string | null
-    bank?: string
+    totalPaid: number
+    remainingAmount: number
+    status: PaymentStatus
+    firstPaymentDate: string | null
+    finalPaymentDate: string | null
+    bank: string
+    observations: string
+    payments: PaymentRecord[]
 }
 export type PurchaseErrors = Partial<Record<keyof PurchasePayload | string, string[]>>
 
@@ -147,14 +152,14 @@ export type CommonTransactionPayload = Omit<SalePayload, "saleNumber"> & Omit<Pu
 
 
 export interface TransactionUpdatePayload {
-    status?: PaymentStatus;
-    totalPaid?: number;
-    remainingAmount?: number;
-    firstPaymentDate?: string | null;
-    finalPaymentDate?: string | null;
-    bank?: string;
-    observations?: string;
-    payments?: PaymentRecord[];
+    status?: PaymentStatus
+    totalPaid?: number
+    remainingAmount?: number
+    firstPaymentDate?: string | null
+    finalPaymentDate?: string | null
+    bank?: string
+    observations?: string
+    payments?: PaymentRecord[]
 }
 
 
@@ -163,7 +168,7 @@ export interface ExpenseProps {
     value: number
     description?: string
     dueDate?: string | null
-    status: "Em aberto" | "Pago"
+    status: "Pendente" | "Pago"
     bank?: string
     [key: string]: unknown
 }

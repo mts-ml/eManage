@@ -51,8 +51,8 @@ export function handleExpenseValidation(
         }
     }
 
-    if (status != null && status !== "Em aberto" && status !== "Pago") {
-        errors.status = "Status deve ser 'Em aberto' ou 'Pago'."
+    if (status != null && status !== "Pendente" && status !== "Pago") {
+        errors.status = "Status deve ser 'Pendente' ou 'Pago'."
     }
 
     if (status === "Pago" && (!bank || bank.trim() === "")) {

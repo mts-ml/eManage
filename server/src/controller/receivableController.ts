@@ -28,7 +28,6 @@ export async function receivableController(req: Request<{ id: string }, {}, Tran
         if ('remainingAmount' in req.body) updateFields.remainingAmount = remainingAmount
         if ('observations' in req.body) updateFields.observations = observations
 
-        // Atualiza e retorna novo documento (new: true)
         const updatedSale = await Sale.findByIdAndUpdate(id, updateFields, { new: true })
 
         if (!updatedSale) {
@@ -45,18 +44,16 @@ export async function receivableController(req: Request<{ id: string }, {}, Tran
 
 export const updateReceivable = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { id } = req.params;
-    const { status, totalPaid, remainingAmount, firstPaymentDate, finalPaymentDate, bank, observations, payments } = req.body;
+    const { id } = req.params
+    const { status, totalPaid, remainingAmount, firstPaymentDate, finalPaymentDate, bank, observations, payments } = req.body
 
-    // Validar se a venda existe
-    const sale = await Sale.findById(id);
+    const sale = await Sale.findById(id)
     if (!sale) {
-      res.status(404).json({ message: 'Venda não encontrada' });
+      res.status(404).json({ message: 'Venda não encontrada' })
       return;
     }
 
-    // Preparar campos para atualização
-    const updateFields: any = {};
+    const updateFields: any = {}
 
     if (status !== undefined) updateFields.status = status;
     if (totalPaid !== undefined) updateFields.totalPaid = totalPaid;
@@ -67,7 +64,6 @@ export const updateReceivable = async (req: Request, res: Response): Promise<voi
     if (observations !== undefined) updateFields.observations = observations;
     if (payments !== undefined) updateFields.payments = payments;
 
-    // Atualizar a venda
     const updatedSale = await Sale.findByIdAndUpdate(
       id,
       updateFields,
@@ -75,17 +71,17 @@ export const updateReceivable = async (req: Request, res: Response): Promise<voi
     );
 
     if (!updatedSale) {
-      res.status(500).json({ message: 'Erro ao atualizar venda' });
-      return;
+      res.status(500).json({ message: 'Erro ao atualizar venda' })
+      return
     }
 
     res.json({
       message: 'Venda atualizada com sucesso',
       data: updatedSale
-    });
+    })
 
   } catch (error) {
-    console.error('Erro ao atualizar recebível:', error);
-    res.status(500).json({ message: 'Erro interno do servidor' });
+    console.error('Erro ao atualizar recebível:', error)
+    res.status(500).json({ message: 'Erro interno do servidor' })
   }
-};
+}

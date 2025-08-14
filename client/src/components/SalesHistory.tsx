@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { FaSearch, FaCalendarAlt } from 'react-icons/fa'
 import type { AxiosResponse } from "axios"
 
@@ -28,6 +28,11 @@ export const SalesHistory: React.FC = () => {
    })
    const axiosPrivate = useAxiosPrivate()
 
+   // Carregar dados automaticamente quando o componente for montado
+   useEffect(() => {
+      fetchSalesHistory()
+   }, [])
+
                async function fetchSalesHistory() {
         setLoading(true)
         setHasSearched(true)
@@ -41,9 +46,19 @@ export const SalesHistory: React.FC = () => {
               return
            }
            
-           setSalesHistory(response.data)
+           // Processar dados para garantir que todos os campos estejam preenchidos
+           const processedData = response.data.map(sale => ({
+              ...sale,
+              totalPaid: sale.totalPaid || 0,
+              remainingAmount: sale.remainingAmount !== undefined && sale.remainingAmount !== null 
+                 ? sale.remainingAmount 
+                 : (sale.total - (sale.totalPaid || 0)),
+              status: sale.status || "Pendente"
+           }))
+           
+           setSalesHistory(processedData)
            // Aplicar filtros após buscar dados
-           applyFilters(response.data)
+           applyFilters(processedData)
         } catch (error) {
            console.error("Erro ao buscar histórico de vendas:", error)
            setSalesHistory([])
@@ -100,7 +115,8 @@ export const SalesHistory: React.FC = () => {
          clientSearch: "",
          saleNumberSearch: ""
       })
-      setFilteredSales([])
+      // Mostrar todas as vendas quando limpar filtros
+      setFilteredSales(salesHistory)
    }
 
    function handleSearch() {
@@ -113,6 +129,19 @@ export const SalesHistory: React.FC = () => {
 
    const totalSales = filteredSales.length
    const totalRevenue = filteredSales.reduce((sum, sale) => sum + sale.total, 0)
+   
+   // Calcular totais baseados nos dados filtrados
+   const totalReceived = filteredSales.reduce((sum, sale) => sum + (sale.totalPaid || 0), 0)
+   const totalPending = filteredSales.reduce((sum, sale) => {
+      // Se não tem remainingAmount, calcular baseado no total e totalPaid
+      if (sale.remainingAmount !== undefined && sale.remainingAmount !== null) {
+         return sum + sale.remainingAmount
+      } else {
+         // Calcular o que falta pagar
+         const totalPaid = sale.totalPaid || 0
+         return sum + (sale.total - totalPaid)
+      }
+   }, 0)
 
 
    return (
@@ -237,14 +266,14 @@ export const SalesHistory: React.FC = () => {
                <article className="bg-blue-50/50 p-4 rounded-xl border border-blue-200">
                   <p className="text-sm font-medium text-gray-600 mb-1">Total Recebido</p>
                   <p className="text-2xl font-bold text-blue-700">
-                     {formatCurrency(filteredSales.reduce((sum, sale) => sum + sale.totalPaid, 0))}
+                     {formatCurrency(totalReceived)}
                   </p>
                </article>
 
                <article className="bg-red-50/50 p-4 rounded-xl border border-red-200">
                   <p className="text-sm font-medium text-gray-600 mb-1">Total Pendente</p>
                   <p className="text-2xl font-bold text-red-700">
-                     {formatCurrency(filteredSales.reduce((sum, sale) => sum + sale.remainingAmount, 0))}
+                     {formatCurrency(totalPending)}
                   </p>
                </article>
             </section>
@@ -337,11 +366,11 @@ export const SalesHistory: React.FC = () => {
 
 
                                  <td className="px-4 py-3 text-xs font-bold text-green-700 text-center">
-                                    {formatCurrency(sale.totalPaid)}
+                                    {formatCurrency(sale.totalPaid || 0)}
                                  </td>
 
                                  <td className="px-4 py-3 text-xs font-bold text-red-700 text-center">
-                                    {formatCurrency(sale.remainingAmount)}
+                                    {formatCurrency(sale.remainingAmount !== undefined && sale.remainingAmount !== null ? sale.remainingAmount : (sale.total - (sale.totalPaid || 0)))}
                                  </td>
 
                                  <td className="px-4 py-3 text-xs text-center">

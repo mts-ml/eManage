@@ -13,7 +13,7 @@ export const Expenses: React.FC = () => {
         value: "",
         dueDate: "",
         description: "",
-        status: "Em aberto",
+        status: "Pendente",
         bank: ""
     }
 
@@ -66,7 +66,7 @@ export const Expenses: React.FC = () => {
 
         let updatedForm = { ...form, [name]: value }
 
-        if (name === "status" && value === "Em aberto") {
+        if (name === "status" && value === "Pendente") {
             updatedForm = { ...updatedForm, bank: "" }
         }
 
@@ -130,14 +130,14 @@ export const Expenses: React.FC = () => {
         setIsReadyToSubmit(true)
     }
 
-    function handleStatusChange(id: string, newStatus: "Em aberto" | "Pago") {
+    function handleStatusChange(id: string, newStatus: "Pendente" | "Pago") {
         setExpenses(prev =>
             prev.map(expense =>
                 expense.id === id
                     ? {
                         ...expense,
                         status: newStatus,
-                        bank: newStatus === "Em aberto" ? "" : expense.bank
+                        bank: newStatus === "Pendente" ? "" : expense.bank
                     }
                     : expense
             )
@@ -219,7 +219,7 @@ export const Expenses: React.FC = () => {
                 name,
                 value: String(value),
                 description: description,
-                status: status === "Pago" ? "Pago" : "Em aberto",
+                status: status === "Pago" ? "Pago" : "Pendente",
                 bank: bank || null
             }
 
@@ -279,7 +279,7 @@ export const Expenses: React.FC = () => {
         { key: "name", label: "Despesa", placeholder: "Ex: Aluguel", required: true },
         { key: "value", label: "Valor", placeholder: "Ex: 1500.00", required: true },
         { key: "dueDate", label: "Data de Vencimento", placeholder: "", required: false },
-        { key: "status", label: "Status", placeholder: "", required: false, type: "select", options: ["Em aberto", "Pago"] },
+        { key: "status", label: "Status", placeholder: "", required: false, type: "select", options: ["Pendente", "Pago"] },
         { key: "bank", label: "Banco", placeholder: "Ex: Banco do Brasil", required: false }
     ]
 
@@ -496,11 +496,11 @@ export const Expenses: React.FC = () => {
                                         <td className="px-4 py-3 text-xs text-center">
                                             <select
                                                 aria-label="Status da despesa"
-                                                className={`border-2 rounded-lg p-1 text-xs cursor-pointer transition-all duration-200 ${exp.status === "Pago" ? "bg-green-50 text-green-700 border-green-400" : "border-gray-200"}`}
-                                                value={exp.status || "Em aberto"}
-                                                onChange={e => handleStatusChange(exp.id!, e.target.value as "Em aberto" | "Pago")}
+                                                className={`border-2 rounded-lg p-1 text-xs cursor-pointer transition-all duration-200 ${exp.status === "Pago" ? "bg-green-50 text-green-700 border-green-400" : exp.status === "Pendente" ? "bg-red-50 text-red-700 border-red-200" : "border-gray-200"}`}
+                                                value={exp.status || "Pendente"}
+                                                onChange={e => handleStatusChange(exp.id!, e.target.value as "Pendente" | "Pago")}
                                             >
-                                                <option value="Em aberto">Em aberto</option>
+                                                <option value="Pendente">Pendente</option>
                                                 <option value="Pago">Pago</option>
                                             </select>
                                         </td>

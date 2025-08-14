@@ -22,6 +22,23 @@ const itemSchema = new mongoose.Schema({
     }
 })
 
+// Schema para pagamentos individuais
+const paymentSchema = new mongoose.Schema({
+  amount: {
+    type: Number,
+    required: true,
+    min: 0
+  },
+  paymentDate: {
+    type: String,
+    required: true
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
+});
+
 const purchaseSchema = new mongoose.Schema({
     purchaseNumber: {
         type: Number,
@@ -37,11 +54,11 @@ const purchaseSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    clientId: {
+    supplierId: {
         type: String,
         required: true
     },
-    clientName: {
+    supplierName: {
         type: String,
         required: true
     },
@@ -49,20 +66,39 @@ const purchaseSchema = new mongoose.Schema({
     total: {
         type: Number,
         required: true
-    },   
+    },
+    // Campos para controle de pagamento
+    totalPaid: {
+        type: Number,
+        default: 0,
+        min: 0
+    },
+    remainingAmount: {
+        type: Number,
+        default: 0
+    },
     status: {
         type: String,
-        enum: ["Em aberto", "Pago"],
-        default: "Em aberto"
+        enum: ["Pendente", "Parcialmente pago", "Pago"],
+        default: "Pendente"
     },
-    paymentDate: {
-        type: Date,
+    firstPaymentDate: {
+        type: String,
+        default: null
+    },
+    finalPaymentDate: {
+        type: String,
         default: null
     },
     bank: {
         type: String,
         default: ""
-    }
+    },
+    observations: {
+        type: String,
+        default: ""
+    },
+    payments: [paymentSchema]
 })
 
 

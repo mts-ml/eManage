@@ -3,7 +3,7 @@ import { NextFunction, Request, Response } from "express"
 import { Item, SalePayload, PurchasePayload, PaymentStatus } from "../types/types.js"
 import { rejectExtraFields } from "../utils/utils.js"
 
-// Middleware para validação de vendas
+
 export function handleSaleValidation(req: Request<{}, {}, Omit<SalePayload, "saleNumber">>, res: Response, next: NextFunction) {
     const payload = req.body
     
@@ -14,6 +14,7 @@ export function handleSaleValidation(req: Request<{}, {}, Omit<SalePayload, "sal
 
     const allowedFields = [
         "clientName",
+        "clientId",
         "date",
         "items",
         "total",
@@ -89,7 +90,6 @@ export function handleSaleValidation(req: Request<{}, {}, Omit<SalePayload, "sal
     next()
 }
 
-// Middleware para validação de compras
 export function handlePurchaseValidation(req: Request<{}, {}, Omit<PurchasePayload, "purchaseNumber">>, res: Response, next: NextFunction) {
     const payload = req.body
     if (!payload) {
@@ -98,20 +98,25 @@ export function handlePurchaseValidation(req: Request<{}, {}, Omit<PurchasePaylo
     }
 
     const allowedFields = [
-        "clientName",
+        "supplierName",
+        "supplierId",
         "date",
         "invoiceNumber",
         "items",
         "total",
-        "paid",
+        "totalPaid",
+        "remainingAmount",
         "status",
-        "paymentDate",
-        "bank"
+        "firstPaymentDate",
+        "finalPaymentDate",
+        "bank",
+        "observations",
+        "payments"
     ]
     if (rejectExtraFields(req.body, allowedFields, res)) return
 
-    if (payload.clientName && typeof payload.clientName === "string") {
-        payload.clientName = payload.clientName.trim()
+    if (payload.supplierName && typeof payload.supplierName === "string") {
+        payload.supplierName = payload.supplierName.trim()
     }
 
     if (Array.isArray(payload.items)) {
@@ -125,8 +130,8 @@ export function handlePurchaseValidation(req: Request<{}, {}, Omit<PurchasePaylo
 
     const errors: Record<string, string[]> = {}
 
-    if (!payload.clientName || typeof payload.clientName !== "string" || payload.clientName.length === 0) {
-        errors.clientName = ["Nome do fornecedor é obrigatório"]
+    if (!payload.supplierName || typeof payload.supplierName !== "string" || payload.supplierName.length === 0) {
+        errors.supplierName = ["Nome do fornecedor é obrigatório"]
     }
 
     if (!payload.date || typeof payload.date !== "string" || payload.date.trim().length < 8) {
@@ -163,10 +168,4 @@ export function handlePurchaseValidation(req: Request<{}, {}, Omit<PurchasePaylo
     }
 
     next()
-}
-
-// Middleware genérico mantido para compatibilidade (deprecated)
-export function handleTransactionValidation(req: Request<{}, {}, any>, res: Response, next: NextFunction) {
-    console.warn("handleTransactionValidation is deprecated. Use handleSaleValidation or handlePurchaseValidation instead.")
-    handleSaleValidation(req, res, next)
 }
