@@ -63,3 +63,11 @@ export function formatPhoneForDisplay(phone: string): string {
     // Caso não seja esperado, retorna o que recebeu
     return phone;
 }
+
+// Função para converter data sem problemas de fuso horário
+export const formatDateForAPI = (dateString: string): string | null => {
+    if (!dateString) return null
+    // Criar data no fuso horário local para evitar mudanças
+    const [year, month, day] = dateString.split('-')
+    return `${year}-${month}-${day}T00:00:00.000Z`
+}
