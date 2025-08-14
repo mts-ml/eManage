@@ -11,14 +11,13 @@ export interface CustomJwtPayload extends JwtPayload {
 
 // Enum para status de pagamento
 export const PaymentStatus = {
-    PENDING: "Em aberto",
+    PENDING: "Pendente",
     PARTIALLY_PAID: "Parcialmente pago",
     PAID: "Pago"
 } as const
 
 export type PaymentStatus = typeof PaymentStatus[keyof typeof PaymentStatus]
 
-// Interfaces para sistema de parcelas
 export interface PaymentRecord {
     _id?: string;
     amount: number;
@@ -96,8 +95,6 @@ export interface ItemPayload {
     items: Item[]
     total: number
     invoiceNumber?: string
-    // Novos campos para sistema de parcelas
-
     totalPaid?: number
     remainingAmount?: number
     status?: PaymentStatus
@@ -113,7 +110,6 @@ export interface SaleResponse {
         _id: string, 
         saleNumber: number, 
         status: PaymentStatus,
-
         totalPaid: number,
         remainingAmount: number,
         paymentHistory: PaymentRecord[] | null,
@@ -149,19 +145,19 @@ export interface Payable {
     _id: string
     purchaseNumber: number
     invoiceNumber: string
-    clientId: string
-    clientName: string
+    supplierId: string
+    supplierName: string
     date: string
     items: Item[]
     total: number
     status: PaymentStatus
-    paymentDate: string | null
-    bank: string
-
     totalPaid: number
     remainingAmount: number
-    paymentHistory: PaymentRecord[] | null
-    installments: Installment[] | null
+    firstPaymentDate: string | null
+    finalPaymentDate: string | null
+    bank: string
+    observations: string
+    payments: PaymentRecord[]
 }
 
 export interface Expense {
@@ -170,7 +166,7 @@ export interface Expense {
   value: string
   dueDate?: string
   description?: string
-  status?: "Em aberto" | "Pago"
+  status?: "Pendente" | "Pago"
   bank?: string
 }
 export type ExpenseFromBackend = Expense & { _id: string }
@@ -189,9 +185,13 @@ export interface UpdateReceivableRequest {
 
 export interface UpdatePayableRequest {
     status: PaymentStatus
-    paymentDate: string | null
+    totalPaid: number
+    remainingAmount: number
+    firstPaymentDate?: string | null
+    finalPaymentDate?: string | null
     bank: string
-    invoiceNumber?: string
+    observations: string
+    payments: PaymentRecord[]
 }
 
 export interface ApiResponse<T> {
@@ -226,7 +226,7 @@ export interface OverduePayment {
     invoiceNumber?: string
     saleNumber?: number
     purchaseNumber?: number
-    status: PaymentStatus
+    status: PaymentStatus | "Pendente" | "Pago"
     paymentDate: string | null
     bank: string
 }
