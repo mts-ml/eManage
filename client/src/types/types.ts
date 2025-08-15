@@ -88,9 +88,9 @@ export interface Item {
 }
 
 
-export interface ItemPayload {
-    clientId: string
-    clientName: string
+export interface PurchasePayload {
+    supplierId: string
+    supplierName: string
     date: string
     items: Item[]
     total: number
@@ -104,28 +104,40 @@ export interface ItemPayload {
     bank?: string
 }
 
+export interface SalePayload {
+    clientId: string
+    clientName: string
+    date: string
+    items: Item[]
+    total: number
+    totalPaid?: number
+    remainingAmount?: number
+    status?: PaymentStatus
+    paymentHistory?: PaymentRecord[] | null
+    installments?: Installment[] | null
+    paymentDate?: string | null
+    bank?: string
+}
+
 
 export interface SaleResponse {
-    sale: ItemPayload & { 
-        _id: string, 
-        saleNumber: number, 
-        status: PaymentStatus,
-        totalPaid: number,
-        remainingAmount: number,
-        paymentHistory: PaymentRecord[] | null,
-        installments: Installment[] | null
+    sale: SalePayload & {
+        _id: string,
+        saleNumber: number
     }
     updatedProducts: Product[]
 }
 
 
 export interface PurchaseResponse {
-    purchase: ItemPayload & { _id: string, purchaseNumber: number, status: PaymentStatus }
+    purchase: PurchasePayload & {
+        _id: string, purchaseNumber: number
+    }
     updatedProducts: Product[]
 }
 
 
-export interface Receivable extends ItemPayload {
+export interface Receivable extends PurchasePayload {
     _id: string;
     saleNumber: string;
     clientName: string;
@@ -161,13 +173,13 @@ export interface Payable {
 }
 
 export interface Expense {
-  id?: string
-  name: string
-  value: string
-  dueDate?: string
-  description?: string
-  status?: "Pendente" | "Pago"
-  bank?: string
+    id?: string
+    name: string
+    value: string
+    dueDate?: string
+    description?: string
+    status?: "Pendente" | "Pago"
+    bank?: string
 }
 export type ExpenseFromBackend = Expense & { _id: string }
 export type ExpenseErrors = Partial<Record<keyof Expense, string>>
