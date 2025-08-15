@@ -99,47 +99,92 @@ export const Cashflow: React.FC = () => {
         axiosPrivate.get<ExpenseFromBackend[]>("/expenses")
       ])
 
-      // Processar todas as transações usando map e flat
       const allTransactions: Transaction[] = [
         // Vendas (créditos)
         ...(salesResponse.status !== 204 && salesResponse.data ? salesResponse.data
-          .filter(sale =>
-            sale.bank === selectedBank &&
-            sale.status === "Pago" &&
-            sale.paymentDate &&
-            new Date(sale.paymentDate) >= new Date(startDate + 'T00:00:00') &&
-            new Date(sale.paymentDate) <= new Date(endDate + 'T23:59:59')
-          )
-          .map(sale => ({
-            id: sale._id,
-            date: new Date(sale.paymentDate!).toLocaleDateString("pt-BR"),
-            type: "Crédito" as const,
-            description: `Venda #${sale.saleNumber}`,
-            amount: sale.total,
-            clientName: sale.clientName,
-            transactionNumber: `V${sale.saleNumber}`,
-            category: "Venda" as const
-          })) : []),
+          .filter(sale => {
+            const matchesBank = sale.bank === selectedBank
+            const matchesStatus = sale.status === "Pago" || sale.status === "Parcialmente pago"
+            const hasPayments = sale.payments && sale.payments.length > 0
+            const hasPaymentDate = sale.paymentDate || sale.finalPaymentDate          
+
+            return matchesBank && matchesStatus && (hasPayments || hasPaymentDate)
+          })
+          .flatMap(sale => {
+            // Se tem payments, usar payments
+            if (sale.payments && sale.payments.length > 0) {
+              return sale.payments
+                .filter(payment => {
+                  if (!payment.paymentDate) return false
+
+                  const paymentDate = new Date(payment.paymentDate)
+                  const start = new Date(startDate + 'T00:00:00')
+                  const end = new Date(endDate + 'T23:59:59')
+                  const inRange = paymentDate >= start && paymentDate <= end
+
+                  return inRange
+                })
+                .map(payment => ({
+                  id: sale._id,
+                  date: new Date(payment.paymentDate).toLocaleDateString("pt-BR"),
+                  type: "Crédito" as const,
+                  description: `Venda #${sale.saleNumber}`,
+                  amount: payment.amount,
+                  clientName: sale.clientName,
+                  transactionNumber: `V${sale.saleNumber}`,
+                  category: "Venda" as const
+                }))
+            }
+
+            // Se não tem payments, usar paymentDate ou finalPaymentDate
+            const paymentDate = sale.paymentDate || sale.finalPaymentDate
+            if (paymentDate) {
+              const date = new Date(paymentDate)
+              const start = new Date(startDate + 'T00:00:00')
+              const end = new Date(endDate + 'T23:59:59')
+
+              if (date >= start && date <= end) {
+                return [{
+                  id: sale._id,
+                  date: date.toLocaleDateString("pt-BR"),
+                  type: "Crédito" as const,
+                  description: `Venda #${sale.saleNumber}`,
+                  amount: sale.total,
+                  clientName: sale.clientName,
+                  transactionNumber: `V${sale.saleNumber}`,
+                  category: "Venda" as const
+                }]
+              }
+            }
+
+            return []
+          }) : []),
 
         // Compras (débitos)
         ...(purchasesResponse.status !== 204 && purchasesResponse.data ? purchasesResponse.data
           .filter(purchase =>
             purchase.bank === selectedBank &&
             purchase.status === "Pago" &&
-            purchase.paymentDate &&
-            new Date(purchase.paymentDate) >= new Date(startDate + 'T00:00:00') &&
-            new Date(purchase.paymentDate) <= new Date(endDate + 'T23:59:59')
+            purchase.payments && purchase.payments.length > 0
           )
-          .map(purchase => ({
-            id: purchase._id,
-            date: new Date(purchase.paymentDate!).toLocaleDateString("pt-BR"),
-            type: "Débito" as const,
-            description: `Compra #${purchase.purchaseNumber}`,
-            amount: purchase.total,
-            clientName: purchase.clientName,
-            transactionNumber: `C${purchase.purchaseNumber}`,
-            category: "Compra" as const
-          })) : []),
+          .flatMap(purchase =>
+            purchase.payments
+              .filter(payment =>
+                payment.paymentDate &&
+                new Date(payment.paymentDate) >= new Date(startDate + 'T00:00:00') &&
+                new Date(payment.paymentDate) <= new Date(endDate + 'T23:59:59')
+              )
+              .map(payment => ({
+                id: purchase._id,
+                date: new Date(payment.paymentDate).toLocaleDateString("pt-BR"),
+                type: "Débito" as const,
+                description: `Compra #${purchase.purchaseNumber}`,
+                amount: payment.amount,
+                clientName: purchase.supplierName,
+                transactionNumber: `C${purchase.purchaseNumber}`,
+                category: "Compra" as const
+              }))
+          ) : []),
 
         // Despesas (débitos) - usar dueDate como data de pagamento
         ...(expensesResponse.status !== 204 && expensesResponse.data ? expensesResponse.data
@@ -247,7 +292,7 @@ export const Cashflow: React.FC = () => {
               id="startDate"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="w-full cursor-pointer p-3 border-2 border-emerald-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200"
+              className="w-full p-3 border-2 border-emerald-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200"
             />
           </article>
 
@@ -262,7 +307,7 @@ export const Cashflow: React.FC = () => {
               id="endDate"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="w-full cursor-pointer p-3 border-2 border-emerald-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200"
+              className="w-full p-3 border-2 border-emerald-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200"
             />
           </article>
         </section>
@@ -270,7 +315,7 @@ export const Cashflow: React.FC = () => {
         <button
           onClick={handleSearch}
           disabled={!selectedBank || !startDate || !endDate || isLoading}
-          className="mt-4 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-lg hover:bg-emerald-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-all duration-200 flex items-center gap-2"
+          className="mt-4 px-6 py-3 cursor-pointer bg-emerald-600 text-white font-semibold rounded-lg hover:bg-emerald-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-all duration-200 flex items-center gap-2"
         >
           <Calendar className="h-4 w-4" />
           {isLoading ? "Buscando..." : "Buscar Transações"}
@@ -305,8 +350,8 @@ export const Cashflow: React.FC = () => {
             </article>
 
             <article className={`p-4 rounded-lg border ${bankBalance.balance >= 0
-                ? "bg-emerald-50 border-emerald-200"
-                : "bg-red-50 border-red-200"
+              ? "bg-emerald-50 border-emerald-200"
+              : "bg-red-50 border-red-200"
               }`}>
               <header className="flex items-center gap-2 mb-2">
                 <DollarSign className={`h-5 w-5 ${bankBalance.balance >= 0 ? "text-emerald-600" : "text-red-600"
@@ -325,7 +370,7 @@ export const Cashflow: React.FC = () => {
         </section>
       )}
 
-      {/* Lista de Transações */}
+      {/* TABELA */}
       {transactions.length > 0 && (
         <section className="bg-white border-2 border-emerald-200 rounded-lg overflow-hidden">
           <header className="bg-emerald-100 px-6 py-4 border-b border-emerald-200">
@@ -335,16 +380,16 @@ export const Cashflow: React.FC = () => {
           </header>
 
           <section className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full text-center">
               <thead className="bg-emerald-50">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-emerald-700">Data</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-emerald-700">Tipo</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-emerald-700">Descrição</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-emerald-700">Cliente/Fornecedor</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-emerald-700">Categoria</th>
-                  <th className="px-4 py-3 text-right text-xs font-semibold text-emerald-700">Valor</th>
-                  <th className="px-4 py-3 text-right text-xs font-semibold text-emerald-700">Saldo Acumulado</th>
+                  <th className="px-4 py-3 text-xs font-semibold text-emerald-700">Data</th>
+                  <th className="px-4 py-3 text-xs font-semibold text-emerald-700">Tipo</th>
+                  <th className="px-4 py-3 text-xs font-semibold text-emerald-700">Descrição</th>
+                  <th className="px-4 py-3 text-xs font-semibold text-emerald-700">Cliente/Fornecedor</th>
+                  <th className="px-4 py-3 text-xs font-semibold text-emerald-700">Categoria</th>
+                  <th className="px-4 py-3 text-xs font-semibold text-emerald-700">Valor</th>
+                  <th className="px-4 py-3 text-xs font-semibold text-emerald-700">Saldo Acumulado</th>
                 </tr>
               </thead>
 
@@ -364,10 +409,10 @@ export const Cashflow: React.FC = () => {
                       </td>
 
                       <td className="px-4 py-3">
-                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${transaction.type === "Crédito"
-                            ? "bg-green-100 text-green-800"
-                            : "bg-red-100 text-red-800"
-                          }`}>
+                        <span className={`inline-flex items-center justify-center px-2 py-1 rounded-full text-xs font-medium ${transaction.type === "Crédito"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-red-100 text-red-800"
+                        }`}>
                           {transaction.type === "Crédito" ? (
                             <TrendingUp className="h-3 w-3 mr-1" />
                           ) : (
@@ -386,24 +431,22 @@ export const Cashflow: React.FC = () => {
                       </td>
 
                       <td className="px-4 py-3">
-                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${transaction.category === "Venda"
-                            ? "bg-blue-100 text-blue-800"
-                            : transaction.category === "Compra"
-                              ? "bg-purple-100 text-purple-800"
-                              : "bg-orange-100 text-orange-800"
-                          }`}>
+                        <span className={`inline-flex items-center justify-center px-2 py-1 rounded-full text-xs font-medium ${transaction.category === "Venda"
+                          ? "bg-blue-100 text-blue-800"
+                          : transaction.category === "Compra"
+                            ? "bg-purple-100 text-purple-800"
+                            : "bg-orange-100 text-orange-800"
+                        }`}>
                           {transaction.category}
                         </span>
                       </td>
 
-                      <td className={`px-4 py-3 text-sm font-bold text-right ${transaction.type === "Crédito" ? "text-green-700" : "text-red-700"
-                        }`}>
+                      <td className={`px-4 py-3 text-sm font-bold ${transaction.type === "Crédito" ? "text-green-700" : "text-red-700"}`}>
                         {transaction.type === "Crédito" ? "+" : "-"}
                         {formatCurrency(transaction.amount)}
                       </td>
 
-                      <td className={`px-4 py-3 text-sm font-bold text-right ${accumulatedBalance >= 0 ? "text-emerald-700" : "text-red-700"
-                        }`}>
+                      <td className={`px-4 py-3 text-sm font-bold ${accumulatedBalance >= 0 ? "text-emerald-700" : "text-red-700"}`}>
                         {formatCurrency(accumulatedBalance)}
                       </td>
                     </tr>

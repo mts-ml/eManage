@@ -131,12 +131,14 @@ export const Receivables: React.FC = () => {
         async function fetchSales() {
             try {
                 const response = await axiosPrivate.get<Receivable[]>("/sales")
+
                 const salesWithReceivableInfo: Receivable[] = response.data.map((sale: Receivable) => ({
                     ...sale,
                     status: sale.status || "Pendente",
                     paymentDate: sale.paymentDate || null,
                     bank: sale.bank || ""
                 }))
+
                 setReceivables(salesWithReceivableInfo)
             } catch (error) {
                 console.error("Erro ao buscar vendas:", error)
@@ -166,6 +168,7 @@ export const Receivables: React.FC = () => {
     // Função para cancelar edição
     const handleCancelEdit = () => {
         setEditingSale(null)
+
         setEditFormData({
             status: PaymentStatus.PENDING,
             totalPaid: 0,
@@ -190,8 +193,8 @@ export const Receivables: React.FC = () => {
     const handleTotalPaidChange = (value: number) => {
         if (editingSale) {
             // Calcular novo status baseado no valor pago
-            const newStatus = calculateStatus(value, editingSale.total);
-            const today = new Date().toISOString().split('T')[0];
+            const newStatus = calculateStatus(value, editingSale.total)
+            const today = new Date().toISOString().split('T')[0]
 
             // LÓGICA: Se valor > 0, definir data do primeiro pagamento automaticamente
             // (usuário não precisa escolher, é sempre a data atual)
@@ -239,8 +242,7 @@ export const Receivables: React.FC = () => {
                             status: newStatus,
                             totalPaid: value,
                             remainingAmount: editingSale.total - value,
-                            firstPaymentDate: value > 0 && !sale.firstPaymentDate ? today : sale.firstPaymentDate,
-                            // NÃO definir finalPaymentDate automaticamente
+                            firstPaymentDate: sale.firstPaymentDate,
                             finalPaymentDate: sale.finalPaymentDate
                         }
                         : sale
@@ -300,17 +302,14 @@ export const Receivables: React.FC = () => {
                 status: finalStatus,
                 totalPaid: editFormData.totalPaid,
                 remainingAmount: editFormData.remainingAmount,
-                firstPaymentDate: editFormData.firstPaymentDate ? new Date(editFormData.firstPaymentDate).toISOString() : null,
-                finalPaymentDate: editFormData.finalPaymentDate ? new Date(editFormData.finalPaymentDate).toISOString() : null,
+                firstPaymentDate: editFormData.firstPaymentDate || null,
+                finalPaymentDate: editFormData.finalPaymentDate || null,
                 bank: editFormData.bank,
                 observations: editFormData.observations,
                 payments: []
             }
 
-            await axiosPrivate.patch<ApiResponse<Receivable>>(
-                `/receivables/${editingSale._id}`,
-                updateData
-            )
+            await axiosPrivate.patch<ApiResponse<Receivable>>(`/receivables/${editingSale._id}`,updateData)
 
             const updatedSale = { ...editingSale, ...updateData }
             setReceivables(prev =>
@@ -373,6 +372,7 @@ export const Receivables: React.FC = () => {
             alert(errorMessage)
         }
     }
+
 
     return (
         <main className="p-8 max-w-6xl mx-auto">
@@ -495,7 +495,7 @@ export const Receivables: React.FC = () => {
                                     </td>
 
                                     <td className="px-4 py-3 text-xs text-center">
-                                        {sale.finalPaymentDate ? new Date(sale.finalPaymentDate).toLocaleDateString("pt-BR") : "--"}
+                                        {sale.finalPaymentDate ? sale.finalPaymentDate.split('T')[0].split('-').reverse().join('/') : "--"}
                                     </td>
 
                                     <td className="px-4 py-3 text-xs text-center">

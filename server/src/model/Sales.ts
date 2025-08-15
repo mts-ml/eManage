@@ -23,22 +23,22 @@ const itemSchema = new mongoose.Schema({
 
 // Schema para pagamentos individuais
 const paymentSchema = new mongoose.Schema({
-  amount: {
-    type: Number,
-    required: true,
-    min: 0
-  },
-  paymentDate: {
-    type: String,
-    required: true
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  }
+    amount: {
+        type: Number,
+        required: true,
+        min: 0
+    },
+    paymentDate: {
+        type: String,
+        required: true,
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now
+    }
 });
 
-const saleSchema = new mongoose.Schema({    
+const saleSchema = new mongoose.Schema({
     saleNumber: {
         type: Number,
         required: true,
@@ -46,7 +46,7 @@ const saleSchema = new mongoose.Schema({
     },
     date: {
         type: String,
-        required: true
+        required: true,
     },
     clientId: {
         type: String,
@@ -78,11 +78,11 @@ const saleSchema = new mongoose.Schema({
     },
     firstPaymentDate: {
         type: String,
-        default: null
+        default: null,
     },
     finalPaymentDate: {
         type: String,
-        default: null
+        default: null,
     },
     bank: {
         type: String,
@@ -94,7 +94,7 @@ const saleSchema = new mongoose.Schema({
     },
     payments: [paymentSchema]
 }, {
-  timestamps: true
+    timestamps: true
 });
 
 export const Sale = mongoose.model<SalePayload>("Sale", saleSchema)

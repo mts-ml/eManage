@@ -154,17 +154,17 @@ export const Reports: React.FC = () => {
          // Processar todas as transações
          const allTransactions: Transaction[] = [
             // Vendas (créditos)
-            ...(salesResponse.data && Array.isArray(salesResponse.data) ? salesResponse.data
+            ...(salesResponse.data || [])
                .filter(sale =>
-                  (!filters.selectedBank || sale.bank === filters.selectedBank) &&
                   sale.status === "Pago" &&
                   sale.paymentDate &&
-                  new Date(sale.paymentDate) >= new Date(filters.startDate + 'T00:00:00') &&
-                  new Date(sale.paymentDate) <= new Date(filters.endDate + 'T23:59:59')
+                  (!filters.selectedBank || sale.bank === filters.selectedBank) &&
+                  sale.paymentDate >= filters.startDate &&
+                  sale.paymentDate <= filters.endDate
                )
                .map(sale => ({
                   id: sale._id,
-                  date: new Date(sale.paymentDate!).toLocaleDateString("pt-BR"),
+                  date: sale.paymentDate!.split('-').reverse().join('/'),
                   type: "Crédito" as const,
                   description: `Venda #${sale.saleNumber}`,
                   amount: sale.total,
@@ -172,41 +172,46 @@ export const Reports: React.FC = () => {
                   transactionNumber: `V${sale.saleNumber}`,
                   category: "Venda" as const,
                   bank: sale.bank
-               })) : []),
+               })),
 
             // Compras (débitos)
-            ...(purchasesResponse.data && Array.isArray(purchasesResponse.data) ? purchasesResponse.data
+            ...(purchasesResponse.data || [])
                .filter(purchase =>
-                  (!filters.selectedBank || purchase.bank === filters.selectedBank) &&
                   purchase.status === "Pago" &&
-                  purchase.paymentDate &&
-                  new Date(purchase.paymentDate) >= new Date(filters.startDate + 'T00:00:00') &&
-                  new Date(purchase.paymentDate) <= new Date(filters.endDate + 'T23:59:59')
+                  purchase.payments?.length > 0 &&
+                  (!filters.selectedBank || purchase.bank === filters.selectedBank)
                )
-               .map(purchase => ({
-                  id: purchase._id,
-                  date: new Date(purchase.paymentDate!).toLocaleDateString("pt-BR"),
-                  type: "Débito" as const,
-                  description: `Compra #${purchase.purchaseNumber}`,
-                  amount: purchase.total,
-                  clientName: purchase.clientName,
-                  transactionNumber: `C${purchase.purchaseNumber}`,
-                  category: "Compra" as const,
-                  bank: purchase.bank
-               })) : []),
+               .flatMap(purchase =>
+                  purchase.payments!
+                     .filter(payment =>
+                        payment.paymentDate >= filters.startDate &&
+                        payment.paymentDate <= filters.endDate
+                     )
+                     .map(payment => ({
+                        id: purchase._id,
+                        date: payment.paymentDate.split('-').reverse().join('/'),
+                        type: "Débito" as const,
+                        description: `Compra #${purchase.purchaseNumber}`,
+                        amount: payment.amount,
+                        clientName: purchase.supplierName,
+                        transactionNumber: `C${purchase.purchaseNumber}`,
+                        category: "Compra" as const,
+                        bank: purchase.bank
+                     }))
+               ),
 
             // Despesas (débitos)
-            ...(expensesResponse.data && Array.isArray(expensesResponse.data) ? expensesResponse.data
+            ...(expensesResponse.data || [])
                .filter(expense =>
-                  (!filters.selectedBank || expense.bank === filters.selectedBank) &&
                   expense.status === "Pago" &&
                   expense.dueDate &&
-                  new Date(expense.dueDate + 'T00:00:00') >= new Date(filters.startDate + 'T00:00:00') &&
-                  new Date(expense.dueDate + 'T00:00:00') <= new Date(filters.endDate + 'T23:59:59')
+                  (!filters.selectedBank || expense.bank === filters.selectedBank) &&
+                  expense.dueDate >= filters.startDate &&
+                  expense.dueDate <= filters.endDate
                )
                .map(expense => ({
                   id: expense._id,
-                  date: new Date(expense.dueDate!).toLocaleDateString("pt-BR"),
+                  date: expense.dueDate!.split('-').reverse().join('/'),
                   type: "Débito" as const,
                   description: expense.name,
                   amount: Number(expense.value),
@@ -214,11 +219,11 @@ export const Reports: React.FC = () => {
                   transactionNumber: `D${expense._id.slice(-6)}`,
                   category: "Despesa" as const,
                   bank: expense.bank || "Não informado"
-               })) : [])
+               }))
          ]
 
-         // Ordenar por data
-         allTransactions.sort((a, b) => new Date(a.date.split('/').reverse().join('-')).getTime() - new Date(b.date.split('/').reverse().join('-')).getTime())
+         // Ordenar por data (simples)
+         allTransactions.sort((a, b) => a.date.localeCompare(b.date))
 
          setTransactions(allTransactions)
 
@@ -398,7 +403,7 @@ export const Reports: React.FC = () => {
       fetchTransactions()
    }
 
-   
+
    return (
       <main className="p-6 bg-white rounded-lg shadow-lg">
          <header className="mb-6">
@@ -423,7 +428,7 @@ export const Reports: React.FC = () => {
                   <label htmlFor="reportType" className="block text-sm font-medium text-emerald-700 mb-2">
                      Tipo de Relatório
                   </label>
-                  
+
                   <select
                      id="reportType"
                      value={filters.reportType}
@@ -518,6 +523,7 @@ export const Reports: React.FC = () => {
                         <TrendingUp className="h-5 w-5 text-green-600" />
                         <span className="font-semibold text-green-800">Total Créditos</span>
                      </header>
+
                      <p className="text-2xl font-bold text-green-700">
                         {formatCurrency(bankBalance.totalCredits)}
                      </p>
@@ -528,6 +534,7 @@ export const Reports: React.FC = () => {
                         <TrendingDown className="h-5 w-5 text-red-600" />
                         <span className="font-semibold text-red-800">Total Débitos</span>
                      </header>
+
                      <p className="text-2xl font-bold text-red-700">
                         {formatCurrency(bankBalance.totalDebits)}
                      </p>
@@ -543,6 +550,7 @@ export const Reports: React.FC = () => {
                            Saldo Final
                         </span>
                      </header>
+
                      <p className={`text-2xl font-bold ${bankBalance.balance >= 0 ? "text-emerald-700" : "text-red-700"}`}>
                         {formatCurrency(bankBalance.balance)}
                      </p>
@@ -551,7 +559,7 @@ export const Reports: React.FC = () => {
             </section>
          )}
 
-         {/* Lista de Transações */}
+         {/* TABELA */}
          {transactions.length > 0 && (
             <section className="bg-white border-2 border-emerald-200 rounded-lg overflow-hidden">
                <header className="bg-emerald-100 px-6 py-4 border-b border-emerald-200">
@@ -561,16 +569,16 @@ export const Reports: React.FC = () => {
                </header>
 
                <section className="overflow-x-auto">
-                  <table className="w-full">
+                  <table className="w-full text-center">
                      <thead className="bg-emerald-50">
                         <tr>
-                           <th className="px-4 py-3 text-left text-xs font-semibold text-emerald-700">Data</th>
-                           <th className="px-4 py-3 text-left text-xs font-semibold text-emerald-700">Tipo</th>
-                           <th className="px-4 py-3 text-left text-xs font-semibold text-emerald-700">Descrição</th>
-                           <th className="px-4 py-3 text-left text-xs font-semibold text-emerald-700">Cliente/Fornecedor</th>
-                           <th className="px-4 py-3 text-left text-xs font-semibold text-emerald-700">Categoria</th>
-                           <th className="px-4 py-3 text-left text-xs font-semibold text-emerald-700">Banco</th>
-                           <th className="px-4 py-3 text-right text-xs font-semibold text-emerald-700">Valor</th>
+                           <th className="px-4 py-3 text-xs font-semibold text-emerald-700">Data</th>
+                           <th className="px-4 py-3 text-xs font-semibold text-emerald-700">Tipo</th>
+                           <th className="px-4 py-3 text-xs font-semibold text-emerald-700">Descrição</th>
+                           <th className="px-4 py-3 text-xs font-semibold text-emerald-700">Cliente/Fornecedor</th>
+                           <th className="px-4 py-3 text-xs font-semibold text-emerald-700">Categoria</th>
+                           <th className="px-4 py-3 text-xs font-semibold text-emerald-700">Banco</th>
+                           <th className="px-4 py-3 text-xs font-semibold text-emerald-700">Valor</th>
                         </tr>
                      </thead>
 
@@ -618,7 +626,7 @@ export const Reports: React.FC = () => {
                                  {transaction.bank}
                               </td>
 
-                              <td className={`px-4 py-3 text-sm font-bold text-right ${transaction.type === "Crédito" ? "text-green-700" : "text-red-700"}`}>
+                              <td className={`px-4 py-3 text-sm font-bold ${transaction.type === "Crédito" ? "text-green-700" : "text-red-700"}`}>
                                  {transaction.type === "Crédito" ? "+" : "-"}
                                  {formatCurrency(transaction.amount)}
                               </td>

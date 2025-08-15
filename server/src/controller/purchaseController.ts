@@ -60,7 +60,7 @@ export async function createNewPurchase(req: Request<{}, {}, Omit<PurchasePayloa
         // Atualiza o estoque dos produtos
         await Promise.all(
             purchaseProps.items.map(async item => {
-                const product = products.find(p => p.id === item.productId)
+                const product = products.find(p => p._id.toString() === item.productId)
 
                 if (product) {
                     product.stock += item.quantity

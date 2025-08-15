@@ -6,7 +6,7 @@ import type { AxiosResponse } from "axios"
 
 import ProductsContext from "../Context/ProductsContext"
 import SupplierContext from "../Context/SupplierContext"
-import type { Product, ItemPayload, PurchaseResponse } from "../types/types"
+import type { Product, PurchasePayload, PurchaseResponse } from "../types/types"
 import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
 
 
@@ -65,8 +65,8 @@ export const Purchases: React.FC = () => {
             const existingProduct = prev.find(item => item.id === product.id)
 
             // Usar preço customizado se fornecido, senão usar o preço padrão
-            const finalPrice = customPrice && !isNaN(Number(customPrice)) && Number(customPrice) > 0 
-                ? customPrice 
+            const finalPrice = customPrice && !isNaN(Number(customPrice)) && Number(customPrice) > 0
+                ? customPrice
                 : product.purchasePrice
 
             if (existingProduct) {
@@ -106,9 +106,9 @@ export const Purchases: React.FC = () => {
     }
 
     async function submitPurchase() {
-        const purchasePayload: ItemPayload & { invoiceNumber: string } = {
-            clientId: selectedSupplierId,
-            clientName: selectedSupplier?.name || "Fornecedor Desconhecido",
+        const purchasePayload: PurchasePayload & { invoiceNumber: string } = {
+            supplierId: selectedSupplierId,
+            supplierName: selectedSupplier?.name || "Fornecedor Desconhecido",
             date: today,
             invoiceNumber,
             items: cart
@@ -158,7 +158,7 @@ export const Purchases: React.FC = () => {
     return (
         <main className="p-8 max-w-6xl mx-auto">
             <header className="text-center mb-8">
-                <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-green-600 mb-2">
+                <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-green-600 mb-3">
                     📦 Compras
                 </h1>
                 <p className="text-gray-600 font-medium">Gerencie suas compras de forma eficiente</p>
@@ -398,12 +398,12 @@ export const Purchases: React.FC = () => {
                                             <section className="flex-shrink-0 w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center">
                                                 <span className="text-emerald-600 text-xl">📦</span>
                                             </section>
-                                            
+
                                             <section className="flex-1 min-w-0">
                                                 <h4 className="font-bold text-emerald-800 text-lg mb-1 truncate">
                                                     {item.name}
                                                 </h4>
-                                                
+
                                                 <section className="space-y-1">
                                                     <section className="flex items-center gap-2 text-sm text-gray-600">
                                                         <span className="font-medium">Preço:</span>
@@ -414,14 +414,14 @@ export const Purchases: React.FC = () => {
                                                             })}
                                                         </span>
                                                     </section>
-                                                    
+
                                                     <section className="flex items-center gap-2 text-sm text-gray-600">
                                                         <span className="font-medium">Quantidade:</span>
                                                         <span className="font-semibold text-emerald-700">
                                                             {Number(item.quantity).toLocaleString("pt-BR")} (x)
                                                         </span>
                                                     </section>
-                                                    
+
                                                     {item.description && item.description.trim() !== "" && (
                                                         <section className="flex items-start gap-2 text-sm text-gray-600">
                                                             <span className="font-medium mt-0.5">Descrição:</span>
@@ -430,7 +430,7 @@ export const Purchases: React.FC = () => {
                                                             </span>
                                                         </section>
                                                     )}
-                                                    
+
                                                     <section className="flex items-center gap-2 text-sm">
                                                         <span className="font-medium text-gray-600">Subtotal:</span>
                                                         <span className="font-bold text-emerald-800 text-base">
@@ -523,16 +523,20 @@ export const Purchases: React.FC = () => {
                         <section className="bg-white p-6 rounded-xl border border-emerald-200 shadow-sm hover:shadow-md transition-shadow">
                             <div className="flex items-center mb-2">
                                 <span className="text-emerald-600 mr-2">🏢</span>
+
                                 <p className="text-sm font-medium text-gray-600">Fornecedor</p>
                             </div>
-                            <p className="text-xl font-bold text-emerald-700 truncate">{lastPurchase.clientName}</p>
+
+                            <p className="text-xl font-bold text-emerald-700 truncate">{lastPurchase.supplierName}</p>
                         </section>
 
                         <section className="bg-white p-6 rounded-xl border border-emerald-200 shadow-sm hover:shadow-md transition-shadow">
                             <div className="flex items-center mb-2">
                                 <span className="text-emerald-600 mr-2">📅</span>
+
                                 <p className="text-sm font-medium text-gray-600">Data</p>
                             </div>
+
                             <p className="text-xl font-bold text-emerald-700">{lastPurchase.date}</p>
                         </section>
                     </section>
@@ -545,7 +549,7 @@ export const Purchases: React.FC = () => {
                                 Itens da Compra
                             </h4>
                         </div>
-                        
+
                         <section className="overflow-x-auto">
                             <table className="w-full">
                                 <thead className="bg-emerald-50">
@@ -553,40 +557,49 @@ export const Purchases: React.FC = () => {
                                         <th className="px-6 py-3 text-left text-xs font-medium text-emerald-700 uppercase tracking-wider">
                                             Produto
                                         </th>
+
                                         <th className="px-6 py-3 text-center text-xs font-medium text-emerald-700 uppercase tracking-wider">
                                             Quantidade
                                         </th>
+
                                         <th className="px-6 py-3 text-center text-xs font-medium text-emerald-700 uppercase tracking-wider">
                                             Preço Unit.
                                         </th>
+
                                         <th className="px-6 py-3 text-right text-xs font-medium text-emerald-700 uppercase tracking-wider">
                                             Subtotal
                                         </th>
                                     </tr>
                                 </thead>
+
                                 <tbody className="divide-y divide-emerald-100">
                                     {lastPurchase.items.map((item, index) => (
                                         <tr key={index} className="hover:bg-emerald-50/50 transition-colors">
                                             <td className="px-6 py-4">
                                                 <section className="flex items-center">
+
                                                     <section className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center mr-3">
                                                         <span className="text-emerald-600 text-sm font-semibold">
                                                             {index + 1}
                                                         </span>
                                                     </section>
+
                                                     <span className="text-gray-900 font-medium">{item.productName}</span>
                                                 </section>
                                             </td>
+
                                             <td className="px-6 py-4 text-center">
                                                 <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-emerald-100 text-emerald-800">
                                                     {item.quantity}x
                                                 </span>
                                             </td>
+
                                             <td className="px-6 py-4 text-center">
                                                 <span className="text-gray-700 font-medium">
                                                     {Number(item.price).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
                                                 </span>
                                             </td>
+
                                             <td className="px-6 py-4 text-right">
                                                 <span className="text-emerald-700 font-bold">
                                                     {(Number(item.price) * item.quantity).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
@@ -602,6 +615,7 @@ export const Purchases: React.FC = () => {
                         <section className="bg-gradient-to-r from-emerald-50 to-green-50 px-6 py-4 border-t border-emerald-200">
                             <section className="flex justify-between items-center">
                                 <span className="text-lg font-semibold text-emerald-800">Total da Compra:</span>
+
                                 <span className="text-2xl font-bold text-emerald-700">
                                     {lastPurchase.total.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
                                 </span>

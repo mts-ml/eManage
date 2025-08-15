@@ -24,19 +24,19 @@ const itemSchema = new mongoose.Schema({
 
 // Schema para pagamentos individuais
 const paymentSchema = new mongoose.Schema({
-  amount: {
-    type: Number,
-    required: true,
-    min: 0
-  },
-  paymentDate: {
-    type: String,
-    required: true
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  }
+    amount: {
+        type: Number,
+        required: true,
+        min: 0
+    },
+    paymentDate: {
+        type: String,
+        required: true,
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now
+    }
 });
 
 const purchaseSchema = new mongoose.Schema({
@@ -52,7 +52,7 @@ const purchaseSchema = new mongoose.Schema({
     },
     date: {
         type: String,
-        required: true
+        required: true,
     },
     supplierId: {
         type: String,
@@ -88,7 +88,7 @@ const purchaseSchema = new mongoose.Schema({
     },
     finalPaymentDate: {
         type: String,
-        default: null
+        default: null,
     },
     bank: {
         type: String,

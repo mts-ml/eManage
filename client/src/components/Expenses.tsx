@@ -490,7 +490,7 @@ export const Expenses: React.FC = () => {
                                         </td>
 
                                         <td className="px-4 py-3 text-xs text-center">
-                                            {exp.dueDate ? new Date(exp.dueDate).toLocaleDateString("pt-BR") : "-"}
+                                            {exp.dueDate ? exp.dueDate.split('-').reverse().join('/') : "-"}
                                         </td>
 
                                         <td className="px-4 py-3 text-xs text-center">
