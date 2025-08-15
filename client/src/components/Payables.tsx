@@ -119,9 +119,9 @@ export const Payables: React.FC = () => {
     // Função para obter o ícone de ordenação
     const getSortIcon = (field: SortField) => {
         if (sortConfig.field !== field) {
-            return '↕️'
+            return '⇅'
         }
-        return sortConfig.order === 'asc' ? '↑' : '↓'
+        return sortConfig.order === 'asc' ? '⇧' : '⇩'
     }
 
     // Pagáveis ordenados
@@ -131,6 +131,7 @@ export const Payables: React.FC = () => {
         async function fetchPurchases() {
             try {
                 const response = await axiosPrivate.get<Payable[]>("/purchases")
+
                 const purchasesWithPayableInfo: Payable[] = response.data.map((purchase: Payable) => ({
                     ...purchase,
                     status: purchase.status || "Pendente",
@@ -141,11 +142,13 @@ export const Payables: React.FC = () => {
                     bank: purchase.bank || "",
                     observations: purchase.observations || ""
                 }))
+
                 setPayables(purchasesWithPayableInfo)
             } catch (error) {
                 console.error("Erro ao buscar compras:", error)
             }
         }
+
         fetchPurchases()
     }, [axiosPrivate])
 
@@ -243,8 +246,7 @@ export const Payables: React.FC = () => {
                             status: newStatus,
                             totalPaid: value,
                             remainingAmount: editingPurchase.total - value,
-                            firstPaymentDate: value > 0 && !purchase.firstPaymentDate ? today : purchase.firstPaymentDate,
-                            // NÃO definir finalPaymentDate automaticamente
+                            firstPaymentDate: purchase.firstPaymentDate,
                             finalPaymentDate: purchase.finalPaymentDate
                         }
                         : purchase
@@ -304,17 +306,14 @@ export const Payables: React.FC = () => {
                 status: finalStatus,
                 totalPaid: editFormData.totalPaid,
                 remainingAmount: editFormData.remainingAmount,
-                firstPaymentDate: editFormData.firstPaymentDate ? new Date(editFormData.firstPaymentDate).toISOString() : null,
-                finalPaymentDate: editFormData.finalPaymentDate ? new Date(editFormData.finalPaymentDate).toISOString() : null,
+                firstPaymentDate: editFormData.firstPaymentDate || null,
+                finalPaymentDate: editFormData.finalPaymentDate || null,
                 bank: editFormData.bank,
                 observations: editFormData.observations,
                 payments: []
             }
 
-            await axiosPrivate.patch<ApiResponse<Payable>>(
-                `/payables/${editingPurchase._id}`,
-                updateData
-            )
+            await axiosPrivate.patch<ApiResponse<Payable>>(`/payables/${editingPurchase._id}`, updateData)
 
             const updatedPurchase = { ...editingPurchase, ...updateData }
             setPayables(prev =>
@@ -378,10 +377,11 @@ export const Payables: React.FC = () => {
         }
     }
 
+
     return (
         <main className="p-8 max-w-6xl mx-auto">
             <header className="text-center mb-8">
-                <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-green-600 mb-2">
+                <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-green-600 pb-3">
                     💸 Contas a Pagar
                 </h1>
 
@@ -503,7 +503,7 @@ export const Payables: React.FC = () => {
                                     </td>
 
                                     <td className="px-4 py-3 text-xs text-center">
-                                        {purchase.finalPaymentDate ? new Date(purchase.finalPaymentDate).toLocaleDateString("pt-BR") : "--"}
+                                        {purchase.finalPaymentDate ? purchase.finalPaymentDate.split("T")[0].split("-").reverse().join("/") : "--"}
                                     </td>
 
                                     <td className="px-4 py-3 text-xs text-center">
