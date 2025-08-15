@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { FaSearch, FaCalendarAlt } from 'react-icons/fa'
 import type { AxiosResponse } from "axios"
 
@@ -6,6 +6,15 @@ import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
 import type { Receivable } from "../types/types"
 import { PaymentStatus } from "../types/types"
 
+
+type SortField = 'date' | 'saleNumber' | 'clientName' | 'total' | 'totalPaid' | 'remainingAmount'
+
+type SortOrder = 'asc' | 'desc'
+
+interface SortConfig {
+   field: SortField
+   order: SortOrder
+}
 
 interface SalesHistoryFilters {
    startDate: string
@@ -20,6 +29,7 @@ export const SalesHistory: React.FC = () => {
    const [filteredSales, setFilteredSales] = useState<Receivable[]>([])
    const [loading, setLoading] = useState<boolean>(false)
    const [hasSearched, setHasSearched] = useState<boolean>(false)
+   const [sortConfig, setSortConfig] = useState<SortConfig>({ field: 'date', order: 'desc' })
    const [filters, setFilters] = useState<SalesHistoryFilters>({
       startDate: "",
       endDate: "",
@@ -28,45 +38,110 @@ export const SalesHistory: React.FC = () => {
    })
    const axiosPrivate = useAxiosPrivate()
 
-   // Carregar dados automaticamente quando o componente for montado
-   useEffect(() => {
-      fetchSalesHistory()
-   }, [])
+   const parseDate = (dateStr: string) => {
+      const [day, month, year] = dateStr.split('/')
+      return new Date(parseInt(year), parseInt(month) - 1, parseInt(day))
+   }
 
-               async function fetchSalesHistory() {
-        setLoading(true)
-        setHasSearched(true)
-        try {
-           const response: AxiosResponse<Receivable[]> = await axiosPrivate.get('/sales/history')
-           
-           // Verifica se a resposta tem status 204 (sem conteúdo) ou se data é null/undefined
-           if (response.status === 204 || !response.data) {
-              setSalesHistory([])
-              setFilteredSales([])
-              return
-           }
-           
-           // Processar dados para garantir que todos os campos estejam preenchidos
-           const processedData = response.data.map(sale => ({
-              ...sale,
-              totalPaid: sale.totalPaid || 0,
-              remainingAmount: sale.remainingAmount !== undefined && sale.remainingAmount !== null 
-                 ? sale.remainingAmount 
-                 : (sale.total - (sale.totalPaid || 0)),
-              status: sale.status || "Pendente"
-           }))
-           
-           setSalesHistory(processedData)
-           // Aplicar filtros após buscar dados
-           applyFilters(processedData)
-        } catch (error) {
-           console.error("Erro ao buscar histórico de vendas:", error)
-           setSalesHistory([])
-           setFilteredSales([])
-        } finally {
-           setLoading(false)
-        }
-     }
+   const sortSales = (data: Receivable[], config: SortConfig): Receivable[] => {
+      return [...data].sort((a, b) => {
+         let aValue: string | number | Date
+         let bValue: string | number | Date
+
+         switch (config.field) {
+            case 'date':
+               aValue = parseDate(a.date)
+               bValue = parseDate(b.date)
+               break
+            case 'saleNumber':
+               aValue = a.saleNumber
+               bValue = b.saleNumber
+               break
+            case 'clientName':
+               aValue = a.clientName.toLowerCase()
+               bValue = b.clientName.toLowerCase()
+               break
+            case 'total':
+               aValue = a.total
+               bValue = b.total
+               break
+            case 'totalPaid':
+               aValue = a.totalPaid || 0
+               bValue = b.totalPaid || 0
+               break
+            case 'remainingAmount':
+               aValue = a.remainingAmount !== undefined && a.remainingAmount !== null
+                  ? a.remainingAmount
+                  : (a.total - (a.totalPaid || 0))
+               bValue = b.remainingAmount !== undefined && b.remainingAmount !== null
+                  ? b.remainingAmount
+                  : (b.total - (b.totalPaid || 0))
+               break
+            default:
+               return 0
+         }
+
+         if (aValue < bValue) {
+            return config.order === 'asc' ? -1 : 1
+         }
+         if (aValue > bValue) {
+            return config.order === 'asc' ? 1 : -1
+         }
+         return 0
+      })
+   }
+
+   // Função para lidar com o clique no cabeçalho da coluna
+   const handleSort = (field: SortField) => {
+      setSortConfig(prev => ({
+         field,
+         order: prev.field === field && prev.order === 'asc' ? 'desc' : 'asc'
+      }))
+   }
+
+   const getSortIcon = (field: SortField) => {
+      if (sortConfig.field !== field) {
+         return '⇅'
+      }
+      return sortConfig.order === 'asc' ? '⇧' : '⇩'
+   }
+
+   const sortedSales = sortSales(filteredSales, sortConfig)
+
+   async function fetchSalesHistory() {
+      setLoading(true)
+      setHasSearched(true)
+      try {
+         const response: AxiosResponse<Receivable[]> = await axiosPrivate.get('/sales/history')
+
+         if (response.status === 204 || !response.data) {
+            setSalesHistory([])
+            setFilteredSales([])
+            return
+         }
+
+         // Processar dados para garantir que todos os campos estejam preenchidos
+         const processedData = response.data.map(sale => ({
+            ...sale,
+            totalPaid: sale.totalPaid || 0,
+            remainingAmount: sale.remainingAmount !== undefined && sale.remainingAmount !== null
+               ? sale.remainingAmount
+               : (sale.total - (sale.totalPaid || 0)),
+            status: sale.status || "Pendente"
+         }))
+
+         setSalesHistory(processedData)
+
+         applyFilters(processedData)
+      } catch (error) {
+         console.error("Erro ao buscar histórico de vendas:", error)
+         setSalesHistory([])
+
+         setFilteredSales([])
+      } finally {
+         setLoading(false)
+      }
+   }
 
    function applyFilters(data: Receivable[] = salesHistory) {
       let filtered = [...data]
@@ -79,7 +154,7 @@ export const SalesHistory: React.FC = () => {
             // Criar data no formato YYYY-MM-DD para evitar problemas de fuso horário
             const saleDateStr = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
             const saleDate = new Date(saleDateStr + 'T00:00:00')
-            
+
             const startDate = new Date(filters.startDate + 'T00:00:00')
             const endDate = new Date(filters.endDate + 'T23:59:59')
 
@@ -115,8 +190,6 @@ export const SalesHistory: React.FC = () => {
          clientSearch: "",
          saleNumberSearch: ""
       })
-      // Mostrar todas as vendas quando limpar filtros
-      setFilteredSales(salesHistory)
    }
 
    function handleSearch() {
@@ -127,21 +200,14 @@ export const SalesHistory: React.FC = () => {
       return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
    }
 
-   const totalSales = filteredSales.length
-   const totalRevenue = filteredSales.reduce((sum, sale) => sum + sale.total, 0)
+   const totalSales = sortedSales.length
    
+   const totalRevenue = sortedSales.reduce((sum, sale) => sum + sale.total, 0)
+
    // Calcular totais baseados nos dados filtrados
-   const totalReceived = filteredSales.reduce((sum, sale) => sum + (sale.totalPaid || 0), 0)
-   const totalPending = filteredSales.reduce((sum, sale) => {
-      // Se não tem remainingAmount, calcular baseado no total e totalPaid
-      if (sale.remainingAmount !== undefined && sale.remainingAmount !== null) {
-         return sum + sale.remainingAmount
-      } else {
-         // Calcular o que falta pagar
-         const totalPaid = sale.totalPaid || 0
-         return sum + (sale.total - totalPaid)
-      }
-   }, 0)
+   const totalReceived = sortedSales.reduce((sum, sale) => sum + (sale.totalPaid || 0), 0)
+
+   const totalPending = sortedSales.reduce((sum, sale) => sum + (sale.remainingAmount || 0), 0)
 
 
    return (
@@ -162,7 +228,7 @@ export const SalesHistory: React.FC = () => {
                   Filtros de Período
                </h2>
 
-               <section className="flex items-center gap-3">
+               <div className="flex items-center gap-3">
                   <button
                      type="button"
                      onClick={handleSearch}
@@ -178,11 +244,11 @@ export const SalesHistory: React.FC = () => {
                   >
                      Limpar Filtros
                   </button>
-               </section>
+               </div>
             </header>
 
-            <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-               <article>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+               <div>
                   <label
                      htmlFor="startDate"
                      className="block text-sm font-semibold text-gray-700 mb-2"
@@ -197,9 +263,9 @@ export const SalesHistory: React.FC = () => {
                      onChange={e => handleFilterChange('startDate', e.target.value)}
                      className="w-full border-2 border-gray-200 rounded-lg p-3 transition-all duration-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                   />
-               </article>
+               </div>
 
-               <article>
+               <div>
                   <label
                      htmlFor="endDate"
                      className="block text-sm font-semibold text-gray-700 mb-2"
@@ -214,17 +280,17 @@ export const SalesHistory: React.FC = () => {
                      onChange={e => handleFilterChange('endDate', e.target.value)}
                      className="w-full border-2 border-gray-200 rounded-lg p-3 transition-all duration-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                   />
-               </article>
+               </div>
 
-               <article>
+               <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                      Buscar Cliente
                   </label>
 
-                  <section className="relative">
-                     <section className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <div className="relative">
+                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <FaSearch className="h-4 w-4 text-gray-400" />
-                     </section>
+                     </div>
 
                      <input
                         type="text"
@@ -233,10 +299,10 @@ export const SalesHistory: React.FC = () => {
                         onChange={e => handleFilterChange('clientSearch', e.target.value)}
                         className="w-full pl-10 pr-3 py-3 border-2 border-gray-200 rounded-lg transition-all duration-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                      />
-                  </section>
-               </article>
+                  </div>
+               </div>
 
-               <article>
+               <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                      Número da Venda
                   </label>
@@ -248,89 +314,155 @@ export const SalesHistory: React.FC = () => {
                      onChange={e => handleFilterChange('saleNumberSearch', e.target.value)}
                      className="w-full border-2 border-gray-200 rounded-lg p-3 transition-all duration-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                   />
-               </article>
-            </section>
+               </div>
+            </div>
 
             {/* Estatísticas */}
-            <section className="grid grid-cols-1 md:grid-cols-4 gap-4">
-               <article className="bg-emerald-50/50 p-4 rounded-xl border border-emerald-200">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+               <div className="bg-emerald-50/50 p-4 rounded-xl border border-emerald-200">
                   <p className="text-sm font-medium text-gray-600 mb-1">Total de Vendas</p>
+
                   <p className="text-2xl font-bold text-emerald-700">{totalSales}</p>
-               </article>
+               </div>
 
-               <article className="bg-green-50/50 p-4 rounded-xl border border-green-200">
-                  <p className="text-sm font-medium text-gray-600 mb-1">Receita Total</p>
-                  <p className="text-2xl font-bold text-green-700">{formatCurrency(totalRevenue)}</p>
-               </article>
+               <div className="bg-green-50/50 p-4 rounded-xl border border-cyan-500">
+                  <p className="text-sm font-medium text-cyan-800/50 mb-1">Receita Total</p>
 
-               <article className="bg-blue-50/50 p-4 rounded-xl border border-blue-200">
-                  <p className="text-sm font-medium text-gray-600 mb-1">Total Recebido</p>
-                  <p className="text-2xl font-bold text-blue-700">
+                  <p className="text-2xl font-bold text-cyan-700">{formatCurrency(totalRevenue)}</p>
+               </div>
+
+               <div className="bg-blue-50/50 p-4 rounded-xl border border-green-500">
+                  <p className="text-sm font-medium text-green-800/50 mb-1">Total Recebido</p>
+
+                  <p className="text-2xl font-bold text-green-700">
                      {formatCurrency(totalReceived)}
                   </p>
-               </article>
+               </div>
 
-               <article className="bg-red-50/50 p-4 rounded-xl border border-red-200">
-                  <p className="text-sm font-medium text-gray-600 mb-1">Total Pendente</p>
+               <div className="bg-red-50/50 p-4 rounded-xl border border-red-200">
+                  <p className="text-sm font-medium text-red-800/50 mb-1">Total Pendente</p>
+
                   <p className="text-2xl font-bold text-red-700">
                      {formatCurrency(totalPending)}
                   </p>
-               </article>
-            </section>
+               </div>
+            </div>
          </section>
 
          {/* Tabela de Histórico */}
          <section className="border-2 border-emerald-200/50 rounded-2xl shadow-xl bg-white/90 backdrop-blur-sm overflow-hidden">
             <header className="bg-gradient-to-r from-emerald-600 to-green-600 px-6 py-4">
                <h3 className="font-semibold text-white text-lg">
-                  Vendas Realizadas ({filteredSales.length})
+                  Vendas Realizadas ({sortedSales.length})
                </h3>
             </header>
 
             {loading ? (
-               <section className="p-8 text-center">
-                  <section className="inline-flex items-center justify-center w-8 h-8 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mr-2"></section>
+               <div className="p-8 text-center">
+                  <div className="inline-flex items-center justify-center w-8 h-8 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mr-2"></div>
+                  
                   <span className="text-gray-600">Carregando histórico...</span>
-               </section>
+               </div>
             ) :
-               filteredSales.length === 0 ? (
-                  <section className="p-8 text-center">
+               sortedSales.length === 0 ? (
+                  <div className="p-8 text-center">
                      {!hasSearched ? (
-                        <article>
+                        <div>
                            <p className="text-gray-500 text-lg mb-4">Nenhuma venda carregada</p>
 
                            <p className="text-gray-400 text-sm">Clique em "Buscar Vendas" para carregar o histórico</p>
-                        </article>
+                        </div>
                      ) : (
-                        <article>
+                        <div>
                            <div className="text-6xl mb-4">📊</div>
                            <h3 className="text-xl font-semibold text-gray-700 mb-2">Nenhuma venda registrada</h3>
 
                            <p className="text-gray-500 text-center mx-auto max-w-md">
                               Não há vendas registradas no sistema ainda. As vendas aparecerão aqui quando você criar novas vendas.
                            </p>
-                        </article>
+                        </div>
                      )}
-                  </section>
+                  </div>
                ) : (
-                  <section className="overflow-x-auto max-h-[70vh]">
+                  // TABELA
+                  <div className="overflow-x-auto max-h-[70vh]">
                      <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-emerald-50 sticky top-0 z-10">
                            <tr>
-                              <th className="px-4 py-3 text-xs font-semibold text-emerald-700 text-center">Data</th>
-                              <th className="px-4 py-3 text-xs font-semibold text-emerald-700 text-center">Nº Venda</th>
-                              <th className="px-4 py-3 text-xs font-semibold text-emerald-700 text-center">Cliente</th>
+                              <th 
+                                 className="px-4 py-3 text-xs font-semibold text-emerald-700 text-center cursor-pointer hover:bg-emerald-100 transition-colors duration-200 select-none"
+                                 onClick={() => handleSort('date')}
+                                 title="Clique para ordenar por data"
+                              >
+                                 <div className="flex items-center justify-center gap-1">
+                                    Data
+                                    <span className="text-xs">{getSortIcon('date')}</span>
+                                 </div>
+                              </th>
+                              
+                              <th 
+                                 className="px-4 py-3 text-xs font-semibold text-emerald-700 text-center cursor-pointer hover:bg-emerald-100 transition-colors duration-200 select-none"
+                                 onClick={() => handleSort('saleNumber')}
+                                 title="Clique para ordenar por número da venda"
+                              >
+                                 <div className="flex items-center justify-center gap-1">
+                                    Nº Venda
+                                    <span className="text-xs">{getSortIcon('saleNumber')}</span>
+                                 </div>
+                              </th>
+                              
+                              <th 
+                                 className="px-4 py-3 text-xs font-semibold text-emerald-700 text-center cursor-pointer hover:bg-emerald-100 transition-colors duration-200 select-none"
+                                 onClick={() => handleSort('clientName')}
+                                 title="Clique para ordenar por cliente"
+                              >
+                                 <div className="flex items-center justify-center gap-1">
+                                    Cliente
+                                    <span className="text-xs">{getSortIcon('clientName')}</span>
+                                 </div>
+                              </th>
+                              
                               <th className="px-4 py-3 text-xs font-semibold text-emerald-700 text-center">Itens</th>
-                              <th className="px-4 py-3 text-xs font-semibold text-emerald-700 text-center">Total</th>
-
-                              <th className="px-4 py-3 text-xs font-semibold text-emerald-700 text-center">Pago</th>
-                              <th className="px-4 py-3 text-xs font-semibold text-emerald-700 text-center">Pendente</th>
+                              
+                              <th 
+                                 className="px-4 py-3 text-xs font-semibold text-emerald-700 text-center cursor-pointer hover:bg-emerald-100 transition-colors duration-200 select-none"
+                                 onClick={() => handleSort('total')}
+                                 title="Clique para ordenar por valor total"
+                              >
+                                 <div className="flex items-center justify-center gap-1">
+                                    Total
+                                    <span className="text-xs">{getSortIcon('total')}</span>
+                                 </div>
+                              </th>
+                              
+                              <th 
+                                 className="px-4 py-3 text-xs font-semibold text-emerald-700 text-center cursor-pointer hover:bg-emerald-100 transition-colors duration-200 select-none"
+                                 onClick={() => handleSort('totalPaid')}
+                                 title="Clique para ordenar por valor pago"
+                              >
+                                 <div className="flex items-center justify-center gap-1">
+                                    Pago
+                                    <span className="text-xs">{getSortIcon('totalPaid')}</span>
+                                 </div>
+                              </th>
+                              
+                              <th 
+                                 className="px-4 py-3 text-xs font-semibold text-emerald-700 text-center cursor-pointer hover:bg-emerald-100 transition-colors duration-200 select-none"
+                                 onClick={() => handleSort('remainingAmount')}
+                                 title="Clique para ordenar por valor pendente"
+                              >
+                                 <div className="flex items-center justify-center gap-1">
+                                    Pendente
+                                    <span className="text-xs">{getSortIcon('remainingAmount')}</span>
+                                 </div>
+                              </th>
+                              
                               <th className="px-4 py-3 text-xs font-semibold text-emerald-700 text-center">Status</th>
                            </tr>
                         </thead>
 
                         <tbody className="bg-white divide-y divide-gray-100">
-                           {filteredSales.map(sale => (
+                           {sortedSales.map(sale => (
                               <tr key={sale._id} className="hover:bg-emerald-50/50 transition-colors duration-200">
 
                                  <td className="px-4 py-3 text-xs font-medium text-center">
@@ -347,7 +479,7 @@ export const SalesHistory: React.FC = () => {
 
                                  <td className="px-4 py-3 text-xs">
                                     {sale.items.map((item, index) => (
-                                       <section key={index}
+                                       <div key={index}
                                           className="flex items-center justify-center text-gray-700"
                                        >
                                           <span className="font-medium">{item.productName} -</span>
@@ -355,11 +487,11 @@ export const SalesHistory: React.FC = () => {
                                           <span className="text-emerald-600 font-semibold ml-1">
                                              {formatCurrency(item.price)}
                                           </span>
-                                       </section>
+                                       </div>
                                     ))}
                                  </td>
 
-                                 <td className="px-4 py-3 text-xs font-bold text-emerald-700 text-center">
+                                 <td className="px-4 py-3 text-xs font-bold text-cyan-700 text-center">
                                     {formatCurrency(sale.total)}
                                  </td>
 
@@ -374,13 +506,12 @@ export const SalesHistory: React.FC = () => {
                                  </td>
 
                                  <td className="px-4 py-3 text-xs text-center">
-                                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold ${
-                                       sale.status === PaymentStatus.PAID
-                                          ? "bg-green-100 text-green-800"
-                                          : sale.status === PaymentStatus.PARTIALLY_PAID
+                                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold ${sale.status === PaymentStatus.PAID
+                                       ? "bg-green-100 text-green-800"
+                                       : sale.status === PaymentStatus.PARTIALLY_PAID
                                           ? "bg-yellow-100 text-yellow-800"
                                           : "bg-red-100 text-red-800"
-                                    }`}>
+                                       }`}>
                                        {sale.status}
                                     </span>
                                  </td>
@@ -388,7 +519,7 @@ export const SalesHistory: React.FC = () => {
                            ))}
                         </tbody>
                      </table>
-                  </section>
+                  </div>
                )}
          </section>
       </main>
