@@ -5,7 +5,7 @@ import type { AxiosResponse } from "axios"
 
 import ProductsContext from "../Context/ProductsContext"
 import ClientContext from "../Context/ClientContext"
-import type { Product, ItemPayload, SaleResponse } from "../types/types"
+import type { Product, SalePayload, SaleResponse } from "../types/types"
 import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
 
 interface CartItem extends Product {
@@ -46,8 +46,8 @@ export const Sales: React.FC = () => {
     useEffect(() => {
         async function getLastSale() {
             try {
-                const response = await axiosPrivate.get('/sales/last')                
-                setLastSale( response.status === 204 ? null : response.data.sale )
+                const response = await axiosPrivate.get('/sales/last')
+                setLastSale(response.status === 204 ? null : response.data.sale)
             } catch (error) {
                 console.log("Erro ao buscar a última venda:", error)
                 return
@@ -119,7 +119,7 @@ export const Sales: React.FC = () => {
     }
 
     async function submitSale() {
-        const salePayload: ItemPayload = {
+        const salePayload: SalePayload = {
             clientId: selectedClientId,
             clientName: selectedClient?.name || "Cliente Desconhecido",
             date: today,
@@ -521,24 +521,30 @@ export const Sales: React.FC = () => {
                         <div className="bg-white p-6 rounded-xl border border-emerald-200 shadow-sm hover:shadow-md transition-shadow">
                             <div className="flex items-center mb-2">
                                 <span className="text-emerald-600 mr-2">📋</span>
+
                                 <p className="text-sm font-medium text-gray-600">Número da Venda</p>
                             </div>
+
                             <p className="text-2xl font-bold text-emerald-700">#{lastSale.saleNumber || '-'}</p>
                         </div>
 
                         <div className="bg-white p-6 rounded-xl border border-emerald-200 shadow-sm hover:shadow-md transition-shadow">
                             <div className="flex items-center mb-2">
                                 <span className="text-emerald-600 mr-2">👤</span>
+
                                 <p className="text-sm font-medium text-gray-600">Cliente</p>
                             </div>
+
                             <p className="text-xl font-bold text-emerald-700 truncate">{lastSale.clientName || 'N/A'}</p>
                         </div>
 
                         <div className="bg-white p-6 rounded-xl border border-emerald-200 shadow-sm hover:shadow-md transition-shadow">
                             <div className="flex items-center mb-2">
                                 <span className="text-emerald-600 mr-2">📅</span>
+
                                 <p className="text-sm font-medium text-gray-600">Data</p>
                             </div>
+
                             <p className="text-xl font-bold text-emerald-700">{lastSale.date || 'N/A'}</p>
                         </div>
                     </div>
@@ -559,17 +565,21 @@ export const Sales: React.FC = () => {
                                         <th className="px-6 py-3 text-left text-xs font-medium text-emerald-700 uppercase tracking-wider">
                                             Produto
                                         </th>
+
                                         <th className="px-6 py-3 text-center text-xs font-medium text-emerald-700 uppercase tracking-wider">
                                             Quantidade
                                         </th>
+
                                         <th className="px-6 py-3 text-center text-xs font-medium text-emerald-700 uppercase tracking-wider">
                                             Preço Unit.
                                         </th>
+
                                         <th className="px-6 py-3 text-right text-xs font-medium text-emerald-700 uppercase tracking-wider">
                                             Subtotal
                                         </th>
                                     </tr>
                                 </thead>
+
                                 <tbody className="divide-y divide-emerald-100">
                                     {(lastSale.items || []).map((item, index) => (
                                         <tr key={index} className="hover:bg-emerald-50/50 transition-colors">
@@ -580,19 +590,23 @@ export const Sales: React.FC = () => {
                                                             {index + 1}
                                                         </span>
                                                     </div>
+
                                                     <span className="text-gray-900 font-medium">{item.productName}</span>
                                                 </div>
                                             </td>
+
                                             <td className="px-6 py-4 text-center">
                                                 <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-emerald-100 text-emerald-800">
                                                     {item.quantity}x
                                                 </span>
                                             </td>
+
                                             <td className="px-6 py-4 text-center">
                                                 <span className="text-gray-700 font-medium">
                                                     {Number(item.price).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
                                                 </span>
                                             </td>
+
                                             <td className="px-6 py-4 text-right">
                                                 <span className="text-emerald-700 font-bold">
                                                     {(Number(item.price) * item.quantity).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
@@ -608,6 +622,7 @@ export const Sales: React.FC = () => {
                         <div className="bg-gradient-to-r from-emerald-50 to-green-50 px-6 py-4 border-t border-emerald-200">
                             <div className="flex justify-between items-center">
                                 <span className="text-lg font-semibold text-emerald-800">Total da Venda:</span>
+
                                 <span className="text-2xl font-bold text-emerald-700">
                                     {(lastSale.total || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
                                 </span>
