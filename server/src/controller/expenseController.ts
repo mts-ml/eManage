@@ -3,6 +3,7 @@ import mongoose from "mongoose"
 
 import { Expense } from "../model/Expenses.js"
 import { ExpenseProps } from "../types/types.js"
+import { getNextExpenseNumber } from "../utils/utils.js"
 
 
 export async function getAllExpenses(req: Request, res: Response, next: NextFunction) {
@@ -24,7 +25,12 @@ export async function createNewExpense(req: Request<{}, {}, ExpenseProps>, res: 
         const { name, value, description, dueDate, status, bank } = req.body
         const expenseProps = { name, value, description, dueDate, status, bank }
 
-        const newExpense = await Expense.create(expenseProps)
+        const nextExpenseNumber = await getNextExpenseNumber()
+
+        const newExpense = await Expense.create({
+            ...expenseProps,
+            expenseNumber: nextExpenseNumber
+        })
 
         res.status(201).json(newExpense)
     } catch (error) {
