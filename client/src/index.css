@@ -60,6 +60,28 @@ html {
   }
 }
 
+@keyframes slideInFromTop {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 /* Apply animations to components */
 .fade-in {
   animation: fadeIn 0.3s ease-out;
@@ -67,6 +89,18 @@ html {
 
 .slide-in {
   animation: slideIn 0.3s ease-out;
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.4s ease-out;
+}
+
+.animate-slideInFromTop {
+  animation: slideInFromTop 0.5s ease-out;
+}
+
+.animate-scaleIn {
+  animation: scaleIn 0.3s ease-out;
 }
 
 /* Glass morphism effect */
