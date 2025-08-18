@@ -180,6 +180,7 @@ export interface Expense {
     description?: string
     status?: "Pendente" | "Pago"
     bank?: string
+    expenseNumber: string
 }
 export type ExpenseFromBackend = Expense & { _id: string }
 export type ExpenseErrors = Partial<Record<keyof Expense, string>>
@@ -224,33 +225,6 @@ export interface AxiosErrorResponse {
             message?: string
         }
     }
-}
-
-export interface OverduePayment {
-    _id: string
-    type: 'receivable' | 'payable' | 'expense'
-    description: string
-    amount: number
-    dueDate: string
-    daysOverdue: number
-    clientName?: string
-    supplierName?: string
-    invoiceNumber?: string
-    saleNumber?: number
-    purchaseNumber?: number
-    status: PaymentStatus | "Pendente" | "Pago"
-    paymentDate: string | null
-    bank: string
-}
-
-export interface OverduePaymentFilters {
-    type?: 'receivable' | 'payable' | 'expense' | 'all'
-    minDays?: number
-    maxDays?: number
-    minAmount?: number
-    maxAmount?: number
-    sortBy?: 'daysOverdue' | 'amount' | 'dueDate'
-    sortOrder?: 'asc' | 'desc'
 }
 
 // Interfaces para requisições de parcelas
