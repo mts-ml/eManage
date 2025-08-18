@@ -170,6 +170,7 @@ export interface ExpenseProps {
     dueDate?: string | null
     status: "Pendente" | "Pago"
     bank?: string
+    expenseNumber: string
     [key: string]: unknown
 }
 export type ExpenseErrors = Partial<Record<keyof ExpenseProps, string>>
