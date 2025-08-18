@@ -1,4 +1,4 @@
-import { useContext, useState } from "react"
+import { useContext, useState, useRef } from "react"
 import { FaTrash, FaEdit, FaSearch } from 'react-icons/fa'
 
 import type { Client, ClientErrors, ClientFromBackend } from "../types/types"
@@ -34,6 +34,7 @@ export const Clients: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState<string>("")
     const { clients, setClients } = useContext(ClientContext)
     const axiosPrivate = useAxiosPrivate()
+    const formRef = useRef<HTMLElement>(null)
 
     // Filtrar clientes baseado no termo de busca (nome ou CPF/CNPJ)
     const filteredClients = clients.filter(client => {
@@ -164,6 +165,16 @@ export const Clients: React.FC = () => {
         setForm({ ...client })
         setEditingClientId(client.id!)
         setShowForm(true)
+        
+        setTimeout(() => {
+            if (formRef.current) {
+                formRef.current.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'start',
+                    inline: 'nearest'
+                })
+            }
+        }, 100)
     }
 
     async function handleDelete(id: string) {
@@ -177,10 +188,16 @@ export const Clients: React.FC = () => {
         e.preventDefault()
         if (!isReadyToSubmit) return
 
+        // Filtra apenas os campos válidos do tipo Client, removendo campos do MongoDB
         const normalizedClient: Client = {
-            ...form,
+            name: form.name,
+            email: form.email,
             phone: form.phone.replace(/\D/g, ''),
-            cpfCnpj: form.cpfCnpj.replace(/\D/g, '')
+            cpfCnpj: form.cpfCnpj.replace(/\D/g, ''),
+            address: form.address,
+            district: form.district,
+            city: form.city,
+            notes: form.notes
         }
 
         try {
@@ -253,15 +270,28 @@ export const Clients: React.FC = () => {
                     setEditingClientId(null)
                     setShowForm(true)
                     setFormErrors({})
+                    
+                    setTimeout(() => {
+                        if (formRef.current) {
+                            formRef.current.scrollIntoView({ 
+                                behavior: 'smooth', 
+                                block: 'start',
+                                inline: 'nearest'
+                            })
+                        }
+                    }, 100)
                 }}
-                className="block mx-auto mb-8 bg-gradient-to-r from-emerald-600 to-green-600 cursor-pointer text-white px-8 py-3 rounded-xl font-semibold hover:from-emerald-700 hover:to-green-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                className="block mx-auto mb-8 bg-gradient-to-r from-emerald-600 to-green-600 cursor-pointer text-white px-8 py-3 rounded-xl font-semibold hover:from-emerald-700 hover:to-green-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 hover:scale-105"
             >
                 ➕ Novo Cliente
             </button>
 
             {showForm && (
-                <section className="border-2 border-emerald-200/50 rounded-2xl p-8 bg-white/90 backdrop-blur-sm shadow-xl mb-8">
-                    <h2 className="text-2xl font-bold text-emerald-800 text-center mb-6">
+                <section 
+                    ref={formRef}
+                    className="border-2 border-emerald-200/50 rounded-2xl p-8 bg-white/90 backdrop-blur-sm shadow-xl mb-8 animate-fadeIn"
+                >
+                    <h2 className="text-2xl font-bold text-emerald-800 text-center mb-6 animate-slideInFromTop">
                         {editingClientId ? "✏️ Editar Cliente" : "➕ Novo Cliente"}
                     </h2>
 
@@ -322,7 +352,7 @@ export const Clients: React.FC = () => {
                                     setEditingClientId(null)
                                     setFormErrors({})
                                 }}
-                                className="px-8 py-3 border-2 border-gray-300 rounded-xl hover:bg-gray-50 cursor-pointer font-semibold transition-all duration-300"
+                                className="px-8 py-3 border-2 border-gray-300 rounded-xl hover:bg-gray-50 cursor-pointer font-semibold transition-all duration-300 hover:scale-105 hover:border-gray-400"
                             >
                                 ❌ Cancelar
                             </button>
@@ -330,7 +360,7 @@ export const Clients: React.FC = () => {
                             <button
                                 type="submit"
                                 disabled={!isReadyToSubmit}
-                                className={`px-8 py-3 rounded-xl font-semibold transition-all duration-300 ${isReadyToSubmit ? "bg-gradient-to-r from-emerald-600 to-green-600 cursor-pointer text-white hover:from-emerald-700 hover:to-green-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5" : "bg-gray-400 text-gray-200 cursor-not-allowed"}`}
+                                className={`px-8 py-3 rounded-xl font-semibold transition-all duration-300 ${isReadyToSubmit ? "bg-gradient-to-r from-emerald-600 to-green-600 cursor-pointer text-white hover:from-emerald-700 hover:to-green-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 hover:scale-105" : "bg-gray-400 text-gray-200 cursor-not-allowed"}`}
                             >
                                 {editingClientId ? "💾 Atualizar" : "💾 Salvar"} Cliente
                             </button>
