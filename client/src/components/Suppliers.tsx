@@ -177,10 +177,16 @@ export const Suppliers: React.FC = () => {
         e.preventDefault()
         if (!isReadyToSubmit) return
 
+        // Filtra apenas os campos válidos do tipo Supplier, removendo campos do MongoDB
         const normalizedSupplier: Supplier = {
-            ...form,
+            name: form.name,
+            email: form.email,
             phone: form.phone.replace(/\D/g, ''),
-            cpfCnpj: form.cpfCnpj.replace(/\D/g, '')
+            cpfCnpj: form.cpfCnpj.replace(/\D/g, ''),
+            address: form.address,
+            district: form.district,
+            city: form.city,
+            notes: form.notes
         }
 
         try {
