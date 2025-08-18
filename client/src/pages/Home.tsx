@@ -113,7 +113,7 @@ const sectionsArray: SectionConfig[] = [
     },
     {
         section: "overduePayments",
-        sectionName: "Pagamentos Atrasados",
+        sectionName: "Despesas Atrasadas",
         icon: <AlertTriangle className="h-6 w-6 sm:h-8 sm:w-8" />,
         component: <OverduePayments />,
         description: "Visualizar pagamentos em atraso"
