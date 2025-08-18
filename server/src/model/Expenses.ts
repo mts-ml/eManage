@@ -26,6 +26,11 @@ const expenseSchema = new Schema<ExpenseProps>({
     bank: {
         type: String,
         default: ""
+    },
+    expenseNumber: {
+        type: String,
+        required: true,
+        unique: true
     }
 })
 
