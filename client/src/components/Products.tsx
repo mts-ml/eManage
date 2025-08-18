@@ -1,4 +1,4 @@
-import { useContext, useState } from "react"
+import { useContext, useState, useRef } from "react"
 import axios from "axios"
 
 import { FaTrash, FaEdit, FaSearch } from 'react-icons/fa'
@@ -27,6 +27,7 @@ export const Products: React.FC = () => {
     const [selectedGroup, setSelectedGroup] = useState<string>("")
     const { products, setProducts } = useContext(ProductsContext)
     const axiosPrivate = useAxiosPrivate()
+    const formRef = useRef<HTMLElement>(null)
 
     // Filtrar produtos baseado no termo de busca e grupo
     const filteredProducts = products.filter(product => {
@@ -35,9 +36,7 @@ export const Products: React.FC = () => {
         return matchesSearch && matchesGroup
     })
 
-    // Obter grupos únicos dos produtos
     const uniqueGroups = Array.from(new Set(products.map(product => product.group))).filter(group => group)
-
 
     function handleChange(event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
         const { name, value } = event.currentTarget as {
@@ -144,6 +143,16 @@ export const Products: React.FC = () => {
         })
 
         setShowForm(true)
+        
+        setTimeout(() => {
+            if (formRef.current) {
+                formRef.current.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'start',
+                    inline: 'nearest'
+                })
+            }
+        }, 100)
     }
 
 
@@ -175,6 +184,16 @@ export const Products: React.FC = () => {
                             setEditingProductId(null)
                             setShowForm(true)
                             setErrors(defaultValues)
+                            
+                            setTimeout(() => {
+                                if (formRef.current) {
+                                    formRef.current.scrollIntoView({ 
+                                        behavior: 'smooth', 
+                                        block: 'start',
+                                        inline: 'nearest'
+                                    })
+                                }
+                            }, 100)
                         }}
                         className="bg-gradient-to-r from-emerald-600 to-green-600 cursor-pointer text-white px-8 py-3 rounded-xl font-semibold hover:from-emerald-700 hover:to-green-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                     >
@@ -184,8 +203,11 @@ export const Products: React.FC = () => {
             )}
 
             {showForm && (
-                <section className="border-2 border-emerald-200/50 rounded-2xl p-8 bg-white/90 backdrop-blur-sm shadow-xl mb-8">
-                    <h2 className="text-2xl font-bold text-emerald-800 text-center mb-6">
+                <section 
+                    ref={formRef}
+                    className="border-2 border-emerald-200/50 rounded-2xl p-8 bg-white/90 backdrop-blur-sm shadow-xl mb-8 animate-fadeIn slideInFromTop"
+                >
+                    <h2 className="text-2xl font-bold text-emerald-800 text-center mb-6 animate-slideInFromTop">
                         {editingProductId ? "✏️ Editar Produto" : "➕ Novo Produto"}
                     </h2>
 
@@ -352,7 +374,7 @@ export const Products: React.FC = () => {
                                     setShowForm(false)
                                     setErrors(defaultValues)
                                 }}
-                                className="px-8 py-3 border-2 border-gray-300 rounded-xl hover:bg-gray-50 cursor-pointer font-semibold transition-all duration-300"
+                                className="px-8 py-3 border-2 border-gray-300 rounded-xl hover:bg-gray-50 cursor-pointer font-semibold transition-all duration-300 hover:scale-105"
                             >
                                 ❌ Cancelar
                             </button>
@@ -360,7 +382,7 @@ export const Products: React.FC = () => {
                             <button
                                 type="submit"
                                 disabled={!isReadyToSubmit}
-                                className={`px-8 py-3 rounded-xl font-semibold transition-all duration-300 ${isReadyToSubmit ? "bg-gradient-to-r from-emerald-600 to-green-600 cursor-pointer text-white hover:from-emerald-700 hover:to-green-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5" : "bg-gray-400 text-gray-200 cursor-not-allowed"}`}
+                                className={`px-8 py-3 rounded-xl font-semibold transition-all duration-300 ${isReadyToSubmit ? "bg-gradient-to-r from-emerald-600 to-green-600 cursor-pointer text-white hover:from-emerald-700 hover:to-green-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 hover:scale-105" : "bg-gray-400 text-gray-200 cursor-not-allowed"}`}
                             >
                                 {editingProductId ? "💾 Atualizar" : "💾 Salvar"} Produto
                             </button>

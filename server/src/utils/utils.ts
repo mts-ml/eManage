@@ -2,6 +2,7 @@ import { Response } from "express"
 
 import { Sale } from "../model/Sales.js"
 import { Purchase } from "../model/Purchases.js"
+import { Expense } from "../model/Expenses.js"
 import { ClientProps, ClientErrors, ProductErrors, ProductProps } from "../types/types.js"
 
 
@@ -95,6 +96,11 @@ export async function getNextSaleNumber(): Promise<number> {
 export async function getNextPurchaseNumber(): Promise<number> {
     const lastPurchase = await Purchase.findOne().sort({ purchaseNumber: -1 }).limit(1)
     return lastPurchase ? lastPurchase.purchaseNumber + 1 : 1
+}
+
+export async function getNextExpenseNumber(): Promise<string> {
+    const lastExpense = await Expense.findOne().sort({ expenseNumber: -1 }).limit(1)
+    return lastExpense ? (parseInt(lastExpense.expenseNumber) + 1).toString() : "1"
 }
 
 

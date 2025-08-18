@@ -12,11 +12,15 @@ interface ExpensesProviderProps {
 interface ExpensesData {
     expenses: Expense[]
     setExpenses: React.Dispatch<React.SetStateAction<Expense[]>>
+    lastExpense: Expense | null
+    getLastExpense: () => Promise<void>
 }
 
 const defaultExpenses: ExpensesData = {
     expenses: [],
-    setExpenses: () => { }
+    setExpenses: () => { },
+    lastExpense: null,
+    getLastExpense: async () => { }
 }
 
 const ExpensesContext = createContext(defaultExpenses)
@@ -24,8 +28,28 @@ const ExpensesContext = createContext(defaultExpenses)
 
 export const ExpensesProvider = ({ children }: ExpensesProviderProps) => {
     const [expenses, setExpenses] = useState<Expense[]>([])
+    const [lastExpense, setLastExpense] = useState<Expense | null>(null)
     const { auth } = useContext(AuthContext)
     const axiosPrivate = useAxiosPrivate()
+
+    async function getLastExpense() {
+        try {
+            const response = await axiosPrivate.get<{ expense: ExpenseFromBackend }>('/expenses/lastExpense')
+            
+            if (response.status === 204) {
+                setLastExpense(null)
+                return
+            }
+
+            const normalizedExpense = {
+                ...response.data.expense,
+                id: response.data.expense._id
+            }
+            setLastExpense(normalizedExpense)
+        } catch (error) {
+            console.log("Erro ao carregar última despesa: ", error)
+        }
+    }
 
     useEffect(() => {
         if (!auth.accessToken) return
@@ -40,7 +64,8 @@ export const ExpensesProvider = ({ children }: ExpensesProviderProps) => {
                 }
 
                 const normalizedExpenses = response.data.map(expense => ({
-                    ...expense, id: expense._id
+                    ...expense,
+                    id: expense._id
                 }))
                 setExpenses(normalizedExpenses)
 
@@ -54,7 +79,9 @@ export const ExpensesProvider = ({ children }: ExpensesProviderProps) => {
     return (
         <ExpensesContext.Provider value={{
             expenses,
-            setExpenses
+            setExpenses,
+            lastExpense,
+            getLastExpense
         }}>
             {children}
         </ExpensesContext.Provider>

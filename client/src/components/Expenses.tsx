@@ -1,4 +1,4 @@
-import { useContext, useState } from "react"
+import { useContext, useState, useEffect } from "react"
 import axios from "axios"
 import { FaTrash, FaEdit } from 'react-icons/fa'
 
@@ -14,7 +14,8 @@ export const Expenses: React.FC = () => {
         dueDate: "",
         description: "",
         status: "Pendente",
-        bank: ""
+        bank: "",
+        expenseNumber: ""
     }
 
     const [form, setForm] = useState<Expense>(defaultExpense)
@@ -28,8 +29,13 @@ export const Expenses: React.FC = () => {
     const [repeatMonths, setRepeatMonths] = useState<number>(1)
 
 
-    const { expenses, setExpenses } = useContext(ExpenseContext)
+    const { expenses, setExpenses, lastExpense, getLastExpense } = useContext(ExpenseContext)
     const axiosPrivate = useAxiosPrivate()
+
+    // Carregar a última despesa quando o componente for montado
+    useEffect(() => {
+        getLastExpense()
+    }, [getLastExpense])
 
 
     function validateExpense(form: Expense): ExpenseErrors {
@@ -85,28 +91,25 @@ export const Expenses: React.FC = () => {
         const value = e.target.value
         const numValue = parseInt(value)
         
-        // Permitir que o usuário digite livremente
         if (value === "") {
-            setRepeatMonths(1)
+            setRepeatMonths(0)
         } else if (!isNaN(numValue)) {
-            // Limitar apenas valores muito altos para evitar problemas
             if (numValue > 60) {
                 setRepeatMonths(60)
             } else if (numValue <= 0) {
-                // Manter o valor como está para permitir que o usuário continue digitando
                 setRepeatMonths(numValue)
             } else {
                 setRepeatMonths(numValue)
             }
         }
 
-        // Revalidar o formulário após mudança no campo de repetição
         const validation = validateExpense(form)
         const requiredFieldsFilled = form.name.trim() !== "" && form.value !== ""
         const noErrors = Object.values(validation).every(error => !error)
         const currentValue = value === "" ? 1 : (isNaN(numValue) ? 1 : numValue)
         const repeatValidation = currentValue === 1 || (currentValue > 1 && !!form.dueDate)
         const validRepeatValue = currentValue > 0
+        
         setIsReadyToSubmit(requiredFieldsFilled && noErrors && repeatValidation && validRepeatValue)
     }
 
@@ -195,7 +198,14 @@ export const Expenses: React.FC = () => {
     }
 
     async function handleDelete(id: string) {
-        if (confirm("Deseja excluir esta despesa?")) {
+        const expenseToDelete = expenses.find(exp => exp.id === id)
+        if (!expenseToDelete) return
+
+        const confirmed = window.confirm(
+            `Tem certeza que deseja excluir a despesa #${expenseToDelete.expenseNumber} - "${expenseToDelete.name}"?\n\nEsta ação não pode ser desfeita.`
+        )
+
+        if (confirmed) {
             await axiosPrivate.delete(`/expenses/${id}`)
             setExpenses(prev => prev.filter(exp => exp.id !== id))
         }
@@ -259,6 +269,11 @@ export const Expenses: React.FC = () => {
             setErrorMessage(null)
             setIsReadyToSubmit(false)
             setRepeatMonths(1)
+            
+            // Recarregar a última despesa para atualizar o próximo número
+            if (!editingExpenseId) {
+                getLastExpense()
+            }
         } catch (error) {
             if (axios.isAxiosError(error)) {
                 const data = error.response?.data
@@ -315,6 +330,15 @@ export const Expenses: React.FC = () => {
                         <h2 className="text-2xl font-bold text-emerald-800">
                             {editingExpenseId ? "✏️ Editar Despesa" : "➕ Nova Despesa"}
                         </h2>
+                        {editingExpenseId ? (
+                            <p className="text-lg text-emerald-700 mt-2">
+                                Editando Despesa #{expenses.find(exp => exp.id === editingExpenseId)?.expenseNumber}
+                            </p>
+                        ) : (
+                            <p className="text-lg text-emerald-700 mt-2">
+                                Despesa Nº {lastExpense ? (parseInt(lastExpense.expenseNumber) + 1).toString() : '1'}
+                            </p>
+                        )}
                     </header>
 
                     <form onSubmit={handleSubmit}>
@@ -464,6 +488,7 @@ export const Expenses: React.FC = () => {
                         <table className="min-w-full divide-y divide-gray-200">
                             <thead className="bg-gradient-to-r from-emerald-600 to-green-600 text-white sticky top-0 z-10">
                                 <tr>
+                                    <th className="px-4 py-3 text-xs font-semibold text-center">Número</th>
                                     <th className="px-4 py-3 text-xs font-semibold text-center">Despesa</th>
                                     <th className="px-4 py-3 text-xs font-semibold text-center">Descrição</th>
                                     <th className="px-4 py-3 text-xs font-semibold text-center">Valor</th>
@@ -477,6 +502,10 @@ export const Expenses: React.FC = () => {
                             <tbody className="bg-white divide-y divide-gray-100">
                                 {expenses.map(exp => (
                                     <tr key={exp.id} className="hover:bg-emerald-50/50 transition-colors duration-200">
+                                        <td className="px-4 py-3 text-xs font-bold text-emerald-700 text-center">
+                                            #{exp.expenseNumber}
+                                        </td>
+
                                         <td className="px-4 py-3 text-xs font-semibold text-gray-800 text-center">
                                             {exp.name}
                                         </td>
@@ -542,14 +571,17 @@ export const Expenses: React.FC = () => {
                                                         >
                                                             <FaEdit size={18} />
                                                         </button>
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => handleDelete(exp.id!)}
-                                                            className="text-red-600 cursor-pointer hover:text-red-800 p-2 rounded-lg hover:bg-red-50 transition-all duration-200"
-                                                            aria-label="Excluir despesa"
-                                                        >
-                                                            <FaTrash size={18} />
-                                                        </button>
+                                                        
+                                                        {exp.status === "Pendente" && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handleDelete(exp.id!)}
+                                                                className="text-red-600 cursor-pointer hover:text-red-800 p-2 rounded-lg hover:bg-red-50 transition-all duration-200"
+                                                                aria-label="Excluir despesa"
+                                                            >
+                                                                <FaTrash size={18} />
+                                                            </button>
+                                                        )}
                                                     </>
                                                 )}
                                             </div>
