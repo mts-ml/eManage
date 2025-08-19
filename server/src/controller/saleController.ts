@@ -39,9 +39,10 @@ export async function createNewSale(req: Request<{}, {}, Omit<SalePayload, "sale
         })
 
         if (insufficientStock) {
-            return res.status(400).json({
+            res.status(400).json({
                 message: "Estoque insuficiente para um ou mais produtos"
             })
+            return
         }
 
         const saleNumber = await getNextSaleNumber()
