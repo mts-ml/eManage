@@ -3,7 +3,7 @@ import { X } from "lucide-react"
 import { FaTrash, FaEdit } from 'react-icons/fa'
 
 import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
-import { logInfo } from "../utils/logger"
+import { logInfo, logError } from "../utils/logger"
 
 
 import type {
@@ -169,7 +169,7 @@ export const Payables: React.FC = () => {
 
                 setPayables(purchasesWithPayableInfo)
             } catch (error) {
-                console.error("Erro ao buscar compras:", error)
+                logError("Payables", error);
             }
         }
 
@@ -348,12 +348,12 @@ export const Payables: React.FC = () => {
 
             handleCancelEdit()
         } catch (error) {
-            console.error("Erro ao atualizar compra:", error)
+            logError("Payables", error);
 
             if (error && typeof error === 'object' && 'response' in error) {
                 const axiosError = error as AxiosErrorResponse
-                console.error("Status do erro:", axiosError.response?.status)
-                console.error("Dados do erro:", axiosError.response?.data)
+                logError("Payables", `Status do erro: ${axiosError.response?.status}`);
+                logError("Payables", `Dados do erro: ${axiosError.response?.data}`);
             }
 
             setEditErrors({ submit: "Erro ao atualizar compra. Tente novamente." })
@@ -381,7 +381,7 @@ export const Payables: React.FC = () => {
             setPayables(prev => prev.filter(purchase => purchase._id !== id))
             logInfo("Payables", "Compra excluída com sucesso", response.data.message)
         } catch (error: unknown) {
-            console.error("Erro ao excluir compra:", error)
+            logError("Payables", error);
 
             let errorMessage = "Erro ao excluir compra. Tente novamente."
 
