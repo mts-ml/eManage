@@ -99,7 +99,11 @@ export async function getNextPurchaseNumber(): Promise<number> {
 }
 
 export async function getNextExpenseNumber(): Promise<string> {
-    const lastExpense = await Expense.findOne().sort({ expenseNumber: -1 }).limit(1)
+    const lastExpense = await Expense.findOne()
+        .collation({ locale: "en", numericOrdering: true })
+        .sort({ expenseNumber: -1 })
+        .limit(1)
+        
     return lastExpense ? (parseInt(lastExpense.expenseNumber) + 1).toString() : "1"
 }
 
