@@ -142,7 +142,7 @@ export const Purchases: React.FC = () => {
 
             setLastPurchase(purchase)
         } catch (error) {
-            console.error(error)
+            logError("Purchases", error);
             alert('Erro ao finalizar a compra.')
             return
         }
