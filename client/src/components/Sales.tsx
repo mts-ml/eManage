@@ -7,6 +7,7 @@ import ProductsContext from "../Context/ProductsContext"
 import ClientContext from "../Context/ClientContext"
 import type { Product, SalePayload, SaleResponse } from "../types/types"
 import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
+import { logError } from "../utils/logger"
 
 interface CartItem extends Product {
     quantity: number
@@ -49,7 +50,7 @@ export const Sales: React.FC = () => {
                 const response = await axiosPrivate.get('/sales/last')
                 setLastSale(response.status === 204 ? null : response.data.sale)
             } catch (error) {
-                console.log("Erro ao buscar a última venda:", error)
+                logError("Sales", error)
                 return
             }
         }
