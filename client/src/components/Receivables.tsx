@@ -3,7 +3,7 @@ import { X } from "lucide-react"
 import { FaTrash, FaEdit } from 'react-icons/fa'
 
 import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
-import { logInfo } from "../utils/logger"
+import { logInfo, logError } from "../utils/logger"
 
 
 import type {
@@ -165,7 +165,7 @@ export const Receivables: React.FC = () => {
 
                 setReceivables(salesWithReceivableInfo)
             } catch (error) {
-                console.error("Erro ao buscar vendas:", error)
+                logError("Receivables", error);
             }
         }
         fetchSales()
@@ -344,12 +344,12 @@ export const Receivables: React.FC = () => {
 
             handleCancelEdit()
         } catch (error) {
-            console.error("Erro ao atualizar venda:", error)
+            logError("Receivables", error);
 
             if (error && typeof error === 'object' && 'response' in error) {
                 const axiosError = error as AxiosErrorResponse
-                console.error("Status do erro:", axiosError.response?.status)
-                console.error("Dados do erro:", axiosError.response?.data)
+                logError("Receivables", `Status do erro: ${axiosError.response?.status}`);
+                logError("Receivables", `Dados do erro: ${axiosError.response?.data}`);
             }
 
             setEditErrors({ submit: "Erro ao atualizar venda. Tente novamente." })
@@ -377,7 +377,7 @@ export const Receivables: React.FC = () => {
             setReceivables(prev => prev.filter(sale => sale._id !== id))
             logInfo("Receivables", "Venda excluída com sucesso", response.data.message)
         } catch (error: unknown) {
-            console.error("Erro ao excluir venda:", error)
+            logError("Receivables", error);
 
             let errorMessage = "Erro ao excluir venda. Tente novamente."
 
