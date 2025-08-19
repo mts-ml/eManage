@@ -3,6 +3,7 @@ import { createContext, useContext, useEffect, useState } from "react"
 import type { Product, ProductFromBackend } from "../types/types"
 import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
 import AuthContext from "./AuthContext"
+import { logError } from "../utils/logger"
 
 
 interface ProductsProviderProps {
@@ -41,7 +42,7 @@ export const ProductsProvider: React.FC<ProductsProviderProps> = ({ children }) 
                     ({ ...product, id: product._id }))
                 setProducts(normalizeProductsId)
             } catch (error) {
-                console.log(error)
+                logError("ProductsContext", error)
             }
         }
         getProducts()
@@ -57,5 +58,5 @@ export const ProductsProvider: React.FC<ProductsProviderProps> = ({ children }) 
         </ProductsContext.Provider>
     )
 }
-
 export default ProductsContext
+
