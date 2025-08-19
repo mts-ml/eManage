@@ -5,6 +5,7 @@ import type { AxiosResponse } from "axios"
 import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
 import type { Receivable } from "../types/types"
 import { PaymentStatus } from "../types/types"
+import { logError } from '../utils/logger';
 
 
 type SortField = 'date' | 'saleNumber' | 'clientName' | 'total' | 'totalPaid' | 'remainingAmount'
@@ -134,7 +135,7 @@ export const SalesHistory: React.FC = () => {
 
          applyFilters(processedData)
       } catch (error) {
-         console.error("Erro ao buscar histórico de vendas:", error)
+         logError("SalesHistory", error);
          setSalesHistory([])
 
          setFilteredSales([])
