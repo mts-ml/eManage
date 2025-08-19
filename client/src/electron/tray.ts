@@ -5,9 +5,9 @@ import { getAssetPath } from "./util.js"
 
 
 export function createTray(mainWindow: BrowserWindow) {
-   const tray = new Tray(path.join(getAssetPath(), 'panda.ico'))
+   const tray = new Tray(path.join(getAssetPath(), 'eManage.ico'))
 
-   tray.setToolTip("🐼 Panda App")
+   tray.setToolTip("🏢 eManage")
 
    tray.setContextMenu(Menu.buildFromTemplate([
       {

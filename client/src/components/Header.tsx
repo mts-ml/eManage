@@ -17,8 +17,11 @@ export const Header: React.FC = () => {
                 {/* Layout para telas pequenas */}
                 <section className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-2 sm:space-y-0">
                     <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-200 to-green-300 text-center sm:text-left">
-                        <NavLink to="/home" className="hover:from-emerald-100 hover:to-green-200 transition-all duration-300">
-                            🐼 Panda Alimentos
+                        <NavLink to="/home" className="hover:from-emerald-100 hover:to-green-200 transition-all duration-300 flex items-center gap-3">
+                            <div className="relative w-12 h-12 bg-gradient-to-br from-emerald-300 to-green-400 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                                <img src="/assets/images/eManage.png" alt="eManage Logo" className="w-10 h-10" />
+                            </div>
+                            eManage
                         </NavLink>
                     </h1>
 
