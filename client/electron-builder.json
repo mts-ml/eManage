@@ -1,5 +1,6 @@
 {
-   "appId": "com.panda.alimentos",
+   "appId": "com.eManage.app",
+   "productName": "eManage",
    "files": [
       "dist-electron",
       "dist-react"
@@ -8,13 +9,14 @@
       "dist-electron/preload.cjs",
       "public/assets/images/**"
    ],
-   "icon": "./public/assets/images/panda.png",
+   "icon": "./public/assets/images/eManage.ico",
    "mac": {
-      "target": "dmg"
+      "target": "dmg",
+      "category": "Business"
    },
    "linux": {
       "target": "AppImage",
-      "category": "Utility"
+      "category": "Office"
    },
    "win": {
       "target": [
