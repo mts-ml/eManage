@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 
 import axios from 'axios'
 import { axiosInstance } from '../api/axios'
+import { logInfo } from '../utils/logger'
 
 
 interface RegisterForm {
@@ -99,7 +100,7 @@ export const Register: React.FC = () => {
         try {
             const response = await axiosInstance.post('/register', form)
             setApiMessage(response.data.message)
-            console.log('Resposta da API:', response.data.message)
+            logInfo('Register', 'Usuário registrado com sucesso', response.data.message)
             setForm({
                 name: "",
                 email: "",
