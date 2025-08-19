@@ -7,6 +7,15 @@ import ExpenseContext from "../Context/ExpensesContext"
 import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
 
 
+type SortField = 'name' | 'value' | 'dueDate' | 'status' | 'expenseNumber'
+type SortOrder = 'asc' | 'desc'
+
+interface SortConfig {
+    field: SortField
+    order: SortOrder
+}
+
+
 export const Expenses: React.FC = () => {
     const defaultExpense: Expense = {
         name: "",
@@ -27,16 +36,84 @@ export const Expenses: React.FC = () => {
     const [modifiedId, setModifiedId] = useState<string | null>(null)
     const [inlineErrors, setInlineErrors] = useState<Partial<Record<string, string>>>({})
     const [repeatMonths, setRepeatMonths] = useState<number>(1)
-
+    const [currentPage, setCurrentPage] = useState(1)
+    const pageSize = 20
+    const [sortConfig, setSortConfig] = useState<SortConfig>({ field: 'expenseNumber', order: 'desc' })
 
     const { expenses, setExpenses, lastExpense, getLastExpense } = useContext(ExpenseContext)
     const axiosPrivate = useAxiosPrivate()
 
-    // Carregar a última despesa quando o componente for montado
+    // Função para ordenar as despesas
+    const sortExpenses = (data: Expense[], config: SortConfig): Expense[] => {
+        return [...data].sort((a, b) => {
+            let aValue: string | number | Date
+            let bValue: string | number | Date
+
+            switch (config.field) {
+                case 'name':
+                    aValue = a.name.toLowerCase()
+                    bValue = b.name.toLowerCase()
+                    break
+                case 'value':
+                    aValue = Number(a.value)
+                    bValue = Number(b.value)
+                    break
+                case 'dueDate':
+                    aValue = a.dueDate ? new Date(a.dueDate) : new Date(0)
+                    bValue = b.dueDate ? new Date(b.dueDate) : new Date(0)
+                    break
+                case 'status':
+                    aValue = (a.status || 'Pendente').toLowerCase()
+                    bValue = (b.status || 'Pendente').toLowerCase()
+                    break
+                case 'expenseNumber':
+                    aValue = parseInt(a.expenseNumber)
+                    bValue = parseInt(b.expenseNumber)
+                    break
+                default:
+                    return 0
+            }
+
+            if (aValue < bValue) {
+                return config.order === 'asc' ? -1 : 1
+            }
+            if (aValue > bValue) {
+                return config.order === 'asc' ? 1 : -1
+            }
+            return 0
+        })
+    }
+
+    // Função para lidar com o clique no cabeçalho da coluna
+    const handleSort = (field: SortField) => {
+        setSortConfig(prev => ({
+            field,
+            order: prev.field === field && prev.order === 'asc' ? 'desc' : 'asc'
+        }))
+    }
+
+    // Função para obter o ícone de ordenação
+    const getSortIcon = (field: SortField) => {
+        if (sortConfig.field !== field) {
+            return '⇅'
+        }
+        return sortConfig.order === 'asc' ? '⇧' : '⇩'
+    }
+
+    // Despesas ordenadas
+    const sortedExpenses = sortExpenses(expenses, sortConfig)
+
     useEffect(() => {
         getLastExpense()
-    }, [getLastExpense])
+    }, [])
 
+    useEffect(() => {
+        setCurrentPage(prev => {
+            const pages = Math.max(1, Math.ceil(sortedExpenses.length / pageSize))
+            
+            return Math.min(prev, pages)
+        })
+    }, [sortedExpenses.length])
 
     function validateExpense(form: Expense): ExpenseErrors {
         const errors: ExpenseErrors = {}
@@ -90,7 +167,7 @@ export const Expenses: React.FC = () => {
     function handleRepeatMonthsChange(e: React.ChangeEvent<HTMLInputElement>) {
         const value = e.target.value
         const numValue = parseInt(value)
-        
+
         if (value === "") {
             setRepeatMonths(0)
         } else if (!isNaN(numValue)) {
@@ -109,7 +186,7 @@ export const Expenses: React.FC = () => {
         const currentValue = value === "" ? 1 : (isNaN(numValue) ? 1 : numValue)
         const repeatValidation = currentValue === 1 || (currentValue > 1 && !!form.dueDate)
         const validRepeatValue = currentValue > 0
-        
+
         setIsReadyToSubmit(requiredFieldsFilled && noErrors && repeatValidation && validRepeatValue)
     }
 
@@ -269,7 +346,7 @@ export const Expenses: React.FC = () => {
             setErrorMessage(null)
             setIsReadyToSubmit(false)
             setRepeatMonths(1)
-            
+
             // Recarregar a última despesa para atualizar o próximo número
             if (!editingExpenseId) {
                 getLastExpense()
@@ -289,6 +366,12 @@ export const Expenses: React.FC = () => {
             }
         }
     }
+
+    // Cálculos de paginação para despesas ordenadas
+    const totalItems = sortedExpenses.length
+    const totalPages = Math.max(1, Math.ceil(totalItems / pageSize))
+    const startIndex = (currentPage - 1) * pageSize
+    const currentItems = sortedExpenses.slice(startIndex, startIndex + pageSize)
 
     const fields = [
         { key: "name", label: "Despesa", placeholder: "Ex: Aluguel", required: true },
@@ -318,6 +401,7 @@ export const Expenses: React.FC = () => {
                     setErrorMessage(null)
                     setIsReadyToSubmit(false)
                     setRepeatMonths(1)
+                    getLastExpense()
                 }}
                 className="block mb-8 cursor-pointer bg-gradient-to-r from-emerald-600 to-green-600 text-white px-8 py-3 rounded-xl font-semibold hover:from-emerald-700 hover:to-green-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 mx-auto"
             >
@@ -488,19 +572,64 @@ export const Expenses: React.FC = () => {
                         <table className="min-w-full divide-y divide-gray-200">
                             <thead className="bg-gradient-to-r from-emerald-600 to-green-600 text-white sticky top-0 z-10">
                                 <tr>
-                                    <th className="px-4 py-3 text-xs font-semibold text-center">Número</th>
-                                    <th className="px-4 py-3 text-xs font-semibold text-center">Despesa</th>
+                                    <th 
+                                        className="px-4 py-3 text-xs font-semibold text-center cursor-pointer hover:bg-emerald-700 transition-colors duration-200 select-none"
+                                        onClick={() => handleSort('expenseNumber')}
+                                        title="Clique para ordenar por número da despesa"
+                                    >
+                                        <div className="flex items-center justify-center gap-1">
+                                            Número
+                                            <span className="text-xs">{getSortIcon('expenseNumber')}</span>
+                                        </div>
+                                    </th>
+                                    <th 
+                                        className="px-4 py-3 text-xs font-semibold text-center cursor-pointer hover:bg-emerald-700 transition-colors duration-200 select-none"
+                                        onClick={() => handleSort('name')}
+                                        title="Clique para ordenar por nome da despesa"
+                                    >
+                                        <div className="flex items-center justify-center gap-1">
+                                            Despesa
+                                            <span className="text-xs">{getSortIcon('name')}</span>
+                                        </div>
+                                    </th>
                                     <th className="px-4 py-3 text-xs font-semibold text-center">Descrição</th>
-                                    <th className="px-4 py-3 text-xs font-semibold text-center">Valor</th>
-                                    <th className="px-4 py-3 text-xs font-semibold text-center">Data Vencimento</th>
-                                    <th className="px-4 py-3 text-xs font-semibold text-center">Status</th>
+                                    <th 
+                                        className="px-4 py-3 text-xs font-semibold text-center cursor-pointer hover:bg-emerald-700 transition-colors duration-200 select-none"
+                                        onClick={() => handleSort('value')}
+                                        title="Clique para ordenar por valor"
+                                    >
+                                        <div className="flex items-center justify-center gap-1">
+                                            Valor
+                                            <span className="text-xs">{getSortIcon('value')}</span>
+                                        </div>
+                                    </th>
+                                    <th 
+                                        className="px-4 py-3 text-xs font-semibold text-center cursor-pointer hover:bg-emerald-700 transition-colors duration-200 select-none"
+                                        onClick={() => handleSort('dueDate')}
+                                        title="Clique para ordenar por data de vencimento"
+                                    >
+                                        <div className="flex items-center justify-center gap-1">
+                                            Data Vencimento
+                                            <span className="text-xs">{getSortIcon('dueDate')}</span>
+                                        </div>
+                                    </th>
+                                    <th 
+                                        className="px-4 py-3 text-xs font-semibold text-center cursor-pointer hover:bg-emerald-700 transition-colors duration-200 select-none"
+                                        onClick={() => handleSort('status')}
+                                        title="Clique para ordenar por status"
+                                    >
+                                        <div className="flex items-center justify-center gap-1">
+                                            Status
+                                            <span className="text-xs">{getSortIcon('status')}</span>
+                                        </div>
+                                    </th>
                                     <th className="px-4 py-3 text-xs font-semibold text-center">Banco</th>
                                     <th className="px-4 py-3 text-xs font-semibold text-center">Ações</th>
                                 </tr>
                             </thead>
 
                             <tbody className="bg-white divide-y divide-gray-100">
-                                {expenses.map(exp => (
+                                {currentItems.map(exp => (
                                     <tr key={exp.id} className="hover:bg-emerald-50/50 transition-colors duration-200">
                                         <td className="px-4 py-3 text-xs font-bold text-emerald-700 text-center">
                                             #{exp.expenseNumber}
@@ -571,7 +700,7 @@ export const Expenses: React.FC = () => {
                                                         >
                                                             <FaEdit size={18} />
                                                         </button>
-                                                        
+
                                                         {exp.status === "Pendente" && (
                                                             <button
                                                                 type="button"
@@ -590,6 +719,30 @@ export const Expenses: React.FC = () => {
                                 ))}
                             </tbody>
                         </table>
+                    </section>
+
+                    <section className="flex items-center justify-between gap-4 mt-4">
+                        <button
+                            type="button"
+                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                            disabled={currentPage === 1}
+                            className={`px-4 py-2 rounded-lg font-semibold transition-all duration-200 border-2 ${currentPage === 1 ? "bg-gray-200 text-gray-500 border-gray-200 cursor-not-allowed" : "bg-white text-emerald-700 border-emerald-300 hover:bg-emerald-50 cursor-pointer"}`}
+                        >
+                            ← Anterior
+                        </button>
+
+                        <p className="text-sm text-gray-600">
+                            Página {currentPage} de {totalPages} — mostrando {totalItems ? (startIndex + 1) : 0}–{startIndex + currentItems.length} de {totalItems}
+                        </p>
+
+                        <button
+                            type="button"
+                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                            disabled={currentPage === totalPages}
+                            className={`px-4 py-2 rounded-lg font-semibold transition-all duration-200 border-2 ${currentPage === totalPages ? "bg-gray-200 text-gray-500 border-gray-200 cursor-not-allowed" : "bg-white text-emerald-700 border-emerald-300 hover:bg-emerald-50 cursor-pointer"}`}
+                        >
+                            Próxima →
+                        </button>
                     </section>
                 </>
             )}
