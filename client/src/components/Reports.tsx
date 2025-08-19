@@ -3,10 +3,8 @@ import { FileText, Download, Calendar, TrendingUp, TrendingDown, Building2, Filt
 import jsPDF from "jspdf"
 import autoTable from "jspdf-autotable"
 
-
 import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
 import type { Receivable, Payable, ExpenseFromBackend } from "../types/types"
-
 
 // Interface para estender jsPDF com propriedades do autoTable
 interface JsPDFWithAutoTable extends jsPDF {
@@ -39,7 +37,6 @@ interface ReportFilters {
    selectedBank: string
    reportType: "diario" | "mensal" | "personalizado"
 }
-
 
 export const Reports: React.FC = () => {
    const [filters, setFilters] = useState<ReportFilters>({
@@ -115,7 +112,7 @@ export const Reports: React.FC = () => {
 
       switch (filters.reportType) {
          case "diario": {
-            const todayStr = today.toISOString().split('T')[0]
+            const todayStr = today.toLocaleDateString("pt-BR")
             setFilters(prev => ({
                ...prev,
                startDate: todayStr,
@@ -124,8 +121,8 @@ export const Reports: React.FC = () => {
             break
          }
          case "mensal": {
-            const firstDayOfMonth = new Date(currentYear, currentMonth, 1).toISOString().split('T')[0]
-            const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0).toISOString().split('T')[0]
+            const firstDayOfMonth = new Date(currentYear, currentMonth, 1).toLocaleDateString("pt-BR")
+            const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0).toLocaleDateString("pt-BR")
             setFilters(prev => ({
                ...prev,
                startDate: firstDayOfMonth,
@@ -139,9 +136,50 @@ export const Reports: React.FC = () => {
       }
    }, [filters.reportType])
 
+   // Função para converter data de DD/MM/YYYY para Date para comparação
+   function parseDate(dateStr: string): Date | null {
+      if (!dateStr) return null
+      
+      // Se estiver no formato DD/MM/YYYY
+      if (dateStr.includes('/')) {
+         const [day, month, year] = dateStr.split('/')
+         if (day && month && year) {
+            return new Date(parseInt(year), parseInt(month) - 1, parseInt(day))
+         }
+      }
+      
+      // Se estiver no formato YYYY-MM-DD
+      if (dateStr.includes('-')) {
+         const [year, month, day] = dateStr.split('-')
+         if (year && month && day) {
+            return new Date(parseInt(year), parseInt(month) - 1, parseInt(day))
+         }
+      }
+      
+      return null
+   }
+
+   // Função para comparar datas no formato DD/MM/YYYY
+   function isDateInRange(dateStr: string, startDateStr: string, endDateStr: string): boolean {
+      const date = parseDate(dateStr)
+      const startDate = parseDate(startDateStr)
+      const endDate = parseDate(endDateStr)
+      
+      if (!date || !startDate || !endDate) return false
+      
+      return date >= startDate && date <= endDate
+   }
+
    // Buscar transações
    async function fetchTransactions() {
       if (!filters.startDate || !filters.endDate) return
+
+      // Validar formato das datas (DD/MM/YYYY)
+      const dateRegex = /^\d{2}\/\d{2}\/\d{4}$/
+      if (!dateRegex.test(filters.startDate) || !dateRegex.test(filters.endDate)) {
+         alert("Por favor, insira as datas no formato DD/MM/AAAA")
+         return
+      }
 
       setIsLoading(true)
       try {
@@ -155,75 +193,138 @@ export const Reports: React.FC = () => {
          const allTransactions: Transaction[] = [
             // Vendas (créditos)
             ...(salesResponse.data || [])
-               .filter(sale =>
-                  sale.status === "Pago" &&
-                  sale.paymentDate &&
-                  (!filters.selectedBank || sale.bank === filters.selectedBank) &&
-                  sale.paymentDate >= filters.startDate &&
-                  sale.paymentDate <= filters.endDate
-               )
-               .map(sale => ({
-                  id: sale._id,
-                  date: sale.paymentDate!.split('-').reverse().join('/'),
-                  type: "Crédito" as const,
-                  description: `Venda #${sale.saleNumber}`,
-                  amount: sale.total,
-                  clientName: sale.clientName,
-                  transactionNumber: `V${sale.saleNumber}`,
-                  category: "Venda" as const,
-                  bank: sale.bank
-               })),
+               .filter(sale => {
+                  const matchesStatus = sale.status === "Pago"
+                  const hasPaymentDate = sale.paymentDate || sale.date
+                  const matchesBank = !filters.selectedBank || sale.bank === filters.selectedBank
+                  const paymentDate = sale.paymentDate || sale.date
+                  const matchesDate = isDateInRange(paymentDate, filters.startDate, filters.endDate)
+
+                  return matchesStatus && hasPaymentDate && matchesBank && matchesDate
+               })
+               .map(sale => {
+                  // Garantir que a data seja exibida no formato DD/MM/YYYY
+                  const rawDate = sale.paymentDate || sale.date
+                  let formattedDate: string
+                  
+                  if (rawDate.includes('/')) {
+                     // Já está no formato DD/MM/YYYY
+                     formattedDate = rawDate
+                  } else if (rawDate.includes('-')) {
+                     // Converter de YYYY-MM-DD para DD/MM/YYYY
+                     formattedDate = rawDate.split('-').reverse().join('/')
+                  } else {
+                     // Formato desconhecido, manter como está
+                     formattedDate = rawDate
+                  }
+                  
+                  return {
+                     id: sale._id,
+                     date: formattedDate,
+                     type: "Crédito" as const,
+                     description: `Venda #${sale.saleNumber}`,
+                     amount: sale.total,
+                     clientName: sale.clientName,
+                     transactionNumber: `V${sale.saleNumber}`,
+                     category: "Venda" as const,
+                     bank: sale.bank
+                  }
+               }),
 
             // Compras (débitos)
             ...(purchasesResponse.data || [])
-               .filter(purchase =>
-                  purchase.status === "Pago" &&
-                  purchase.payments?.length > 0 &&
-                  (!filters.selectedBank || purchase.bank === filters.selectedBank)
-               )
-               .flatMap(purchase =>
-                  purchase.payments!
-                     .filter(payment =>
-                        payment.paymentDate >= filters.startDate &&
-                        payment.paymentDate <= filters.endDate
-                     )
-                     .map(payment => ({
-                        id: purchase._id,
-                        date: payment.paymentDate.split('-').reverse().join('/'),
-                        type: "Débito" as const,
-                        description: `Compra #${purchase.purchaseNumber}`,
-                        amount: payment.amount,
-                        clientName: purchase.supplierName,
-                        transactionNumber: `C${purchase.purchaseNumber}`,
-                        category: "Compra" as const,
-                        bank: purchase.bank
-                     }))
-               ),
+               .filter(purchase => {
+                  const matchesStatus = purchase.status === "Pago"
+                  const hasPayments = purchase.payments?.length > 0 || purchase.date
+                  const matchesBank = !filters.selectedBank || purchase.bank === filters.selectedBank
+
+                  return matchesStatus && hasPayments && matchesBank
+               })
+               .flatMap(purchase => {
+                  // Se não tiver payments, criar um pagamento fictício com a data da compra
+                  const payments = purchase.payments?.length > 0 ? purchase.payments : [{
+                     paymentDate: purchase.date,
+                     amount: purchase.total
+                  }]
+
+                  return payments
+                     .filter(payment => {
+                        // Comparar datas no formato DD/MM/YYYY
+                        const matchesDate = isDateInRange(payment.paymentDate, filters.startDate, filters.endDate)
+                        return matchesDate
+                     })
+                     .map(payment => {
+                        // Garantir que a data seja exibida no formato DD/MM/YYYY
+                        const rawDate = payment.paymentDate
+                        let formattedDate: string
+                        
+                        if (rawDate.includes('/')) {
+                           // Já está no formato DD/MM/YYYY
+                           formattedDate = rawDate
+                        } else if (rawDate.includes('-')) {
+                           // Converter de YYYY-MM-DD para DD/MM/YYYY
+                           formattedDate = rawDate.split('-').reverse().join('/')
+                        } else {
+                           // Formato desconhecido, manter como está
+                           formattedDate = rawDate
+                        }
+                        
+                        return {
+                           id: purchase._id,
+                           date: formattedDate,
+                           type: "Débito" as const,
+                           description: `Compra #${purchase.purchaseNumber}`,
+                           amount: payment.amount,
+                           clientName: purchase.supplierName,
+                           transactionNumber: `C${purchase.purchaseNumber}`,
+                           category: "Compra" as const,
+                           bank: purchase.bank
+                        }
+                     })
+               }),
 
             // Despesas (débitos)
             ...(expensesResponse.data || [])
-               .filter(expense =>
-                  expense.status === "Pago" &&
-                  expense.dueDate &&
-                  (!filters.selectedBank || expense.bank === filters.selectedBank) &&
-                  expense.dueDate >= filters.startDate &&
-                  expense.dueDate <= filters.endDate
-               )
-               .map(expense => ({
-                  id: expense._id,
-                  date: expense.dueDate!.split('-').reverse().join('/'),
-                  type: "Débito" as const,
-                  description: expense.name,
-                  amount: Number(expense.value),
-                  clientName: expense.description || "Despesa",
-                  transactionNumber: `D${expense._id.slice(-6)}`,
-                  category: "Despesa" as const,
-                  bank: expense.bank || "Não informado"
-               }))
+               .filter(expense => {
+                  const matchesStatus = expense.status === "Pago"
+                  const matchesBank = !filters.selectedBank || expense.bank === filters.selectedBank
+                  const hasDueDate = expense.dueDate
+                  const matchesDate = expense.dueDate && isDateInRange(expense.dueDate, filters.startDate, filters.endDate)
+
+                  return matchesStatus && matchesBank && hasDueDate && matchesDate
+               })
+               .map(expense => {
+                  // Garantir que a data seja exibida no formato DD/MM/YYYY
+                  let formattedDate: string
+                  if (expense.dueDate!.includes('-')) {
+                     // Converter de YYYY-MM-DD para DD/MM/YYYY
+                     formattedDate = expense.dueDate!.split('-').reverse().join('/')
+                  } else {
+                     // Já está no formato DD/MM/YYYY
+                     formattedDate = expense.dueDate!
+                  }
+                  
+                  return {
+                     id: expense._id,
+                     date: formattedDate,
+                     type: "Débito" as const,
+                     description: expense.name,
+                     amount: Number(expense.value),
+                     clientName: expense.description || "Despesa",
+                     transactionNumber: `D${expense._id.slice(-6)}`,
+                     category: "Despesa" as const,
+                     bank: expense.bank || "Não informado"
+                  }
+               })
          ]
 
-         // Ordenar por data (simples)
-         allTransactions.sort((a, b) => a.date.localeCompare(b.date))
+         // Ordenar por data
+         allTransactions.sort((a, b) => {
+            const dateA = parseDate(a.date)
+            const dateB = parseDate(b.date)
+            if (!dateA || !dateB) return 0
+            return dateA.getTime() - dateB.getTime()
+         })
 
          setTransactions(allTransactions)
 
@@ -256,10 +357,6 @@ export const Reports: React.FC = () => {
       })
    }
 
-   function formatDate(date: string): string {
-      return new Date(date).toLocaleDateString("pt-BR")
-   }
-
    function generatePDF() {
       if (transactions.length === 0) return
 
@@ -282,7 +379,7 @@ export const Reports: React.FC = () => {
       // Informações do relatório
       doc.setFontSize(12)
       doc.setTextColor(100, 100, 100)
-      doc.text(`Período: ${formatDate(filters.startDate)} a ${formatDate(filters.endDate)}`, margin, yPosition)
+      doc.text(`Período: ${filters.startDate} a ${filters.endDate}`, margin, yPosition)
       yPosition += 7
 
       if (filters.selectedBank) {
@@ -403,7 +500,6 @@ export const Reports: React.FC = () => {
       fetchTransactions()
    }
 
-
    return (
       <main className="p-6 bg-white rounded-lg shadow-lg">
          <header className="mb-6">
@@ -446,6 +542,7 @@ export const Reports: React.FC = () => {
                   <label htmlFor="bank" className="block text-sm font-medium text-emerald-700 mb-2">
                      Banco (Opcional)
                   </label>
+
                   <select
                      id="bank"
                      value={filters.selectedBank}
@@ -462,14 +559,21 @@ export const Reports: React.FC = () => {
                {/* Data Inicial */}
                <div>
                   <label htmlFor="startDate" className="block text-sm font-medium text-emerald-700 mb-2">
-                     Data Inicial
+                     Data Inicial (DD/MM/AAAA)
                   </label>
 
                   <input
-                     type="date"
+                     type="text"
                      id="startDate"
+                     placeholder="DD/MM/AAAA"
                      value={filters.startDate}
-                     onChange={(e) => handleFilterChange("startDate", e.target.value)}
+                     onChange={(e) => {
+                        const value = e.target.value
+                        // Permitir apenas números e barras
+                        if (/^[\d/]*$/.test(value) && value.length <= 10) {
+                           handleFilterChange("startDate", value)
+                        }
+                     }}
                      className="w-full cursor-pointer p-3 border-2 border-emerald-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200"
                   />
                </div>
@@ -477,14 +581,21 @@ export const Reports: React.FC = () => {
                {/* Data Final */}
                <div>
                   <label htmlFor="endDate" className="block text-sm font-medium text-emerald-700 mb-2">
-                     Data Final
+                     Data Final (DD/MM/AAAA)
                   </label>
 
                   <input
-                     type="date"
+                     type="text"
                      id="endDate"
+                     placeholder="DD/MM/AAAA"
                      value={filters.endDate}
-                     onChange={(e) => handleFilterChange("endDate", e.target.value)}
+                     onChange={(e) => {
+                        const value = e.target.value
+                        // Permitir apenas números e barras
+                        if (/^[\d/]*$/.test(value) && value.length <= 10) {
+                           handleFilterChange("endDate", value)
+                        }
+                     }}
                      className="w-full cursor-pointer p-3 border-2 border-emerald-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200"
                   />
                </div>
