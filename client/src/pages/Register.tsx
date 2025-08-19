@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 
 import axios from 'axios'
 import { axiosInstance } from '../api/axios'
-import { logInfo } from '../utils/logger'
+import { logInfo, logError } from '../utils/logger'
 
 
 interface RegisterForm {
@@ -115,39 +115,39 @@ export const Register: React.FC = () => {
             if (axios.isAxiosError(error)) {
                 if (!error.response) {
                     // Falha de rede, API fora do ar, timeout, etc.
-                    console.error("Erro de rede ou servidor indisponível:", error.message)
+                    logError("Register", error);
                     setErrors(prev => ({ ...prev, general: "Serviço indisponível. Tente novamente mais tarde." }))
                 } else {
                     // API respondeu com erro
                     const status = error.response.status
                     const data = error.response.data
 
-                    console.error(`Erro da API (status ${status}):`, data)
+                    logError("Register", `Erro da API (status ${status}): ${data}`);
 
                     switch (status) {
                         case 400:
-                            setErrors(prev => ({ ...prev, geral: "Dados inválidos. Verifique os campos." }))
+                            setErrors(prev => ({ ...prev, general: "Dados inválidos. Verifique os campos." }))
                             break
                         case 401:
-                            setErrors(prev => ({ ...prev, geral: "Credenciais inválidas." }))
+                            setErrors(prev => ({ ...prev, general: "Credenciais inválidas." }))
                             break
                         case 403:
-                            setErrors(prev => ({ ...prev, geral: "Acesso negado." }))
+                            setErrors(prev => ({ ...prev, general: "Acesso negado." }))
                             break
                         case 409:
                             setErrors(prev => ({ ...prev, email: ["Email já cadastrado"] }))
                             break
                         case 500:
-                            setErrors(prev => ({ ...prev, geral: "Erro interno do servidor. Tente mais tarde." }))
+                            setErrors(prev => ({ ...prev, general: "Erro interno do servidor. Tente mais tarde." }))
                             break
                         default:
-                            setErrors(prev => ({ ...prev, geral: "Erro inesperado." }))
+                            setErrors(prev => ({ ...prev, general: "Erro inesperado." }))
                     }
                 }
             } else {
                 // Erro desconhecido, que não veio do axios
-                console.error("Erro desconhecido:", error)
-                setErrors(prev => ({ ...prev, geral: "Erro inesperado. Tente novamente." }))
+                logError("Register", error);
+                setErrors(prev => ({ ...prev, general: "Erro inesperado. Tente novamente." }))
             }
         }
     }
