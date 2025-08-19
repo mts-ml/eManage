@@ -3,6 +3,7 @@ import { X } from "lucide-react"
 import { FaTrash, FaEdit } from 'react-icons/fa'
 
 import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
+import { logInfo, logError } from "../utils/logger"
 
 
 import type {
@@ -17,7 +18,7 @@ import type {
 import { PaymentStatus } from "../types/types"
 
 
-type SortField = 'date' | 'saleNumber' | 'clientName' | 'total' | 'firstPaymentDate' | 'finalPaymentDate'
+type SortField = 'date' | 'saleNumber' | 'clientName' | 'total' | 'status' | 'firstPaymentDate' | 'finalPaymentDate'
 
 type SortOrder = 'asc' | 'desc'
 
@@ -55,6 +56,8 @@ export const Receivables: React.FC = () => {
     const [editErrors, setEditErrors] = useState<Partial<Record<string, string>>>({})
     const [isSaving, setIsSaving] = useState(false)
     const axiosPrivate = useAxiosPrivate()
+    const [currentPage, setCurrentPage] = useState(1)
+    const pageSize = 20
 
 
     // Função para converter data do formato DD/MM/AAAA para objeto Date
@@ -65,6 +68,9 @@ export const Receivables: React.FC = () => {
 
     // Função para ordenar os recebíveis
     const sortReceivables = (data: Receivable[], config: SortConfig): Receivable[] => {
+        // Ordem lógica para status: Pendente → Parcialmente pago → Pago
+        const statusOrder = { 'Pendente': 1, 'Parcialmente pago': 2, 'Pago': 3 }
+        
         return [...data].sort((a, b) => {
             let aValue: string | number | Date
             let bValue: string | number | Date
@@ -85,6 +91,10 @@ export const Receivables: React.FC = () => {
                 case 'total':
                     aValue = a.total
                     bValue = b.total
+                    break
+                case 'status':
+                    aValue = statusOrder[a.status as keyof typeof statusOrder] || 1
+                    bValue = statusOrder[b.status as keyof typeof statusOrder] || 1
                     break
                 case 'firstPaymentDate':
                     aValue = a.firstPaymentDate ? new Date(a.firstPaymentDate) : new Date(0)
@@ -119,13 +129,27 @@ export const Receivables: React.FC = () => {
     // Função para obter o ícone de ordenação
     const getSortIcon = (field: SortField) => {
         if (sortConfig.field !== field) {
-            return '↕️'
+            return '⇅'
         }
-        return sortConfig.order === 'asc' ? '↑' : '↓'
+        return sortConfig.order === 'asc' ? '⇧' : '⇩'
     }
 
     // Recebíveis ordenados
     const sortedReceivables = sortReceivables(receivables, sortConfig)
+
+    // Cálculos de paginação para recebíveis ordenados
+    const totalItems = sortedReceivables.length
+    const totalPages = Math.max(1, Math.ceil(totalItems / pageSize))
+    const startIndex = (currentPage - 1) * pageSize
+    const currentItems = sortedReceivables.slice(startIndex, startIndex + pageSize)
+
+    // Ajustar página atual quando o total mudar
+    useEffect(() => {
+        setCurrentPage(prev => {
+            const pages = Math.max(1, Math.ceil(totalItems / pageSize))
+            return Math.min(prev, pages)
+        })
+    }, [totalItems])
 
     useEffect(() => {
         async function fetchSales() {
@@ -141,7 +165,7 @@ export const Receivables: React.FC = () => {
 
                 setReceivables(salesWithReceivableInfo)
             } catch (error) {
-                console.error("Erro ao buscar vendas:", error)
+                logError("Receivables", error);
             }
         }
         fetchSales()
@@ -320,12 +344,12 @@ export const Receivables: React.FC = () => {
 
             handleCancelEdit()
         } catch (error) {
-            console.error("Erro ao atualizar venda:", error)
+            logError("Receivables", error);
 
             if (error && typeof error === 'object' && 'response' in error) {
                 const axiosError = error as AxiosErrorResponse
-                console.error("Status do erro:", axiosError.response?.status)
-                console.error("Dados do erro:", axiosError.response?.data)
+                logError("Receivables", `Status do erro: ${axiosError.response?.status}`);
+                logError("Receivables", `Dados do erro: ${axiosError.response?.data}`);
             }
 
             setEditErrors({ submit: "Erro ao atualizar venda. Tente novamente." })
@@ -351,9 +375,9 @@ export const Receivables: React.FC = () => {
         try {
             const response = await axiosPrivate.delete<DeleteResponse>(`/sales/${id}`)
             setReceivables(prev => prev.filter(sale => sale._id !== id))
-            console.log("Venda excluída com sucesso:", response.data.message)
+            logInfo("Receivables", "Venda excluída com sucesso", response.data.message)
         } catch (error: unknown) {
-            console.error("Erro ao excluir venda:", error)
+            logError("Receivables", error);
 
             let errorMessage = "Erro ao excluir venda. Tente novamente."
 
@@ -394,147 +418,182 @@ export const Receivables: React.FC = () => {
                     </p>
                 </div>
             ) : (
-                // Tabela
-                <section className="overflow-auto border-2 border-emerald-200/50 rounded-2xl shadow-xl mb-10 max-h-[70vh] bg-white/90 backdrop-blur-sm">
-                    <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gradient-to-r from-emerald-600 to-green-600 text-white sticky top-0 z-10">
-                            <tr>
-                                <th
-                                    className="px-4 py-3 text-xs font-semibold text-center cursor-pointer hover:bg-emerald-700 transition-colors duration-200 select-none"
-                                    onClick={() => handleSort('date')}
-                                    title="Clique para ordenar por data da venda"
-                                >
-                                    <div className="flex items-center justify-center gap-1">
-                                        Data da Venda
-                                        <span className="text-xs">{getSortIcon('date')}</span>
-                                    </div>
-                                </th>
+                <>
+                    {/* Tabela */}
+                    <section className="overflow-auto border-2 border-emerald-200/50 rounded-2xl shadow-xl mb-10 max-h-[70vh] bg-white/90 backdrop-blur-sm">
+                        <table className="min-w-full divide-y divide-gray-200">
+                            <thead className="bg-gradient-to-r from-emerald-600 to-green-600 text-white sticky top-0 z-10">
+                                <tr>
+                                    <th
+                                        className="px-4 py-3 text-xs font-semibold text-center cursor-pointer hover:bg-emerald-700 transition-colors duration-200 select-none"
+                                        onClick={() => handleSort('date')}
+                                        title="Clique para ordenar por data da venda"
+                                    >
+                                        <div className="flex items-center justify-center gap-1">
+                                            Data da Venda
+                                            <span className="text-xs">{getSortIcon('date')}</span>
+                                        </div>
+                                    </th>
 
-                                <th
-                                    className="px-4 py-3 text-xs font-semibold text-center cursor-pointer hover:bg-emerald-700 transition-colors duration-200 select-none"
-                                    onClick={() => handleSort('saleNumber')}
-                                    title="Clique para ordenar por número da venda"
-                                >
-                                    <div className="flex items-center justify-center gap-1">
-                                        Nº Venda
-                                        <span className="text-xs">{getSortIcon('saleNumber')}</span>
-                                    </div>
-                                </th>
+                                    <th
+                                        className="px-4 py-3 text-xs font-semibold text-center cursor-pointer hover:bg-emerald-700 transition-colors duration-200 select-none"
+                                        onClick={() => handleSort('saleNumber')}
+                                        title="Clique para ordenar por número da venda"
+                                    >
+                                        <div className="flex items-center justify-center gap-1">
+                                            Nº Venda
+                                            <span className="text-xs">{getSortIcon('saleNumber')}</span>
+                                        </div>
+                                    </th>
 
-                                <th
-                                    className="px-4 py-3 text-xs font-semibold text-center cursor-pointer hover:bg-emerald-700 transition-colors duration-200 select-none"
-                                    onClick={() => handleSort('clientName')}
-                                    title="Clique para ordenar por cliente"
-                                >
-                                    <div className="flex items-center justify-center gap-1">
-                                        Cliente
-                                        <span className="text-xs">{getSortIcon('clientName')}</span>
-                                    </div>
-                                </th>
+                                    <th
+                                        className="px-4 py-3 text-xs font-semibold text-center cursor-pointer hover:bg-emerald-700 transition-colors duration-200 select-none"
+                                        onClick={() => handleSort('clientName')}
+                                        title="Clique para ordenar por cliente"
+                                    >
+                                        <div className="flex items-center justify-center gap-1">
+                                            Cliente
+                                            <span className="text-xs">{getSortIcon('clientName')}</span>
+                                        </div>
+                                    </th>
 
-                                <th
-                                    className="px-4 py-3 text-xs font-semibold text-center cursor-pointer hover:bg-emerald-700 transition-colors duration-200 select-none"
-                                    onClick={() => handleSort('total')}
-                                    title="Clique para ordenar por valor total"
-                                >
-                                    <div className="flex items-center justify-center gap-1">
-                                        Valor Total
-                                        <span className="text-xs">{getSortIcon('total')}</span>
-                                    </div>
-                                </th>
+                                    <th
+                                        className="px-4 py-3 text-xs font-semibold text-center cursor-pointer hover:bg-emerald-700 transition-colors duration-200 select-none"
+                                        onClick={() => handleSort('total')}
+                                        title="Clique para ordenar por valor total"
+                                    >
+                                        <div className="flex items-center justify-center gap-1">
+                                            Valor Total
+                                            <span className="text-xs">{getSortIcon('total')}</span>
+                                        </div>
+                                    </th>
 
-                                <th className="px-4 py-3 text-xs font-semibold text-center">Valor Pago</th>
+                                    <th className="px-4 py-3 text-xs font-semibold text-center">Valor Pago</th>
 
-                                <th className="px-4 py-3 text-xs font-semibold text-center">Status</th>
+                                    <th 
+                                        className="px-4 py-3 text-xs font-semibold text-center cursor-pointer hover:bg-emerald-700 transition-colors duration-200 select-none"
+                                        onClick={() => handleSort('status')}
+                                        title="Clique para ordenar por status"
+                                    >
+                                        <div className="flex items-center justify-center gap-1">
+                                            Status
+                                            <span className="text-xs">{getSortIcon('status')}</span>
+                                        </div>
+                                    </th>
 
-                                <th
-                                    className="px-4 py-3 text-xs font-semibold text-center cursor-pointer hover:bg-emerald-700 transition-colors duration-200 select-none"
-                                    onClick={() => handleSort('finalPaymentDate')}
-                                    title="Clique para ordenar por data do pagamento total"
-                                >
-                                    <div className="flex items-center justify-center gap-1">
-                                        Pagamento Total
-                                        <span className="text-xs">{getSortIcon('finalPaymentDate')}</span>
-                                    </div>
-                                </th>
+                                    <th
+                                        className="px-4 py-3 text-xs font-semibold text-center cursor-pointer hover:bg-emerald-700 transition-colors duration-200 select-none"
+                                        onClick={() => handleSort('finalPaymentDate')}
+                                        title="Clique para ordenar por data do pagamento total"
+                                    >
+                                        <div className="flex items-center justify-center gap-1">
+                                            Data pagamento total
+                                            <span className="text-xs">{getSortIcon('finalPaymentDate')}</span>
+                                        </div>
+                                    </th>
 
-                                <th className="px-4 py-3 text-xs font-semibold text-center">Banco</th>
+                                    <th className="px-4 py-3 text-xs font-semibold text-center">Banco</th>
 
-                                <th className="px-4 py-3 text-xs font-semibold text-center">Ações</th>
-                            </tr>
-                        </thead>
+                                    <th className="px-4 py-3 text-xs font-semibold text-center">Ações</th>
+                                </tr>
+                            </thead>
 
-                        <tbody className="bg-white divide-y divide-gray-100">
-                            {sortedReceivables.map(sale => (
-                                <tr key={sale._id} className="hover:bg-emerald-50/50 transition-colors duration-200">
-                                    <td className="px-4 py-3 text-xs font-medium text-center">{sale.date}</td>
+                            <tbody className="bg-white divide-y divide-gray-100">
+                                {currentItems.map(sale => (
+                                    <tr key={sale._id} className="hover:bg-emerald-50/50 transition-colors duration-200">
+                                        <td className="px-4 py-3 text-xs font-medium text-center">{sale.date}</td>
 
-                                    <td className="px-4 py-3 text-xs font-bold text-emerald-700 text-center">#{sale.saleNumber}</td>
+                                        <td className="px-4 py-3 text-xs font-bold text-emerald-700 text-center">#{sale.saleNumber}</td>
 
-                                    <td className="px-4 py-3 text-xs text-center">{sale.clientName}</td>
+                                        <td className="px-4 py-3 text-xs text-center">{sale.clientName}</td>
 
-                                    <td className="px-4 py-3 text-xs font-bold text-emerald-700 text-center">
-                                        {sale.total.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-                                    </td>
+                                        <td className="px-4 py-3 text-xs font-bold text-emerald-700 text-center">
+                                            {sale.total.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                                        </td>
 
-                                    <td className="px-4 py-3 text-xs font-bold text-green-700 text-center">
-                                        {sale.totalPaid ? sale.totalPaid.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) : "R$ 0,00"}
-                                    </td>
+                                        <td className="px-4 py-3 text-xs font-bold text-green-700 text-center">
+                                            {sale.totalPaid ? sale.totalPaid.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) : "R$ 0,00"}
+                                        </td>
 
-                                    <td className="px-4 py-3 text-xs text-center">
-                                        <span
-                                            className={`inline-block px-3 py-1 rounded-lg text-xs font-medium border-2 transition-all duration-200 ${sale.status === "Pago"
-                                                ? "bg-green-50 text-green-700 border-green-400"
-                                                : sale.status === "Parcialmente pago"
-                                                    ? "bg-yellow-50 text-yellow-700 border-yellow-400"
-                                                    : "bg-red-50 text-red-600 border-red-300"
-                                                }`}
-                                        >
-                                            {sale.status}
-                                        </span>
-                                    </td>
-
-                                    <td className="px-4 py-3 text-xs text-center">
-                                        {sale.finalPaymentDate ? sale.finalPaymentDate.split('T')[0].split('-').reverse().join('/') : "--"}
-                                    </td>
-
-                                    <td className="px-4 py-3 text-xs text-center">
-                                        <span className="text-gray-700 font-medium">
-                                            {sale.bank || "--"}
-                                        </span>
-                                    </td>
-
-                                    <td className="px-4 py-3 text-xs text-center">
-                                        <section className="flex items-center">
-                                            {/* Botão de editar */}
-                                            <button
-                                                type="button"
-                                                onClick={() => handleStartEdit(sale)}
-                                                className="text-emerald-600 cursor-pointer hover:text-emerald-800 p-2 rounded-lg hover:bg-emerald-50/50 transition-all duration-200"
-                                                title="Editar venda"
-                                                aria-label="Editar venda"
+                                        <td className="px-4 py-3 text-xs text-center">
+                                            <span
+                                                className={`inline-block px-3 py-1 rounded-lg text-xs font-medium border-2 transition-all duration-200 ${sale.status === "Pago"
+                                                    ? "bg-green-50 text-green-700 border-green-400"
+                                                    : sale.status === "Parcialmente pago"
+                                                        ? "bg-yellow-50 text-yellow-700 border-yellow-400"
+                                                        : "bg-red-50 text-red-600 border-red-300"
+                                                    }`}
                                             >
-                                                <FaEdit size={18} />
-                                            </button>
+                                                {sale.status}
+                                            </span>
+                                        </td>
 
-                                            {sale.status === "Pendente" && (
+                                        <td className="px-4 py-3 text-xs text-center">
+                                            {sale.finalPaymentDate ? sale.finalPaymentDate.split('T')[0].split('-').reverse().join('/') : "--"}
+                                        </td>
+
+                                        <td className="px-4 py-3 text-xs text-center">
+                                            <span className="text-gray-700 font-medium">
+                                                {sale.bank || "--"}
+                                            </span>
+                                        </td>
+
+                                        <td className="px-4 py-3 text-xs text-center">
+                                            <section className="flex items-center">
+                                                {/* Botão de editar */}
                                                 <button
                                                     type="button"
-                                                    onClick={() => handleDeleteSale(sale._id)}
-                                                    className="text-red-600 cursor-pointer hover:text-red-800 p-2 rounded-lg hover:bg-red-50/50 transition-all duration-200"
-                                                    title="Excluir venda"
-                                                    aria-label="Excluir venda"
+                                                    onClick={() => handleStartEdit(sale)}
+                                                    className="text-emerald-600 cursor-pointer hover:text-emerald-800 p-2 rounded-lg hover:bg-emerald-50/50 transition-all duration-200"
+                                                    title="Editar venda"
+                                                    aria-label="Editar venda"
                                                 >
-                                                    <FaTrash size={18} />
+                                                    <FaEdit size={18} />
                                                 </button>
-                                            )}
-                                        </section>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </section>
+
+                                                {sale.status === "Pendente" && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleDeleteSale(sale._id)}
+                                                        className="text-red-600 cursor-pointer hover:text-red-800 p-2 rounded-lg hover:bg-red-50/50 transition-all duration-200"
+                                                        title="Excluir venda"
+                                                        aria-label="Excluir venda"
+                                                    >
+                                                        <FaTrash size={18} />
+                                                    </button>
+                                                )}
+                                            </section>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </section>
+
+                    <section className="flex items-center justify-between gap-4 mt-4">
+                        <button
+                            type="button"
+                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                            disabled={currentPage === 1}
+                            className={`px-4 py-2 rounded-lg font-semibold transition-all duration-200 border-2 ${currentPage === 1 ? "bg-gray-200 text-gray-500 border-gray-200 cursor-not-allowed" : "bg-white text-emerald-700 border-emerald-300 hover:bg-emerald-50 cursor-pointer"}`}
+                        >
+                            ← Anterior
+                        </button>
+
+                        <p className="text-sm text-gray-600">
+                            Página {currentPage} de {totalPages} — mostrando {totalItems ? (startIndex + 1) : 0}–{startIndex + currentItems.length} de {totalItems}
+                        </p>
+
+                        <button
+                            type="button"
+                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                            disabled={currentPage === totalPages}
+                            className={`px-4 py-2 rounded-lg font-semibold transition-all duration-200 border-2 ${currentPage === totalPages ? "bg-gray-200 text-gray-500 border-gray-200 cursor-not-allowed" : "bg-white text-emerald-700 border-emerald-300 hover:bg-emerald-50 cursor-pointer"}`}
+                        >
+                            Próxima →
+                        </button>
+                    </section>
+                </>
             )}
 
             {/* Modal de Edição */}

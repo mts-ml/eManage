@@ -3,6 +3,7 @@ import { createContext, useContext, useEffect, useState } from "react"
 import type { Expense, ExpenseFromBackend } from "../types/types"
 import AuthContext from "./AuthContext"
 import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
+import { logError } from "../utils/logger"
 
 
 interface ExpensesProviderProps {
@@ -47,7 +48,7 @@ export const ExpensesProvider = ({ children }: ExpensesProviderProps) => {
             }
             setLastExpense(normalizedExpense)
         } catch (error) {
-            console.log("Erro ao carregar última despesa: ", error)
+            logError("ExpensesContext", error)
         }
     }
 
@@ -70,7 +71,7 @@ export const ExpensesProvider = ({ children }: ExpensesProviderProps) => {
                 setExpenses(normalizedExpenses)
 
             } catch (error) {
-                console.log("Erro ao carregar despesas: ", error)
+                logError("ExpensesContext", error)
             }
         }
         getExpenses()
@@ -87,5 +88,5 @@ export const ExpensesProvider = ({ children }: ExpensesProviderProps) => {
         </ExpensesContext.Provider>
     )
 }
-
 export default ExpensesContext
+

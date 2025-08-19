@@ -3,6 +3,7 @@ import { Calendar, DollarSign, TrendingUp, TrendingDown, Building2 } from "lucid
 
 import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
 import type { Receivable, Payable, ExpenseFromBackend } from "../types/types"
+import { logError } from '../utils/logger';
 
 
 interface Transaction {
@@ -79,7 +80,7 @@ export const Cashflow: React.FC = () => {
 
         setAvailableBanks(Array.from(allBanks).sort())
       } catch (error) {
-        console.error("Erro ao buscar bancos:", error)
+        logError("CashFlow", error);
         setAvailableBanks([])
       }
     }
@@ -228,7 +229,7 @@ export const Cashflow: React.FC = () => {
       })
 
     } catch (error) {
-      console.error("Erro ao buscar transações:", error)
+      logError("CashFlow", error);
     } finally {
       setIsLoading(false)
     }

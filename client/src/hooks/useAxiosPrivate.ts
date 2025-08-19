@@ -3,6 +3,7 @@ import { useContext, useEffect } from "react"
 import { useRefreshToken } from "./useRefreshToken"
 import AuthContext from "../Context/AuthContext"
 import { axiosPrivate } from "../api/axios"
+import { logError, logInfo } from '../utils/logger';
 
 
 export function useAxiosPrivate() {
@@ -33,21 +34,22 @@ export function useAxiosPrivate() {
                 const previousRequest = error?.config
 
                 // Se deu erro 401 (não autorizado) e ainda não tentamos renovar
-                if (error.response.status === 401 && !previousRequest.sent) {
-                    console.debug("[Axios Interceptor] Token expired, attempting refresh...")
-                    previousRequest.sent = true // Marca como enviado para não criar loop infinito
-
+                if (error.response?.status === 401) {
+                    logInfo("Axios Interceptor", "Token expired, attempting refresh...");
+                    
                     try {
-                        const newAccessToken = await refresh()
-                        console.debug("[Axios Interceptor] Token refreshed successfully")
-
-                        previousRequest.headers['Authorization'] = `Bearer ${newAccessToken}`
-
-                        // Refaz a requisição anterior com o token novo
-                        return axiosPrivate(previousRequest)
+                        const response = await refresh();
+                        const { accessToken } = response.data;
+                        
+                        logInfo("Axios Interceptor", "Token refreshed successfully");
+                        
+                        // Atualiza o token no header
+                        previousRequest.headers.Authorization = `Bearer ${accessToken}`;
+                        
+                        return axiosPrivate(previousRequest);
                     } catch (refreshError) {
-                        console.error("[Axios Interceptor] Failed to refresh token:", refreshError)
-                        return Promise.reject(refreshError)
+                        logError("Axios Interceptor", refreshError);
+                        return Promise.reject(refreshError);
                     }
                 }
                 // Se não for erro 403, ou já tentou renovar, retorna erro normalmente

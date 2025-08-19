@@ -1,10 +1,11 @@
-import { useContext, useState, useRef } from "react"
+import { useContext, useState, useRef, useEffect } from "react"
 import axios from "axios"
 
 import { FaTrash, FaEdit, FaSearch } from 'react-icons/fa'
 import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
 import ProductsContext from "../Context/ProductsContext"
 import type { Product } from "../types/types"
+import { logError } from "../utils/logger"
 
 
 export const Products: React.FC = () => {
@@ -28,6 +29,8 @@ export const Products: React.FC = () => {
     const { products, setProducts } = useContext(ProductsContext)
     const axiosPrivate = useAxiosPrivate()
     const formRef = useRef<HTMLElement>(null)
+    const [currentPage, setCurrentPage] = useState(1)
+    const pageSize = 20
 
     // Filtrar produtos baseado no termo de busca e grupo
     const filteredProducts = products.filter(product => {
@@ -35,6 +38,25 @@ export const Products: React.FC = () => {
         const matchesGroup = selectedGroup === "" || product.group === selectedGroup
         return matchesSearch && matchesGroup
     })
+
+    // Cálculos de paginação para produtos filtrados
+    const totalItems = filteredProducts.length
+    const totalPages = Math.max(1, Math.ceil(totalItems / pageSize))
+    const startIndex = (currentPage - 1) * pageSize
+    const currentItems = filteredProducts.slice(startIndex, startIndex + pageSize)
+
+    // Resetar página quando mudar o filtro
+    useEffect(() => {
+        setCurrentPage(1)
+    }, [searchTerm, selectedGroup])
+
+    // Ajustar página atual quando o total mudar
+    useEffect(() => {
+        setCurrentPage(prev => {
+            const pages = Math.max(1, Math.ceil(totalItems / pageSize))
+            return Math.min(prev, pages)
+        })
+    }, [totalItems])
 
     const uniqueGroups = Array.from(new Set(products.map(product => product.group))).filter(group => group)
 
@@ -164,7 +186,7 @@ export const Products: React.FC = () => {
             }
 
         } catch (error) {
-            console.log(error)
+            logError("Products", error)
         }
     }
 
@@ -468,7 +490,7 @@ export const Products: React.FC = () => {
                             </thead>
 
                             <tbody className="bg-white divide-y divide-gray-100">
-                                {filteredProducts.map(product => (
+                                {currentItems.map(product => (
                                     <tr key={product.id} className="hover:bg-emerald-50/50 transition-colors duration-200">
                                         <td className="px-6 py-4 text-sm font-medium whitespace-nowrap text-center">{product.name}</td>
 
@@ -522,6 +544,29 @@ export const Products: React.FC = () => {
                             </tbody>
                         </table>
                     </section>
+
+                    {/* Controles de Paginação */}
+                    {totalPages > 1 && (
+                        <div className="flex justify-center items-center gap-2 mt-6">
+                            <button
+                                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                                disabled={currentPage === 1}
+                                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                Anterior
+                            </button>
+                            <span className="text-gray-700">
+                                Página {currentPage} de {totalPages}
+                            </span>
+                            <button
+                                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                                disabled={currentPage === totalPages}
+                                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                Próxima
+                            </button>
+                        </div>
+                    )}
                 </>
             )}
         </main>

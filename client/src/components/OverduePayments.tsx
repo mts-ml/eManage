@@ -6,6 +6,7 @@ import type {
     ExpenseFromBackend,
     AxiosErrorResponse
 } from "../types/types"
+import { logError } from '../utils/logger';
 
 // Nova interface simplificada apenas para despesas
 interface OverdueExpense {
@@ -87,7 +88,7 @@ export const OverduePayments: React.FC = () => {
             setOverdueExpenses(overdueItems)
         } catch (error) {
             const axiosError = error as AxiosErrorResponse
-            console.error("Erro ao buscar despesas atrasadas:", error)
+            logError("OverduePayments", error);
 
             if (axiosError.response?.status === 500) {
                 setError("Erro interno do servidor. Tente novamente mais tarde.")

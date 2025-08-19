@@ -1,4 +1,4 @@
-import { useContext, useState } from "react"
+import { useContext, useState, useEffect } from "react"
 import { FaTrash, FaEdit, FaSearch } from 'react-icons/fa'
 
 import type { Supplier, SupplierErrors, SupplierFromBackend } from "../types/types"
@@ -34,6 +34,8 @@ export const Suppliers: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState<string>("")
     const { suppliers, setSuppliers } = useContext(SupplierContext)
     const axiosPrivate = useAxiosPrivate()
+    const [currentPage, setCurrentPage] = useState(1)
+    const pageSize = 20
 
     // Filtrar fornecedores baseado no termo de busca (nome ou CPF/CNPJ)
     const filteredSuppliers = suppliers.filter(supplier => {
@@ -51,6 +53,22 @@ export const Suppliers: React.FC = () => {
 
         return nameMatch || cpfCnpjMatch
     })
+
+    const totalItems = filteredSuppliers.length
+    const totalPages = Math.max(1, Math.ceil(totalItems / pageSize))
+    const startIndex = (currentPage - 1) * pageSize
+    const currentItems = filteredSuppliers.slice(startIndex, startIndex + pageSize)
+
+    useEffect(() => {
+        setCurrentPage(1)
+    }, [searchTerm])
+
+    useEffect(() => {
+        setCurrentPage(prev => {
+            const pages = Math.max(1, Math.ceil(totalItems / pageSize))
+            return Math.min(prev, pages)
+        })
+    }, [totalItems])
 
 
     function formValidation(form: Supplier): SupplierErrors {
@@ -413,7 +431,7 @@ export const Suppliers: React.FC = () => {
                             </thead>
 
                             <tbody className="bg-white divide-y divide-gray-100">
-                                {filteredSuppliers.map(supplier => (
+                                {currentItems.map(supplier => (
                                     <tr key={supplier.id} className="hover:bg-emerald-50/50 transition-colors duration-200">
                                         <td className="px-6 py-4 text-sm font-medium whitespace-nowrap text-center">{supplier.name}</td>
 
@@ -452,6 +470,30 @@ export const Suppliers: React.FC = () => {
                                 ))}
                             </tbody>
                         </table>
+                    </section>
+
+                    <section className="flex items-center justify-between gap-4 mt-4">
+                        <button
+                            type="button"
+                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                            disabled={currentPage === 1}
+                            className={`px-4 py-2 rounded-lg font-semibold transition-all duration-200 border-2 ${currentPage === 1 ? "bg-gray-200 text-gray-500 border-gray-200 cursor-not-allowed" : "bg-white text-emerald-700 border-emerald-300 hover:bg-emerald-50 cursor-pointer"}`}
+                        >
+                            ← Anterior
+                        </button>
+
+                        <p className="text-sm text-gray-600">
+                            Página {currentPage} de {totalPages} — mostrando {totalItems ? (startIndex + 1) : 0}–{startIndex + currentItems.length} de {totalItems}
+                        </p>
+
+                        <button
+                            type="button"
+                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                            disabled={currentPage === totalPages}
+                            className={`px-4 py-2 rounded-lg font-semibold transition-all duration-200 border-2 ${currentPage === totalPages ? "bg-gray-200 text-gray-500 border-gray-200 cursor-not-allowed" : "bg-white text-emerald-700 border-emerald-300 hover:bg-emerald-50 cursor-pointer"}`}
+                        >
+                            Próxima →
+                        </button>
                     </section>
                 </>
             )}

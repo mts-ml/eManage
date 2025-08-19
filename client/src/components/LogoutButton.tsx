@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom"
 
 import AuthContext from "../Context/AuthContext"
 import { axiosInstance } from "../api/axios"
+import { logError } from "../utils/logger"
 
 
 export const LogoutButton: React.FC = () => {
@@ -26,7 +27,7 @@ export const LogoutButton: React.FC = () => {
 
             navigate('/')
         } catch (error) {
-            console.log(error)
+            logError("LogoutButton", error)
         } finally {
             setAuth({ name: "", email: "", roles: [], accessToken: "" })
             navigate('/')

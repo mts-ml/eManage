@@ -4,6 +4,7 @@ import { jwtDecode } from "jwt-decode"
 import { axiosInstance } from "../api/axios"
 import type { CustomJwtPayload } from "../types/types"
 import { CircleLoader } from "react-spinners"
+import { logInfo, logError } from "../utils/logger"
 
 
 interface AuthProviderProps {
@@ -77,9 +78,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
                 if (error instanceof Error) {
                     if (error.name === 'AbortError') {
-                        console.log('Requisição cancelada intencionalmente')
+                        logInfo('AuthContext', 'Requisição cancelada intencionalmente');
                     } else {
-                        console.log(error.message)
+                        logError('AuthContext', error.message);
                     }
                 }
             } finally {
@@ -114,5 +115,5 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         </AuthContext.Provider>
     )
 }
-
 export default AuthContext
+

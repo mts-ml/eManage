@@ -6,6 +6,7 @@ import axios from 'axios'
 import type { CustomJwtPayload } from '../types/types.js'
 import { axiosInstance } from '../api/axios'
 import AuthContext from '../Context/AuthContext.js'
+import { logError } from '../utils/logger';
 
 
 type LoginForm = {
@@ -109,14 +110,14 @@ export const Login: React.FC = () => {
             if (axios.isAxiosError(error)) {
                 if (!error.response) {
                     // Falha de rede, API fora do ar, timeout, etc.
-                    console.error("Erro de rede ou servidor indisponível:", error.message)
+                    logError("Login", error);
                     setErrors(prev => ({ ...prev, geral: "Serviço indisponível. Tente novamente mais tarde." }))
                 } else {
                     // API respondeu com erro
                     const status = error.response.status
                     const data = error.response.data
 
-                    console.error(`Erro da API (status ${status}):`, data)
+                    logError("Login", `Erro da API (status ${status}): ${data}`);
 
                     switch (status) {
                         case 400:
@@ -140,7 +141,7 @@ export const Login: React.FC = () => {
                 }
             } else {
                 // Erro desconhecido, que não veio do axios
-                console.error("Erro desconhecido:", error)
+                logError("Login", error);
                 setErrors(prev => ({ ...prev, geral: "Erro inesperado. Tente novamente." }))
             }
         }

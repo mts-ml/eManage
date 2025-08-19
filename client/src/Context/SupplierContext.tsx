@@ -3,6 +3,7 @@ import React, { createContext, useContext, useEffect, useState } from "react"
 import type { Supplier, SupplierFromBackend } from "../types/types"
 import AuthContext from "./AuthContext"
 import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
+import { logError } from '../utils/logger';
 
 
 interface SupplierProviderProps {
@@ -43,7 +44,7 @@ export const SupplierProvider: React.FC<SupplierProviderProps> = ({ children }) 
                 }))
                 setSuppliers(normalizeSupplier)
             } catch (error) {
-                console.error("Erro ao carregar fornecedores", error)
+                logError("SupplierContext", error);
             }
         }
         getSuppliers()
@@ -58,5 +59,5 @@ export const SupplierProvider: React.FC<SupplierProviderProps> = ({ children }) 
         </SupplierContext.Provider >
     )
 }
-
 export default SupplierContext
+

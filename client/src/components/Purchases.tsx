@@ -8,6 +8,7 @@ import ProductsContext from "../Context/ProductsContext"
 import SupplierContext from "../Context/SupplierContext"
 import type { Product, PurchasePayload, PurchaseResponse } from "../types/types"
 import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
+import { logError } from "../utils/logger"
 
 
 interface CartItem extends Product {
@@ -52,7 +53,7 @@ export const Purchases: React.FC = () => {
                 const response = await axiosPrivate.get('/purchases/last')
                 setLastPurchase(response.data.purchase)
             } catch (error) {
-                console.log("Erro ao buscar a última compra:", error)
+                logError("Purchases", error)
                 return
             }
         }
@@ -141,7 +142,7 @@ export const Purchases: React.FC = () => {
 
             setLastPurchase(purchase)
         } catch (error) {
-            console.error(error)
+            logError("Purchases", error);
             alert('Erro ao finalizar a compra.')
             return
         }

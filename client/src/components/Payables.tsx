@@ -3,6 +3,7 @@ import { X } from "lucide-react"
 import { FaTrash, FaEdit } from 'react-icons/fa'
 
 import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
+import { logInfo, logError } from "../utils/logger"
 
 
 import type {
@@ -17,7 +18,7 @@ import type {
 import { PaymentStatus } from "../types/types"
 
 
-type SortField = 'date' | 'purchaseNumber' | 'supplierName' | 'total' | 'firstPaymentDate' | 'finalPaymentDate'
+type SortField = 'date' | 'purchaseNumber' | 'supplierName' | 'total' | 'status' | 'firstPaymentDate' | 'finalPaymentDate'
 
 type SortOrder = 'asc' | 'desc'
 
@@ -55,6 +56,8 @@ export const Payables: React.FC = () => {
     const [editErrors, setEditErrors] = useState<Partial<Record<string, string>>>({})
     const [isSaving, setIsSaving] = useState(false)
     const axiosPrivate = useAxiosPrivate()
+    const [currentPage, setCurrentPage] = useState(1)
+    const pageSize = 20
 
 
     // Função para converter data do formato DD/MM/AAAA para objeto Date
@@ -65,6 +68,9 @@ export const Payables: React.FC = () => {
 
     // Função para ordenar os pagáveis
     const sortPayables = (data: Payable[], config: SortConfig): Payable[] => {
+        // Ordem lógica para status: Pendente → Parcialmente pago → Pago
+        const statusOrder = { 'Pendente': 1, 'Parcialmente pago': 2, 'Pago': 3 }
+        
         return [...data].sort((a, b) => {
             let aValue: string | number | Date
             let bValue: string | number | Date
@@ -85,6 +91,10 @@ export const Payables: React.FC = () => {
                 case 'total':
                     aValue = a.total
                     bValue = b.total
+                    break
+                case 'status':
+                    aValue = statusOrder[a.status as keyof typeof statusOrder] || 1
+                    bValue = statusOrder[b.status as keyof typeof statusOrder] || 1
                     break
                 case 'firstPaymentDate':
                     aValue = a.firstPaymentDate ? new Date(a.firstPaymentDate) : new Date(0)
@@ -127,6 +137,20 @@ export const Payables: React.FC = () => {
     // Pagáveis ordenados
     const sortedPayables = sortPayables(payables, sortConfig)
 
+    // Cálculos de paginação para pagáveis ordenados
+    const totalItems = sortedPayables.length
+    const totalPages = Math.max(1, Math.ceil(totalItems / pageSize))
+    const startIndex = (currentPage - 1) * pageSize
+    const currentItems = sortedPayables.slice(startIndex, startIndex + pageSize)
+
+    // Ajustar página atual quando o total mudar
+    useEffect(() => {
+        setCurrentPage(prev => {
+            const pages = Math.max(1, Math.ceil(totalItems / pageSize))
+            return Math.min(prev, pages)
+        })
+    }, [totalItems])
+
     useEffect(() => {
         async function fetchPurchases() {
             try {
@@ -145,7 +169,7 @@ export const Payables: React.FC = () => {
 
                 setPayables(purchasesWithPayableInfo)
             } catch (error) {
-                console.error("Erro ao buscar compras:", error)
+                logError("Payables", error);
             }
         }
 
@@ -324,12 +348,12 @@ export const Payables: React.FC = () => {
 
             handleCancelEdit()
         } catch (error) {
-            console.error("Erro ao atualizar compra:", error)
+            logError("Payables", error);
 
             if (error && typeof error === 'object' && 'response' in error) {
                 const axiosError = error as AxiosErrorResponse
-                console.error("Status do erro:", axiosError.response?.status)
-                console.error("Dados do erro:", axiosError.response?.data)
+                logError("Payables", `Status do erro: ${axiosError.response?.status}`);
+                logError("Payables", `Dados do erro: ${axiosError.response?.data}`);
             }
 
             setEditErrors({ submit: "Erro ao atualizar compra. Tente novamente." })
@@ -355,9 +379,9 @@ export const Payables: React.FC = () => {
         try {
             const response = await axiosPrivate.delete<DeleteResponse>(`/purchases/${id}`)
             setPayables(prev => prev.filter(purchase => purchase._id !== id))
-            console.log("Compra excluída com sucesso:", response.data.message)
+            logInfo("Payables", "Compra excluída com sucesso", response.data.message)
         } catch (error: unknown) {
-            console.error("Erro ao excluir compra:", error)
+            logError("Payables", error);
 
             let errorMessage = "Erro ao excluir compra. Tente novamente."
 
@@ -388,7 +412,7 @@ export const Payables: React.FC = () => {
                 <p className="text-gray-600 font-medium">Gerencie seus pagamentos financeiros</p>
             </header>
 
-            {sortedPayables.length === 0 ? (
+            {currentItems.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 px-8 border-2 border-emerald-200/50 rounded-2xl shadow-xl bg-white/90 backdrop-blur-sm">
                     <div className="text-6xl mb-4">💸</div>
                     <h3 className="text-xl font-semibold text-gray-700 mb-2">Nenhuma conta a pagar encontrada</h3>
@@ -398,151 +422,186 @@ export const Payables: React.FC = () => {
                     </p>
                 </div>
             ) : (
-                // Tabela
-                <section className="overflow-auto border-2 border-emerald-200/50 rounded-2xl shadow-xl mb-10 max-h-[70vh] bg-white/90 backdrop-blur-sm">
-                    <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gradient-to-r from-emerald-600 to-green-600 text-white sticky top-0 z-10">
-                            <tr>
-                                <th
-                                    className="px-4 py-3 text-xs font-semibold text-center cursor-pointer hover:bg-emerald-700 transition-colors duration-200 select-none"
-                                    onClick={() => handleSort('date')}
-                                    title="Clique para ordenar por data da compra"
-                                >
-                                    <div className="flex items-center justify-center gap-1">
-                                        Data da Compra
-                                        <span className="text-xs">{getSortIcon('date')}</span>
-                                    </div>
-                                </th>
+                <>
+                    {/* Tabela */}
+                    <section className="overflow-auto border-2 border-emerald-200/50 rounded-2xl shadow-xl mb-10 max-h-[70vh] bg-white/90 backdrop-blur-sm">
+                        <table className="min-w-full divide-y divide-gray-200">
+                            <thead className="bg-gradient-to-r from-emerald-600 to-green-600 text-white sticky top-0 z-10">
+                                <tr>
+                                    <th
+                                        className="px-4 py-3 text-xs font-semibold text-center cursor-pointer hover:bg-emerald-700 transition-colors duration-200 select-none"
+                                        onClick={() => handleSort('date')}
+                                        title="Clique para ordenar por data da compra"
+                                    >
+                                        <div className="flex items-center justify-center gap-1">
+                                            Data da Compra
+                                            <span className="text-xs">{getSortIcon('date')}</span>
+                                        </div>
+                                    </th>
 
-                                <th
-                                    className="px-4 py-3 text-xs font-semibold text-center cursor-pointer hover:bg-emerald-700 transition-colors duration-200 select-none"
-                                    onClick={() => handleSort('purchaseNumber')}
-                                    title="Clique para ordenar por número da compra"
-                                >
-                                    <div className="flex items-center justify-center gap-1">
-                                        Nº Compra
-                                        <span className="text-xs">{getSortIcon('purchaseNumber')}</span>
-                                    </div>
-                                </th>
+                                    <th
+                                        className="px-4 py-3 text-xs font-semibold text-center cursor-pointer hover:bg-emerald-700 transition-colors duration-200 select-none"
+                                        onClick={() => handleSort('purchaseNumber')}
+                                        title="Clique para ordenar por número da compra"
+                                    >
+                                        <div className="flex items-center justify-center gap-1">
+                                            Nº da Compra
+                                            <span className="text-xs">{getSortIcon('purchaseNumber')}</span>
+                                        </div>
+                                    </th>
 
-                                <th className="px-4 py-3 text-xs font-semibold text-center">Nº da Nota</th>
+                                    <th className="px-4 py-3 text-xs font-semibold text-center">Nº da Nota</th>
 
-                                <th
-                                    className="px-4 py-3 text-xs font-semibold text-center cursor-pointer hover:bg-emerald-700 transition-colors duration-200 select-none"
-                                    onClick={() => handleSort('supplierName')}
-                                    title="Clique para ordenar por fornecedor"
-                                >
-                                    <div className="flex items-center justify-center gap-1">
-                                        Fornecedor
-                                        <span className="text-xs">{getSortIcon('supplierName')}</span>
-                                    </div>
-                                </th>
+                                    <th
+                                        className="px-4 py-3 text-xs font-semibold text-center cursor-pointer hover:bg-emerald-700 transition-colors duration-200 select-none"
+                                        onClick={() => handleSort('supplierName')}
+                                        title="Clique para ordenar por fornecedor"
+                                    >
+                                        <div className="flex items-center justify-center gap-1">
+                                            Fornecedor
+                                            <span className="text-xs">{getSortIcon('supplierName')}</span>
+                                        </div>
+                                    </th>
 
-                                <th
-                                    className="px-4 py-3 text-xs font-semibold text-center cursor-pointer hover:bg-emerald-700 transition-colors duration-200 select-none"
-                                    onClick={() => handleSort('total')}
-                                    title="Clique para ordenar por valor total"
-                                >
-                                    <div className="flex items-center justify-center gap-1">
-                                        Valor Total
-                                        <span className="text-xs">{getSortIcon('total')}</span>
-                                    </div>
-                                </th>
+                                    <th
+                                        className="px-4 py-3 text-xs font-semibold text-center cursor-pointer hover:bg-emerald-700 transition-colors duration-200 select-none"
+                                        onClick={() => handleSort('total')}
+                                        title="Clique para ordenar por valor total"
+                                    >
+                                        <div className="flex items-center justify-center gap-1">
+                                            Valor Total
+                                            <span className="text-xs">{getSortIcon('total')}</span>
+                                        </div>
+                                    </th>
 
-                                <th className="px-4 py-3 text-xs font-semibold text-center">Valor Pago</th>
+                                    <th className="px-4 py-3 text-xs font-semibold text-center">Valor Pago</th>
 
-                                <th className="px-4 py-3 text-xs font-semibold text-center">Status</th>
+                                    <th 
+                                        className="px-4 py-3 text-xs font-semibold text-center cursor-pointer hover:bg-emerald-700 transition-colors duration-200 select-none"
+                                        onClick={() => handleSort('status')}
+                                        title="Clique para ordenar por status"
+                                    >
+                                        <div className="flex items-center justify-center gap-1">
+                                            Status
+                                            <span className="text-xs">{getSortIcon('status')}</span>
+                                        </div>
+                                    </th>
 
-                                <th
-                                    className="px-4 py-3 text-xs font-semibold text-center cursor-pointer hover:bg-emerald-700 transition-colors duration-200 select-none"
-                                    onClick={() => handleSort('finalPaymentDate')}
-                                    title="Clique para ordenar por data do pagamento total"
-                                >
-                                    <div className="flex items-center justify-center gap-1">
-                                        Pagamento Total
-                                        <span className="text-xs">{getSortIcon('finalPaymentDate')}</span>
-                                    </div>
-                                </th>
+                                    <th
+                                        className="px-4 py-3 text-xs font-semibold text-center cursor-pointer hover:bg-emerald-700 transition-colors duration-200 select-none"
+                                        onClick={() => handleSort('finalPaymentDate')}
+                                        title="Clique para ordenar por data do pagamento total"
+                                    >
+                                        <div className="flex items-center justify-center gap-1">
+                                            Data pagamento total
+                                            <span className="text-xs">{getSortIcon('finalPaymentDate')}</span>
+                                        </div>
+                                    </th>
 
-                                <th className="px-4 py-3 text-xs font-semibold text-center">Banco</th>
+                                    <th className="px-4 py-3 text-xs font-semibold text-center">Banco</th>
 
-                                <th className="px-4 py-3 text-xs font-semibold text-center">Ações</th>
-                            </tr>
-                        </thead>
+                                    <th className="px-4 py-3 text-xs font-semibold text-center">Ações</th>
+                                </tr>
+                            </thead>
 
-                        <tbody className="bg-white divide-y divide-gray-100">
-                            {sortedPayables.map(purchase => (
-                                <tr key={purchase._id} className="hover:bg-emerald-50/50 transition-colors duration-200">
-                                    <td className="px-4 py-3 text-xs font-medium text-center">{purchase.date}</td>
+                            <tbody className="bg-white divide-y divide-gray-100">
+                                {currentItems.map(purchase => (
+                                    <tr key={purchase._id} className="hover:bg-emerald-50/50 transition-colors duration-200">
+                                        <td className="px-4 py-3 text-xs font-medium text-center">{purchase.date}</td>
 
-                                    <td className="px-4 py-3 text-xs font-bold text-emerald-700 text-center">#{purchase.purchaseNumber}</td>
+                                        <td className="px-4 py-3 text-xs font-bold text-emerald-700 text-center">#{purchase.purchaseNumber}</td>
 
-                                    <td className="px-4 py-3 text-xs text-center">{purchase.invoiceNumber}</td>
+                                        <td className="px-4 py-3 text-xs text-center">{purchase.invoiceNumber}</td>
 
-                                    <td className="px-4 py-3 text-xs text-center">{purchase.supplierName}</td>
+                                        <td className="px-4 py-3 text-xs text-center">{purchase.supplierName}</td>
 
-                                    <td className="px-4 py-3 text-xs font-bold text-emerald-700 text-center">
-                                        {purchase.total.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-                                    </td>
+                                        <td className="px-4 py-3 text-xs font-bold text-emerald-700 text-center">
+                                            {purchase.total.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                                        </td>
 
-                                    <td className="px-4 py-3 text-xs font-bold text-green-700 text-center">
-                                        {purchase.totalPaid ? purchase.totalPaid.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) : "R$ 0,00"}
-                                    </td>
+                                        <td className="px-4 py-3 text-xs font-bold text-green-700 text-center">
+                                            {purchase.totalPaid ? purchase.totalPaid.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) : "R$ 0,00"}
+                                        </td>
 
-                                    <td className="px-4 py-3 text-xs text-center">
-                                        <span
-                                            className={`inline-block px-3 py-1 rounded-lg text-xs font-medium border-2 transition-all duration-200 ${purchase.status === "Pago"
-                                                ? "bg-green-50 text-green-700 border-green-400"
-                                                : purchase.status === "Parcialmente pago"
-                                                    ? "bg-yellow-50 text-yellow-700 border-yellow-400"
-                                                    : "bg-red-50 text-red-600 border-red-300"
-                                                }`}
-                                        >
-                                            {purchase.status}
-                                        </span>
-                                    </td>
-
-                                    <td className="px-4 py-3 text-xs text-center">
-                                        {purchase.finalPaymentDate ? purchase.finalPaymentDate.split("T")[0].split("-").reverse().join("/") : "--"}
-                                    </td>
-
-                                    <td className="px-4 py-3 text-xs text-center">
-                                        <span className="text-gray-700 font-medium">
-                                            {purchase.bank || "--"}
-                                        </span>
-                                    </td>
-
-                                    <td className="px-4 py-3 text-xs text-center">
-                                        <section className="flex items-center">
-                                            {/* Botão de editar */}
-                                            <button
-                                                type="button"
-                                                onClick={() => handleStartEdit(purchase)}
-                                                className="text-emerald-600 cursor-pointer hover:text-emerald-800 p-2 rounded-lg hover:bg-emerald-50/50 transition-all duration-200"
-                                                title="Editar compra"
-                                                aria-label="Editar compra"
+                                        <td className="px-4 py-3 text-xs text-center">
+                                            <span
+                                                className={`inline-block px-3 py-1 rounded-lg text-xs font-medium border-2 transition-all duration-200 ${purchase.status === "Pago"
+                                                    ? "bg-green-50 text-green-700 border-green-400"
+                                                    : purchase.status === "Parcialmente pago"
+                                                        ? "bg-yellow-50 text-yellow-700 border-yellow-400"
+                                                        : "bg-red-50 text-red-600 border-red-300"
+                                                    }`}
                                             >
-                                                <FaEdit size={18} />
-                                            </button>
+                                                {purchase.status}
+                                            </span>
+                                        </td>
 
-                                            {purchase.status === "Pendente" && (
+                                        <td className="px-4 py-3 text-xs text-center">
+                                            {purchase.finalPaymentDate ? purchase.finalPaymentDate.split("T")[0].split("-").reverse().join("/") : "--"}
+                                        </td>
+
+                                        <td className="px-4 py-3 text-xs text-center">
+                                            <span className="text-gray-700 font-medium">
+                                                {purchase.bank || "--"}
+                                            </span>
+                                        </td>
+
+                                        <td className="px-4 py-3 text-xs text-center">
+                                            <section className="flex items-center">
+                                                {/* Botão de editar */}
                                                 <button
                                                     type="button"
-                                                    onClick={() => handleDeletePurchase(purchase._id)}
-                                                    className="text-red-600 cursor-pointer hover:text-red-800 p-2 rounded-lg hover:bg-red-50/50 transition-all duration-200"
-                                                    title="Excluir compra"
-                                                    aria-label="Excluir compra"
+                                                    onClick={() => handleStartEdit(purchase)}
+                                                    className="text-emerald-600 cursor-pointer hover:text-emerald-800 p-2 rounded-lg hover:bg-emerald-50/50 transition-all duration-200"
+                                                    title="Editar compra"
+                                                    aria-label="Editar compra"
                                                 >
-                                                    <FaTrash size={18} />
+                                                    <FaEdit size={18} />
                                                 </button>
-                                            )}
-                                        </section>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </section>
+
+                                                {purchase.status === "Pendente" && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleDeletePurchase(purchase._id)}
+                                                        className="text-red-600 cursor-pointer hover:text-red-800 p-2 rounded-lg hover:bg-red-50 transition-all duration-200"
+                                                        title="Excluir compra"
+                                                        aria-label="Excluir compra"
+                                                    >
+                                                        <FaTrash size={18} />
+                                                    </button>
+                                                )}
+                                            </section>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </section>
+
+                    <section className="flex items-center justify-between gap-4 mt-4">
+                        <button
+                            type="button"
+                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                            disabled={currentPage === 1}
+                            className={`px-4 py-2 rounded-lg font-semibold transition-all duration-200 border-2 ${currentPage === 1 ? "bg-gray-200 text-gray-500 border-gray-200 cursor-not-allowed" : "bg-white text-emerald-700 border-emerald-300 hover:bg-emerald-50 cursor-pointer"}`}
+                        >
+                            ← Anterior
+                        </button>
+
+                        <p className="text-sm text-gray-600">
+                            Página {currentPage} de {totalPages} — mostrando {totalItems ? (startIndex + 1) : 0}–{startIndex + currentItems.length} de {totalItems}
+                        </p>
+
+                        <button
+                            type="button"
+                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                            disabled={currentPage === totalPages}
+                            className={`px-4 py-2 rounded-lg font-semibold transition-all duration-200 border-2 ${currentPage === totalPages ? "bg-gray-200 text-gray-500 border-gray-200 cursor-not-allowed" : "bg-white text-emerald-700 border-emerald-300 hover:bg-emerald-50 cursor-pointer"}`}
+                        >
+                            Próxima →
+                        </button>
+                    </section>
+                </>
             )}
 
             {/* Modal de Edição */}
