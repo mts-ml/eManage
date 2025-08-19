@@ -155,7 +155,7 @@ export const Sales: React.FC = () => {
 
             setLastSale(sale)
         } catch (error) {
-            console.error(error)
+            logError("Sales", error);
             alert('Erro ao finalizar a venda.')
             return
         }
