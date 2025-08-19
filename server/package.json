@@ -1,7 +1,7 @@
 {
-  "name": "server",
+  "name": "emanage-server",
   "version": "1.0.0",
-  "description": "",
+  "description": "Servidor backend para o sistema eManage",
   "main": "index.js",
   "scripts": {
     "dev": "nodemon --exec tsx src/server.ts",
