@@ -5,6 +5,7 @@ import autoTable from "jspdf-autotable"
 
 import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
 import type { Receivable, Payable, ExpenseFromBackend } from "../types/types"
+import { logError } from '../utils/logger';
 
 // Interface para estender jsPDF com propriedades do autoTable
 interface JsPDFWithAutoTable extends jsPDF {
@@ -97,7 +98,7 @@ export const Reports: React.FC = () => {
 
             setAvailableBanks(Array.from(allBanks).sort())
          } catch (error) {
-            console.error("Erro ao buscar bancos:", error)
+            logError("Reports", error);
          }
       }
 
@@ -344,7 +345,7 @@ export const Reports: React.FC = () => {
          })
 
       } catch (error) {
-         console.error("Erro ao buscar transações:", error)
+         logError("Reports", error);
       } finally {
          setIsLoading(false)
       }
