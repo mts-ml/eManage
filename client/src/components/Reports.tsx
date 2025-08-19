@@ -369,7 +369,7 @@ export const Reports: React.FC = () => {
       // Cabeçalho
       doc.setFontSize(20)
       doc.setTextColor(16, 185, 129) // emerald-600
-      doc.text("PANDA ALIMENTOS", pageWidth / 2, yPosition, { align: "center" })
+      doc.text("eManage", pageWidth / 2, yPosition, { align: "center" })
       yPosition += 10
 
       doc.setFontSize(16)
