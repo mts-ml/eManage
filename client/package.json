@@ -1,10 +1,10 @@
 {
-  "name": "panda-alimentos",
-  "description": "Aplicativo desktop Panda Alimentos",
+  "name": "eManage",
+  "description": "Aplicativo desktop eManage",
   "author": "Mateus Moreira Lima",
-  "productName": "Panda Alimentos",
+  "productName": "eManage",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "main": "dist-electron/main.js",
   "scripts": {
