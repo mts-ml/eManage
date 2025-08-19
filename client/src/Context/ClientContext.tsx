@@ -3,6 +3,7 @@ import { createContext, useContext, useEffect, useState } from "react"
 import type { Client, ClientFromBackend } from "../types/types"
 import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
 import AuthContext from "./AuthContext"
+import { logError } from '../utils/logger';
 
 
 interface ClientsProviderProps {
@@ -44,7 +45,7 @@ export const ClientsProvider: React.FC<ClientsProviderProps> = ({ children }) =>
                 }))
                 setClients(normalizeClient)
             } catch (error) {
-                console.error("Erro ao carregar clientes", error)
+                logError("ClientContext", error);
             }
         }
         getClients()
@@ -60,5 +61,4 @@ export const ClientsProvider: React.FC<ClientsProviderProps> = ({ children }) =>
         </ClientContext.Provider>
     )
 }
-
 export default ClientContext
