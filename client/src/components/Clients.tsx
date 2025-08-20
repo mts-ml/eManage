@@ -4,7 +4,7 @@ import { FaTrash, FaEdit, FaSearch } from 'react-icons/fa'
 import type { Client, ClientErrors, ClientFromBackend } from "../types/types"
 import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
 import axios from "axios"
-import ClientContext from "../Context/ClientContext"
+import ClientContext, { ClientsProvider } from "../Context/ClientContext"
 import {
     capitalizeWords,
     isValidCPF,
@@ -12,8 +12,16 @@ import {
     formatPhoneForDisplay
 } from "../utils/utils"
 
-
 export const Clients: React.FC = () => {
+   return (
+      <ClientsProvider>
+         <ClientsContent />
+      </ClientsProvider>
+   )
+}
+
+// Conteúdo do componente
+const ClientsContent: React.FC = () => {
     const defaultClient: Client = {
         name: "",
         email: "",
