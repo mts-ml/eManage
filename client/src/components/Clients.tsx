@@ -5,12 +5,14 @@ import type { Client, ClientErrors, ClientFromBackend } from "../types/types"
 import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
 import axios from "axios"
 import ClientContext, { ClientsProvider } from "../Context/ClientContext"
+import { TableSkeleton } from "./TableSkeleton"
 import {
     capitalizeWords,
     isValidCPF,
     isValidCNPJ,
     formatPhoneForDisplay
 } from "../utils/utils"
+import { logError } from "../utils/logger"
 
 export const Clients: React.FC = () => {
    return (
@@ -40,11 +42,33 @@ const ClientsContent: React.FC = () => {
     const [editingClientId, setEditingClientId] = useState<string | null>(null)
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
     const [searchTerm, setSearchTerm] = useState<string>("")
+    const [isLoading, setIsLoading] = useState(true)
     const { clients, setClients } = useContext(ClientContext)
     const axiosPrivate = useAxiosPrivate()
     const formRef = useRef<HTMLElement>(null)
     const [currentPage, setCurrentPage] = useState(1)
     const pageSize = 20
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const response = await axiosPrivate.get('/clients')
+                if (response.status !== 204) {
+                    const normalizedClients = response.data.map((client: ClientFromBackend) => ({
+                        ...client,
+                        id: client._id
+                    }))
+                    setClients(normalizedClients)
+                }
+            } catch (error) {
+                logError("Clients", error)
+            } finally {
+                setIsLoading(false)
+            }
+        }
+
+        fetchData()
+    }, [axiosPrivate, setClients])
 
     // Filtrar clientes baseado no termo de busca (nome ou CPF/CNPJ)
     const filteredClients = clients.filter(client => {
@@ -445,57 +469,61 @@ const ClientsContent: React.FC = () => {
                     </h2>
 
                     <section className="overflow-auto border-2 border-emerald-200/50 rounded-2xl shadow-xl mb-10 max-h-[70vh] bg-white/90 backdrop-blur-sm">
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gradient-to-r from-emerald-600 to-green-600 text-white sticky top-0 z-10">
-                                <tr>
-                                    <th className="px-6 py-4 text-sm font-semibold text-center">Nome</th>
-                                    <th className="px-6 py-4 text-sm font-semibold text-center">E-mail</th>
-                                    <th className="px-6 py-4 text-sm font-semibold text-center">Telefone</th>
-                                    <th className="px-6 py-4 text-sm font-semibold text-center">Documento</th>
-                                    <th className="px-6 py-4 text-sm font-semibold text-center">Ações</th>
-                                </tr>
-                            </thead>
-
-                            <tbody className="bg-white divide-y divide-gray-100">
-                                {currentItems.map(client => (
-                                    <tr key={client.id} className="hover:bg-emerald-50/50 transition-colors duration-200">
-                                        <td className="px-6 py-4 text-sm font-medium whitespace-nowrap text-center">{client.name}</td>
-
-                                        <td className="px-6 py-4 text-sm break-words text-emerald-700 text-center">{client.email}</td>
-
-                                        <td className="px-6 py-4 text-sm whitespace-nowrap font-medium text-center">{formatPhoneForDisplay(client.phone)}</td>
-
-                                        <td className="px-6 py-4 text-sm whitespace-nowrap font-mono text-center">
-                                            {client.cpfCnpj.length === 11
-                                                ? client.cpfCnpj.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4")
-                                                : client.cpfCnpj.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, "$1.$2.$3/$4-$5")}
-                                        </td>
-
-                                        <td className="px-6 py-4 text-sm flex justify-center">
-                                            <button
-                                                type="button"
-                                                onClick={() => handleEdit(client)}
-                                                className="text-emerald-600 cursor-pointer hover:text-emerald-800 p-2 rounded-lg hover:bg-emerald-50/50 transition-all duration-200"
-                                                aria-label="Editar cliente."
-                                                title="Editar cliente"
-                                            >
-                                                <FaEdit size={18} />
-                                            </button>
-
-                                            <button
-                                                type="button"
-                                                onClick={() => handleDelete(client.id!)}
-                                                className="text-red-600 cursor-pointer hover:text-red-800 p-2 rounded-lg hover:bg-red-50 transition-all duration-200"
-                                                aria-label="Excluir cliente"
-                                                title="Excluir cliente"
-                                            >
-                                                <FaTrash size={18} />
-                                            </button>
-                                        </td>
+                        {isLoading ? (
+                            <TableSkeleton />
+                        ) : (
+                            <table className="min-w-full divide-y divide-gray-200">
+                                <thead className="bg-gradient-to-r from-emerald-600 to-green-600 text-white sticky top-0 z-10">
+                                    <tr>
+                                        <th className="px-6 py-4 text-sm font-semibold text-center">Nome</th>
+                                        <th className="px-6 py-4 text-sm font-semibold text-center">E-mail</th>
+                                        <th className="px-6 py-4 text-sm font-semibold text-center">Telefone</th>
+                                        <th className="px-6 py-4 text-sm font-semibold text-center">Documento</th>
+                                        <th className="px-6 py-4 text-sm font-semibold text-center">Ações</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+
+                                <tbody className="bg-white divide-y divide-gray-100">
+                                    {currentItems.map(client => (
+                                        <tr key={client.id} className="hover:bg-emerald-50/50 transition-colors duration-200">
+                                            <td className="px-6 py-4 text-sm font-medium whitespace-nowrap text-center">{client.name}</td>
+
+                                            <td className="px-6 py-4 text-sm break-words text-emerald-700 text-center">{client.email}</td>
+
+                                            <td className="px-6 py-4 text-sm whitespace-nowrap font-medium text-center">{formatPhoneForDisplay(client.phone)}</td>
+
+                                            <td className="px-6 py-4 text-sm whitespace-nowrap font-mono text-center">
+                                                {client.cpfCnpj.length === 11
+                                                    ? client.cpfCnpj.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4")
+                                                    : client.cpfCnpj.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, "$1.$2.$3/$4-$5")}
+                                            </td>
+
+                                            <td className="px-6 py-4 text-sm flex justify-center">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleEdit(client)}
+                                                    className="text-emerald-600 cursor-pointer hover:text-emerald-800 p-2 rounded-lg hover:bg-emerald-50/50 transition-all duration-200"
+                                                    aria-label="Editar cliente."
+                                                    title="Editar cliente"
+                                                >
+                                                    <FaEdit size={18} />
+                                                </button>
+
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleDelete(client.id!)}
+                                                    className="text-red-600 cursor-pointer hover:text-red-800 p-2 rounded-lg hover:bg-red-50 transition-all duration-200"
+                                                    aria-label="Excluir cliente"
+                                                    title="Excluir cliente"
+                                                >
+                                                    <FaTrash size={18} />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        )}
                     </section>
 
                     <section className="flex items-center justify-between gap-4 mt-4">
