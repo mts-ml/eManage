@@ -51,6 +51,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
+  <!-- CSS principal (bloqueia render para evitar flash sem estilo) -->
+  <link rel="stylesheet" href="/src/index.css">
+
   <!-- Meta tags para dispositivos móveis -->
   <meta name="msapplication-TileColor" content="#10b981" />
   <meta name="mobile-web-app-capable" content="yes" />
@@ -72,6 +75,13 @@
   " />
 
   <style>
+    /* CSS crítico para evitar tela preta/sem estilo antes do bundle */
+    html, body, #root {
+      min-height: 100vh;
+      width: 100%;
+      background: linear-gradient(135deg, #fafdf9 0%, #f8fdfa 50%, #f0fdf4 100%);
+    }
+
     .loading-critical {
       min-height: 100vh;
       display: flex;
