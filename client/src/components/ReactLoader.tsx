@@ -12,7 +12,8 @@ export function Loading() {
         aria-label="Loading Spinner"
         data-testid="loader"
       />
-      <p className="font-medium text-[#10b981]">
+
+      <p className="font-medium text-[#10b981] mt-2">
         Loading...
       </p>
     </div>
