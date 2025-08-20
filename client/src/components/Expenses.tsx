@@ -59,8 +59,9 @@ export const Expenses: React.FC = () => {
                     bValue = Number(b.value)
                     break
                 case 'dueDate':
-                    aValue = a.dueDate ? new Date(a.dueDate) : new Date(0)
-                    bValue = b.dueDate ? new Date(b.dueDate) : new Date(0)
+                    // Converter data ISO para número para evitar problemas de timezone na ordenação
+                    aValue = a.dueDate ? parseInt(a.dueDate.replace(/-/g, '')) : 0
+                    bValue = b.dueDate ? parseInt(b.dueDate.replace(/-/g, '')) : 0
                     break
                 case 'status':
                     aValue = (a.status || 'Pendente').toLowerCase()
@@ -191,15 +192,24 @@ export const Expenses: React.FC = () => {
     }
 
     function getNextMonthDate(currentDate: string, monthsToAdd: number): string {
-        const date = new Date(currentDate)
-        date.setMonth(date.getMonth() + monthsToAdd)
-
-        // Garantir que a data seja formatada corretamente
-        const year = date.getFullYear()
-        const month = String(date.getMonth() + 1).padStart(2, '0')
-        const day = String(date.getDate()).padStart(2, '0')
-
-        return `${year}-${month}-${day}`
+        // Criar data local sem timezone para evitar problemas de conversão
+        const [year, month, day] = currentDate.split('-').map(Number)
+        
+        // Calcular nova data manualmente para evitar problemas de timezone
+        let newYear = year
+        let newMonth = month + monthsToAdd
+        
+        // Ajustar ano se necessário
+        while (newMonth > 12) {
+            newMonth -= 12
+            newYear += 1
+        }
+        
+        // Garantir que a data seja formatada corretamente como string local
+        const formattedMonth = String(newMonth).padStart(2, '0')
+        const formattedDay = String(day).padStart(2, '0')
+        
+        return `${newYear}-${formattedMonth}-${formattedDay}`
     }
 
     function handleEdit(expense: Expense) {
