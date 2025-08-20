@@ -1,34 +1,70 @@
-import { useContext, useEffect, useState } from "react"
-import { X } from "lucide-react"
+import { useEffect, useState } from "react"
 import { FaSearch } from 'react-icons/fa'
+import { X } from "lucide-react"
 import type { AxiosResponse } from "axios"
 
-
-import ProductsContext from "../Context/ProductsContext"
-import SupplierContext from "../Context/SupplierContext"
-import type { Product, PurchasePayload, PurchaseResponse } from "../types/types"
+import type { Product, Supplier, PurchasePayload, PurchaseResponse } from "../types/types"
 import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
 import { logError } from "../utils/logger"
-
+import { TableSkeleton } from "./TableSkeleton"
 
 interface CartItem extends Product {
     quantity: number
 }
 
 export const Purchases: React.FC = () => {
-    const { suppliers } = useContext(SupplierContext)
-    const { products, setProducts } = useContext(ProductsContext)
-
     const [cart, setCart] = useState<CartItem[]>([])
     const [lastPurchase, setLastPurchase] = useState<PurchaseResponse["purchase"] | null>(null)
     const [selectedSupplierId, setSelectedSupplierId] = useState<string>("")
     const [selectedProductId, setSelectedProductId] = useState<string>("")
-    const [quantity, setQuantity] = useState<number>(1)
+    const [quantity, setQuantity] = useState<number>(0)
     const [customPrice, setCustomPrice] = useState<string>("")
-    const [invoiceNumber, setInvoiceNumber] = useState<string>("")
     const [supplierSearchTerm, setSupplierSearchTerm] = useState<string>("")
     const [productSearchTerm, setProductSearchTerm] = useState<string>("")
+    const [invoiceNumber, setInvoiceNumber] = useState<string>("")
+    const [isLoading, setIsLoading] = useState(true)
+    const [products, setProducts] = useState<Product[]>([])
+    const [suppliers, setSuppliers] = useState<Supplier[]>([])
+
     const axiosPrivate = useAxiosPrivate()
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const [productsResponse, suppliersResponse, lastPurchaseResponse] = await Promise.all([
+                    axiosPrivate.get('/products'),
+                    axiosPrivate.get('/suppliers'),
+                    axiosPrivate.get('/purchases/last')
+                ])
+
+                if (productsResponse.status !== 204) {
+                    const normalizedProducts = productsResponse.data.map((product: Product & { _id: string }) => ({
+                        ...product,
+                        id: product._id
+                    }))
+                    setProducts(normalizedProducts)
+                }
+
+                if (suppliersResponse.status !== 204) {
+                    const normalizedSuppliers = suppliersResponse.data.map((supplier: Supplier & { _id: string }) => ({
+                        ...supplier,
+                        id: supplier._id
+                    }))
+                    setSuppliers(normalizedSuppliers)
+                }
+
+                if (lastPurchaseResponse.status !== 204) {
+                    setLastPurchase(lastPurchaseResponse.data.purchase)
+                }
+            } catch (error) {
+                logError("Purchases", error)
+            } finally {
+                setIsLoading(false)
+            }
+        }
+
+        fetchData()
+    }, [axiosPrivate])
 
     // Filtrar fornecedores baseado no termo de busca
     const filteredSuppliers = suppliers.filter(supplier => {
@@ -134,7 +170,7 @@ export const Purchases: React.FC = () => {
 
             setProducts((prev: Product[]) =>
                 prev.map(product => {
-                    const updatedProduct = updatedProducts.find(p => p.id === product.id)
+                    const updatedProduct = updatedProducts.find((p: Product) => p.id === product.id)
 
                     return updatedProduct ? { ...product, stock: updatedProduct.stock } : product
                 })
@@ -552,64 +588,67 @@ export const Purchases: React.FC = () => {
                         </div>
 
                         <section className="overflow-x-auto">
-                            <table className="w-full">
-                                <thead className="bg-emerald-50">
-                                    <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-emerald-700 uppercase tracking-wider">
-                                            Produto
-                                        </th>
+                            {isLoading ? (
+                                <TableSkeleton />
+                            ) : (
+                                <table className="w-full">
+                                    <thead className="bg-emerald-50">
+                                        <tr>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-emerald-700 uppercase tracking-wider">
+                                                Produto
+                                            </th>
 
-                                        <th className="px-6 py-3 text-center text-xs font-medium text-emerald-700 uppercase tracking-wider">
-                                            Quantidade
-                                        </th>
+                                            <th className="px-6 py-3 text-center text-xs font-medium text-emerald-700 uppercase tracking-wider">
+                                                Quantidade
+                                            </th>
 
-                                        <th className="px-6 py-3 text-center text-xs font-medium text-emerald-700 uppercase tracking-wider">
-                                            Preço Unit.
-                                        </th>
+                                            <th className="px-6 py-3 text-center text-xs font-medium text-emerald-700 uppercase tracking-wider">
+                                                Preço Unit.
+                                            </th>
 
-                                        <th className="px-6 py-3 text-right text-xs font-medium text-emerald-700 uppercase tracking-wider">
-                                            Subtotal
-                                        </th>
-                                    </tr>
-                                </thead>
-
-                                <tbody className="divide-y divide-emerald-100">
-                                    {lastPurchase.items.map((item, index) => (
-                                        <tr key={index} className="hover:bg-emerald-50/50 transition-colors">
-                                            <td className="px-6 py-4">
-                                                <section className="flex items-center">
-
-                                                    <section className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center mr-3">
-                                                        <span className="text-emerald-600 text-sm font-semibold">
-                                                            {index + 1}
-                                                        </span>
-                                                    </section>
-
-                                                    <span className="text-gray-900 font-medium">{item.productName}</span>
-                                                </section>
-                                            </td>
-
-                                            <td className="px-6 py-4 text-center">
-                                                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-emerald-100 text-emerald-800">
-                                                    {item.quantity}x
-                                                </span>
-                                            </td>
-
-                                            <td className="px-6 py-4 text-center">
-                                                <span className="text-gray-700 font-medium">
-                                                    {Number(item.price).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-                                                </span>
-                                            </td>
-
-                                            <td className="px-6 py-4 text-right">
-                                                <span className="text-emerald-700 font-bold">
-                                                    {(Number(item.price) * item.quantity).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-                                                </span>
-                                            </td>
+                                            <th className="px-6 py-3 text-right text-xs font-medium text-emerald-700 uppercase tracking-wider">
+                                                Subtotal
+                                            </th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                    </thead>
+
+                                    <tbody className="divide-y divide-emerald-100">
+                                        {(lastPurchase.items || []).map((item, index) => (
+                                            <tr key={index} className="hover:bg-emerald-50/50 transition-colors">
+                                                <td className="px-6 py-4">
+                                                    <div className="flex items-center">
+                                                        <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center mr-3">
+                                                            <span className="text-emerald-600 text-sm font-semibold">
+                                                                {index + 1}
+                                                            </span>
+                                                        </div>
+
+                                                        <span className="text-gray-900 font-medium">{item.productName}</span>
+                                                    </div>
+                                                </td>
+
+                                                <td className="px-6 py-4 text-center">
+                                                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-emerald-100 text-emerald-800">
+                                                        {item.quantity}x
+                                                    </span>
+                                                </td>
+
+                                                <td className="px-6 py-4 text-center">
+                                                    <span className="text-gray-700 font-medium">
+                                                        {Number(item.price).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                                                    </span>
+                                                </td>
+
+                                                <td className="px-6 py-4 text-right">
+                                                    <span className="text-emerald-700 font-bold">
+                                                        {(Number(item.price) * item.quantity).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            )}
                         </section>
 
                         {/* Total */}

@@ -5,6 +5,8 @@ import { FaTrash, FaEdit } from 'react-icons/fa'
 import type { Expense, ExpenseErrors, ExpenseFromBackend } from "../types/types"
 import ExpenseContext, { ExpensesProvider } from "../Context/ExpensesContext"
 import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
+import { TableSkeleton } from "./TableSkeleton"
+import { logError } from "../utils/logger"
 
 // Wrapper com provider
 export const Expenses: React.FC = () => {
@@ -47,6 +49,7 @@ const ExpensesContent: React.FC = () => {
     const [currentPage, setCurrentPage] = useState(1)
     const pageSize = 20
     const [sortConfig, setSortConfig] = useState<SortConfig>({ field: 'expenseNumber', order: 'desc' })
+    const [isLoading, setIsLoading] = useState(true)  // ← Novo estado
 
     const { expenses, setExpenses, lastExpense, getLastExpense } = useContext(ExpenseContext)
     const axiosPrivate = useAxiosPrivate()
@@ -112,9 +115,21 @@ const ExpensesContent: React.FC = () => {
     // Despesas ordenadas
     const sortedExpenses = sortExpenses(expenses, sortConfig)
 
+    // Fetch paralelo - dados carregam em background
     useEffect(() => {
-        getLastExpense()
-    }, [])
+        const fetchData = async () => {
+            try {
+                await getLastExpense()
+            } catch (error) {
+                logError("Expenses", error)
+            } finally {
+                setIsLoading(false)  // ← Para o loading
+            }
+        }
+
+        // Inicia fetch IMEDIATAMENTE
+        fetchData()
+    }, [getLastExpense])
 
     useEffect(() => {
         setCurrentPage(prev => {
@@ -587,156 +602,160 @@ const ExpensesContent: React.FC = () => {
                     </header>
 
                     <section className="overflow-auto border-2 border-emerald-200/50 rounded-2xl shadow-xl mb-10 max-h-[70vh] bg-white/90 backdrop-blur-sm">
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gradient-to-r from-emerald-600 to-green-600 text-white sticky top-0 z-10">
-                                <tr>
-                                    <th 
-                                        className="px-4 py-3 text-xs font-semibold text-center cursor-pointer hover:bg-emerald-700 transition-colors duration-200 select-none"
-                                        onClick={() => handleSort('expenseNumber')}
-                                        title="Clique para ordenar por número da despesa"
-                                    >
-                                        <div className="flex items-center justify-center gap-1">
-                                            Número
-                                            <span className="text-xs">{getSortIcon('expenseNumber')}</span>
-                                        </div>
-                                    </th>
-                                    <th 
-                                        className="px-4 py-3 text-xs font-semibold text-center cursor-pointer hover:bg-emerald-700 transition-colors duration-200 select-none"
-                                        onClick={() => handleSort('name')}
-                                        title="Clique para ordenar por nome da despesa"
-                                    >
-                                        <div className="flex items-center justify-center gap-1">
-                                            Despesa
-                                            <span className="text-xs">{getSortIcon('name')}</span>
-                                        </div>
-                                    </th>
-                                    <th className="px-4 py-3 text-xs font-semibold text-center">Descrição</th>
-                                    <th 
-                                        className="px-4 py-3 text-xs font-semibold text-center cursor-pointer hover:bg-emerald-700 transition-colors duration-200 select-none"
-                                        onClick={() => handleSort('value')}
-                                        title="Clique para ordenar por valor"
-                                    >
-                                        <div className="flex items-center justify-center gap-1">
-                                            Valor
-                                            <span className="text-xs">{getSortIcon('value')}</span>
-                                        </div>
-                                    </th>
-                                    <th 
-                                        className="px-4 py-3 text-xs font-semibold text-center cursor-pointer hover:bg-emerald-700 transition-colors duration-200 select-none"
-                                        onClick={() => handleSort('dueDate')}
-                                        title="Clique para ordenar por data de vencimento"
-                                    >
-                                        <div className="flex items-center justify-center gap-1">
-                                            Data Vencimento
-                                            <span className="text-xs">{getSortIcon('dueDate')}</span>
-                                        </div>
-                                    </th>
-                                    <th 
-                                        className="px-4 py-3 text-xs font-semibold text-center cursor-pointer hover:bg-emerald-700 transition-colors duration-200 select-none"
-                                        onClick={() => handleSort('status')}
-                                        title="Clique para ordenar por status"
-                                    >
-                                        <div className="flex items-center justify-center gap-1">
-                                            Status
-                                            <span className="text-xs">{getSortIcon('status')}</span>
-                                        </div>
-                                    </th>
-                                    <th className="px-4 py-3 text-xs font-semibold text-center">Banco</th>
-                                    <th className="px-4 py-3 text-xs font-semibold text-center">Ações</th>
-                                </tr>
-                            </thead>
+                        {isLoading ? (
+                            <TableSkeleton />
+                        ) : (
+                            <table className="min-w-full divide-y divide-gray-200">
+                                <thead className="bg-gradient-to-r from-emerald-600 to-green-600 text-white sticky top-0 z-10">
+                                    <tr>
+                                        <th 
+                                            className="px-4 py-3 text-xs font-semibold text-center cursor-pointer hover:bg-emerald-700 transition-colors duration-200 select-none"
+                                            onClick={() => handleSort('expenseNumber')}
+                                            title="Clique para ordenar por número da despesa"
+                                        >
+                                            <div className="flex items-center justify-center gap-1">
+                                                Número
+                                                <span className="text-xs">{getSortIcon('expenseNumber')}</span>
+                                            </div>
+                                        </th>
+                                        <th 
+                                            className="px-4 py-3 text-xs font-semibold text-center cursor-pointer hover:bg-emerald-700 transition-colors duration-200 select-none"
+                                            onClick={() => handleSort('name')}
+                                            title="Clique para ordenar por nome da despesa"
+                                        >
+                                            <div className="flex items-center justify-center gap-1">
+                                                Despesa
+                                                <span className="text-xs">{getSortIcon('name')}</span>
+                                            </div>
+                                        </th>
+                                        <th className="px-4 py-3 text-xs font-semibold text-center">Descrição</th>
+                                        <th 
+                                            className="px-4 py-3 text-xs font-semibold text-center cursor-pointer hover:bg-emerald-700 transition-colors duration-200 select-none"
+                                            onClick={() => handleSort('value')}
+                                            title="Clique para ordenar por valor"
+                                        >
+                                            <div className="flex items-center justify-center gap-1">
+                                                Valor
+                                                <span className="text-xs">{getSortIcon('value')}</span>
+                                            </div>
+                                        </th>
+                                        <th 
+                                            className="px-4 py-3 text-xs font-semibold text-center cursor-pointer hover:bg-emerald-700 transition-colors duration-200 select-none"
+                                            onClick={() => handleSort('dueDate')}
+                                            title="Clique para ordenar por data de vencimento"
+                                        >
+                                            <div className="flex items-center justify-center gap-1">
+                                                Data Vencimento
+                                                <span className="text-xs">{getSortIcon('dueDate')}</span>
+                                            </div>
+                                        </th>
+                                        <th 
+                                            className="px-4 py-3 text-xs font-semibold text-center cursor-pointer hover:bg-emerald-700 transition-colors duration-200 select-none"
+                                            onClick={() => handleSort('status')}
+                                            title="Clique para ordenar por status"
+                                        >
+                                            <div className="flex items-center justify-center gap-1">
+                                                Status
+                                                <span className="text-xs">{getSortIcon('status')}</span>
+                                            </div>
+                                        </th>
+                                        <th className="px-4 py-3 text-xs font-semibold text-center">Banco</th>
+                                        <th className="px-4 py-3 text-xs font-semibold text-center">Ações</th>
+                                    </tr>
+                                </thead>
 
-                            <tbody className="bg-white divide-y divide-gray-100">
-                                {currentItems.map(exp => (
-                                    <tr key={exp.id} className="hover:bg-emerald-50/50 transition-colors duration-200">
-                                        <td className="px-4 py-3 text-xs font-bold text-emerald-700 text-center">
-                                            #{exp.expenseNumber}
-                                        </td>
+                                <tbody className="bg-white divide-y divide-gray-100">
+                                    {currentItems.map(exp => (
+                                        <tr key={exp.id} className="hover:bg-emerald-50/50 transition-colors duration-200">
+                                            <td className="px-4 py-3 text-xs font-bold text-emerald-700 text-center">
+                                                #{exp.expenseNumber}
+                                            </td>
 
-                                        <td className="px-4 py-3 text-xs font-semibold text-gray-800 text-center">
-                                            {exp.name}
-                                        </td>
+                                            <td className="px-4 py-3 text-xs font-semibold text-gray-800 text-center">
+                                                {exp.name}
+                                            </td>
 
-                                        <td className="px-4 py-3 text-xs text-gray-600 text-center">
-                                            {exp.description || "-"}
-                                        </td>
+                                            <td className="px-4 py-3 text-xs text-gray-600 text-center">
+                                                {exp.description || "-"}
+                                            </td>
 
-                                        <td className="px-4 py-3 text-xs font-bold text-emerald-700 text-center">
-                                            {Number(exp.value).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-                                        </td>
+                                            <td className="px-4 py-3 text-xs font-bold text-emerald-700 text-center">
+                                                {Number(exp.value).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                                            </td>
 
-                                        <td className="px-4 py-3 text-xs text-center">
-                                            {exp.dueDate ? exp.dueDate.split('-').reverse().join('/') : "-"}
-                                        </td>
+                                            <td className="px-4 py-3 text-xs text-center">
+                                                {exp.dueDate ? exp.dueDate.split('-').reverse().join('/') : "-"}
+                                            </td>
 
-                                        <td className="px-4 py-3 text-xs text-center">
-                                            <select
-                                                aria-label="Status da despesa"
-                                                className={`border-2 rounded-lg p-1 text-xs cursor-pointer transition-all duration-200 ${exp.status === "Pago" ? "bg-green-50 text-green-700 border-green-400" : exp.status === "Pendente" ? "bg-red-50 text-red-700 border-red-200" : "border-gray-200"}`}
-                                                value={exp.status || "Pendente"}
-                                                onChange={e => handleStatusChange(exp.id!, e.target.value as "Pendente" | "Pago")}
-                                            >
-                                                <option value="Pendente">Pendente</option>
-                                                <option value="Pago">Pago</option>
-                                            </select>
-                                        </td>
+                                            <td className="px-4 py-3 text-xs text-center">
+                                                <select
+                                                    aria-label="Status da despesa"
+                                                    className={`border-2 rounded-lg p-1 text-xs cursor-pointer transition-all duration-200 ${exp.status === "Pago" ? "bg-green-50 text-green-700 border-green-400" : exp.status === "Pendente" ? "bg-red-50 text-red-700 border-red-200" : "border-gray-200"}`}
+                                                    value={exp.status || "Pendente"}
+                                                    onChange={e => handleStatusChange(exp.id!, e.target.value as "Pendente" | "Pago")}
+                                                >
+                                                    <option value="Pendente">Pendente</option>
+                                                    <option value="Pago">Pago</option>
+                                                </select>
+                                            </td>
 
-                                        <td className="px-4 py-3 text-xs text-center">
-                                            <input
-                                                type="text"
-                                                value={exp.bank || ""}
-                                                onChange={e => handleBankChange(exp.id!, e.target.value)}
-                                                placeholder="Banco"
-                                                className="border-2 border-gray-200 rounded-lg p-1 w-full text-xs focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200 cursor-text"
-                                            />
+                                            <td className="px-4 py-3 text-xs text-center">
+                                                <input
+                                                    type="text"
+                                                    value={exp.bank || ""}
+                                                    onChange={e => handleBankChange(exp.id!, e.target.value)}
+                                                    placeholder="Banco"
+                                                    className="border-2 border-gray-200 rounded-lg p-1 w-full text-xs focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200 cursor-text"
+                                                />
 
-                                            {inlineErrors[exp.id!] && (
-                                                <p className="text-red-500 text-xs mt-1 flex items-center justify-center">
-                                                    <span className="mr-1">⚠️</span>
-                                                    {inlineErrors[exp.id!]}
-                                                </p>
-                                            )}
-                                        </td>
+                                                {inlineErrors[exp.id!] && (
+                                                    <p className="text-red-500 text-xs mt-1 flex items-center justify-center">
+                                                        <span className="mr-1">⚠️</span>
+                                                        {inlineErrors[exp.id!]}
+                                                    </p>
+                                                )}
+                                            </td>
 
-                                        <td className="px-4 py-3 text-xs text-center">
-                                            <div className="flex gap-2 justify-center">
-                                                {modifiedId === exp.id ? (
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => handleSave(exp.id!)}
-                                                        className="bg-gradient-to-r from-emerald-600 to-green-600 cursor-pointer text-white px-3 py-1 rounded-lg text-xs font-semibold hover:from-emerald-700 hover:to-green-700 transition-all duration-300 shadow-md hover:shadow-lg"
-                                                    >
-                                                        💾 Salvar
-                                                    </button>
-                                                ) : (
-                                                    <>
+                                            <td className="px-4 py-3 text-xs text-center">
+                                                <div className="flex gap-2 justify-center">
+                                                    {modifiedId === exp.id ? (
                                                         <button
                                                             type="button"
-                                                            onClick={() => handleEdit(exp)}
-                                                            className="text-emerald-600 cursor-pointer hover:text-emerald-800 p-2 rounded-lg hover:bg-emerald-50/50 transition-all duration-200"
-                                                            aria-label="Editar despesa"
+                                                            onClick={() => handleSave(exp.id!)}
+                                                            className="bg-gradient-to-r from-emerald-600 to-green-600 cursor-pointer text-white px-3 py-1 rounded-lg text-xs font-semibold hover:from-emerald-700 hover:to-green-700 transition-all duration-300 shadow-md hover:shadow-lg"
                                                         >
-                                                            <FaEdit size={18} />
+                                                            💾 Salvar
                                                         </button>
-
-                                                        {exp.status === "Pendente" && (
+                                                    ) : (
+                                                        <>
                                                             <button
                                                                 type="button"
-                                                                onClick={() => handleDelete(exp.id!)}
-                                                                className="text-red-600 cursor-pointer hover:text-red-800 p-2 rounded-lg hover:bg-red-50 transition-all duration-200"
-                                                                aria-label="Excluir despesa"
+                                                                onClick={() => handleEdit(exp)}
+                                                                className="text-emerald-600 cursor-pointer hover:text-emerald-800 p-2 rounded-lg hover:bg-emerald-50/50 transition-all duration-200"
+                                                                aria-label="Editar despesa"
                                                             >
-                                                                <FaTrash size={18} />
+                                                                <FaEdit size={18} />
                                                             </button>
-                                                        )}
-                                                    </>
-                                                )}
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+
+                                                            {exp.status === "Pendente" && (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => handleDelete(exp.id!)}
+                                                                    className="text-red-600 cursor-pointer hover:text-red-800 p-2 rounded-lg hover:bg-red-50 transition-all duration-200"
+                                                                    aria-label="Excluir despesa"
+                                                                >
+                                                                    <FaTrash size={18} />
+                                                                </button>
+                                                            )}
+                                                        </>
+                                                    )}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        )}
                     </section>
 
                     <section className="flex items-center justify-between gap-4 mt-4">
