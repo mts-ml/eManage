@@ -94,7 +94,7 @@ export const Login: React.FC = () => {
             const decodedToken: CustomJwtPayload = jwtDecode(accessToken)
             const { name, email, roles } = decodedToken.UserInfo
             setAuth({ name, email, roles, accessToken })
-            
+
             setIsLoggedIn(true)
             setForm(defaultValues)
             setErrors({
@@ -103,9 +103,7 @@ export const Login: React.FC = () => {
                 geral: null
             })
 
-            setTimeout(() => {
-                navigate('home')
-            }, 500)
+            navigate('home')
         } catch (error) {
             if (axios.isAxiosError(error)) {
                 if (!error.response) {
@@ -154,7 +152,7 @@ export const Login: React.FC = () => {
             <div className="absolute inset-0 bg-gradient-to-br from-emerald-100/10 to-green-100/10"></div>
             <div className="absolute top-10 left-10 w-32 h-32 bg-emerald-200/20 rounded-full blur-3xl"></div>
             <div className="absolute bottom-10 right-10 w-40 h-40 bg-green-200/20 rounded-full blur-3xl"></div>
-            
+
             <div className="relative p-6 sm:p-8 lg:p-10 rounded-3xl bg-white/90 backdrop-blur-sm shadow-2xl border border-emerald-200/50 w-full max-w-md mx-4">
                 <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-green-600 mb-2 text-center flex items-center justify-center gap-3">
                     <img src="/assets/images/eManage.png" alt="eManage Logo" className="w-12 h-12" />
