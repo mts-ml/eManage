@@ -5,7 +5,6 @@ import type { AxiosResponse } from "axios"
 
 import ProductsContext from "../Context/ProductsContext"
 import ClientContext from "../Context/ClientContext"
-import { SaleProvider } from "../Context/SaleContext"
 import type { Product, SalePayload, SaleResponse } from "../types/types"
 import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
 import { logError } from "../utils/logger"
@@ -15,15 +14,6 @@ interface CartItem extends Product {
 }
 
 export const Sales: React.FC = () => {
-   return (
-      <SaleProvider>
-         <SalesContent />
-      </SaleProvider>
-   )
-}
-
-// Conteúdo do componente
-const SalesContent: React.FC = () => {
     const { clients } = useContext(ClientContext)
     const { products, setProducts } = useContext(ProductsContext)
 

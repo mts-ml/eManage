@@ -3,28 +3,20 @@ import axios from "axios"
 import { FaTrash, FaEdit } from 'react-icons/fa'
 
 import type { Expense, ExpenseErrors, ExpenseFromBackend } from "../types/types"
-import ExpenseContext, { ExpensesProvider } from "../Context/ExpensesContext"
+import ExpenseContext from "../Context/ExpensesContext"
 import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
 
-// Wrapper com provider
-export const Expenses: React.FC = () => {
-   return (
-      <ExpensesProvider>
-         <ExpensesContent />
-      </ExpensesProvider>
-   )
+
+type SortField = 'name' | 'value' | 'dueDate' | 'status' | 'expenseNumber'
+type SortOrder = 'asc' | 'desc'
+
+interface SortConfig {
+    field: SortField
+    order: SortOrder
 }
 
-// Conteúdo do componente
-const ExpensesContent: React.FC = () => {
-    type SortField = 'name' | 'value' | 'dueDate' | 'status' | 'expenseNumber'
-    type SortOrder = 'asc' | 'desc'
 
-    interface SortConfig {
-        field: SortField
-        order: SortOrder
-    }
-
+export const Expenses: React.FC = () => {
     const defaultExpense: Expense = {
         name: "",
         value: "",

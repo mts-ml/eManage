@@ -10,19 +10,10 @@ import {
     isValidCNPJ,
     formatPhoneForDisplay
 } from "../utils/utils"
-import SupplierContext, { SupplierProvider } from "../Context/SupplierContext"
+import SupplierContext from "../Context/SupplierContext"
 
-// Wrapper com provider
+
 export const Suppliers: React.FC = () => {
-   return (
-      <SupplierProvider>
-         <SuppliersContent />
-      </SupplierProvider>
-   )
-}
-
-// Conteúdo do componente
-const SuppliersContent: React.FC = () => {
     const defaultSupplier: Supplier = {
         name: "",
         email: "",
