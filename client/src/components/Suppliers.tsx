@@ -32,10 +32,32 @@ export const Suppliers: React.FC = () => {
     const [editingSupplierId, setEditingSupplierId] = useState<string | null>(null)
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
     const [searchTerm, setSearchTerm] = useState<string>("")
+    const [isLoading, setIsLoading] = useState(true)
     const { suppliers, setSuppliers } = useContext(SupplierContext)
     const axiosPrivate = useAxiosPrivate()
     const [currentPage, setCurrentPage] = useState(1)
     const pageSize = 20
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const response = await axiosPrivate.get('/suppliers')
+                if (response.status !== 204) {
+                    const normalizedSuppliers = response.data.map((supplier: SupplierFromBackend) => ({
+                        ...supplier,
+                        id: supplier._id
+                    }))
+                    setSuppliers(normalizedSuppliers)
+                }
+            } catch (error) {
+                logError("Suppliers", error)
+            } finally {
+                setIsLoading(false)
+            }
+        }
+       
+        fetchData()
+    }, [axiosPrivate, setSuppliers])
 
     // Filtrar fornecedores baseado no termo de busca (nome ou CPF/CNPJ)
     const filteredSuppliers = suppliers.filter(supplier => {
@@ -412,64 +434,63 @@ export const Suppliers: React.FC = () => {
 
             {suppliers.length > 0 && (
                 <>
-                    <header className="text-center mb-6">
-                        <h2 className="text-2xl font-bold text-emerald-800">
-                            📋 Lista de Fornecedores
-                        </h2>
-                    </header>
+                    <h2 className="text-2xl font-bold text-emerald-800 text-center mb-6">
+                        📋 Lista de Fornecedores
+                    </h2>
 
                     <section className="overflow-auto border-2 border-emerald-200/50 rounded-2xl shadow-xl mb-10 max-h-[70vh] bg-white/90 backdrop-blur-sm">
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gradient-to-r from-emerald-600 to-green-600 text-white sticky top-0 z-10">
-                                <tr>
-                                    <th className="px-6 py-4 text-sm font-semibold text-center">Nome</th>
-                                    <th className="px-6 py-4 text-sm font-semibold text-center">E-mail</th>
-                                    <th className="px-6 py-4 text-sm font-semibold text-center">Telefone</th>
-                                    <th className="px-6 py-4 text-sm font-semibold text-center">Documento</th>
-                                    <th className="px-6 py-4 text-sm font-semibold text-center">Ações</th>
-                                </tr>
-                            </thead>
-
-                            <tbody className="bg-white divide-y divide-gray-100">
-                                {currentItems.map(supplier => (
-                                    <tr key={supplier.id} className="hover:bg-emerald-50/50 transition-colors duration-200">
-                                        <td className="px-6 py-4 text-sm font-medium whitespace-nowrap text-center">{supplier.name}</td>
-
-                                        <td className="px-6 py-4 text-sm break-words text-emerald-700 text-center">{supplier.email}</td>
-
-                                        <td className="px-6 py-4 text-sm whitespace-nowrap font-medium text-center">
-                                            {formatPhoneForDisplay(supplier.phone)}
-                                        </td>
-
-                                        <td className="px-6 py-4 text-sm whitespace-nowrap font-mono text-center">
-                                            {supplier.cpfCnpj.length === 11
-                                                ? supplier.cpfCnpj.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4")
-                                                : supplier.cpfCnpj.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, "$1.$2.$3/$4-$5")}
-                                        </td>
-
-                                        <td className="px-6 py-4 text-sm flex justify-center">
-                                            <button
-                                                type="button"
-                                                onClick={() => handleEdit(supplier)}
-                                                className="text-emerald-600 cursor-pointer hover:text-emerald-800 p-2 rounded-lg hover:bg-emerald-50/50 transition-all duration-200"
-                                                aria-label="Editar fornecedor."
-                                            >
-                                                <FaEdit size={18} />
-                                            </button>
-
-                                            <button
-                                                type="button"
-                                                onClick={() => handleDelete(supplier.id!)}
-                                                className="text-red-600 cursor-pointer hover:text-red-800 p-2 rounded-lg hover:bg-red-50 transition-all duration-200"
-                                                aria-label="Excluir fornecedor"
-                                            >
-                                                <FaTrash size={18} />
-                                            </button>
-                                        </td>
+                            <table className="min-w-full divide-y divide-gray-200">
+                                <thead className="bg-gradient-to-r from-emerald-600 to-green-600 text-white sticky top-0 z-10">
+                                    <tr>
+                                        <th className="px-6 py-4 text-sm font-semibold text-center">Nome</th>
+                                        <th className="px-6 py-4 text-sm font-semibold text-center">E-mail</th>
+                                        <th className="px-6 py-4 text-sm font-semibold text-center">Telefone</th>
+                                        <th className="px-6 py-4 text-sm font-semibold text-center">Documento</th>
+                                        <th className="px-6 py-4 text-sm font-semibold text-center">Ações</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+
+                                <tbody className="bg-white divide-y divide-gray-100">
+                                    {currentItems.map(supplier => (
+                                        <tr key={supplier.id} className="hover:bg-emerald-50/50 transition-colors duration-200">
+                                            <td className="px-6 py-4 text-sm font-medium whitespace-nowrap text-center">{supplier.name}</td>
+
+                                            <td className="px-6 py-4 text-sm break-words text-emerald-700 text-center">{supplier.email}</td>
+
+                                            <td className="px-6 py-4 text-sm whitespace-nowrap font-medium text-center">{formatPhoneForDisplay(supplier.phone)}</td>
+
+                                            <td className="px-6 py-4 text-sm whitespace-nowrap font-mono text-center">
+                                                {supplier.cpfCnpj.length === 11
+                                                    ? supplier.cpfCnpj.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4")
+                                                    : supplier.cpfCnpj.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, "$1.$2.$3/$4-$5")}
+                                            </td>
+
+                                            <td className="px-6 py-4 text-sm flex justify-center">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleEdit(supplier)}
+                                                    className="text-emerald-600 cursor-pointer hover:text-emerald-800 p-2 rounded-lg hover:bg-emerald-50/50 transition-all duration-200"
+                                                    aria-label="Editar fornecedor"
+                                                    title="Editar fornecedor"
+                                                >
+                                                    <FaEdit size={18} />
+                                                </button>
+
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleDelete(supplier.id!)}
+                                                    className="text-red-600 cursor-pointer hover:text-red-800 p-2 rounded-lg hover:bg-red-50 transition-all duration-200"
+                                                    aria-label="Excluir fornecedor"
+                                                    title="Excluir fornecedor"
+                                                >
+                                                    <FaTrash size={18} />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        }
                     </section>
 
                     <section className="flex items-center justify-between gap-4 mt-4">

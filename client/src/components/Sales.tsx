@@ -1,22 +1,24 @@
-import { useContext, useEffect, useState } from "react"
-import { X } from "lucide-react"
+import { useEffect, useState } from "react"
 import { FaSearch } from 'react-icons/fa'
+import { X } from "lucide-react"
 import type { AxiosResponse } from "axios"
 
 import ProductsContext from "../Context/ProductsContext"
 import ClientContext from "../Context/ClientContext"
 import type { Product, SalePayload, SaleResponse } from "../types/types"
 import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
+import { SaleProvider } from "../Context/SaleContext"
 import { logError } from "../utils/logger"
+import { TableSkeleton } from "./TableSkeleton"
 
 interface CartItem extends Product {
     quantity: number
 }
 
+
 export const Sales: React.FC = () => {
     const { clients } = useContext(ClientContext)
     const { products, setProducts } = useContext(ProductsContext)
-
     const [cart, setCart] = useState<CartItem[]>([])
     const [lastSale, setLastSale] = useState<SaleResponse["sale"] | null>(null)
     const [selectedClientId, setSelectedClientId] = useState<string>("")
@@ -25,7 +27,49 @@ export const Sales: React.FC = () => {
     const [customPrice, setCustomPrice] = useState<string>("")
     const [clientSearchTerm, setClientSearchTerm] = useState<string>("")
     const [productSearchTerm, setProductSearchTerm] = useState<string>("")
+    const [isLoading, setIsLoading] = useState(true)
+    const [products, setProducts] = useState<Product[]>([])
+    const [clients, setClients] = useState<Client[]>([])
+
     const axiosPrivate = useAxiosPrivate()
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const [productsResponse, clientsResponse, lastSaleResponse] = await Promise.all([
+                    axiosPrivate.get('/products'),
+                    axiosPrivate.get('/clients'),
+                    axiosPrivate.get('/sales/last')
+                ])
+
+                if (productsResponse.status !== 204) {
+                    const normalizedProducts = productsResponse.data.map((product: Product & { _id: string }) => ({
+                        ...product,
+                        id: product._id
+                    }))
+                    setProducts(normalizedProducts)
+                }
+
+                if (clientsResponse.status !== 204) {
+                    const normalizedClients = clientsResponse.data.map((client: Client & { _id: string }) => ({
+                        ...client,
+                        id: client._id
+                    }))
+                    setClients(normalizedClients)
+                }
+
+                if (lastSaleResponse.status !== 204) {
+                    setLastSale(lastSaleResponse.data.sale)
+                }
+            } catch (error) {
+                logError("Sales", error)
+            } finally {
+                setIsLoading(false)
+            }
+        }
+
+        fetchData()
+    }, [axiosPrivate])
 
     // Filtrar clientes baseado no termo de busca
     const filteredClients = clients.filter(client => {
@@ -559,64 +603,65 @@ export const Sales: React.FC = () => {
                             </h4>
                         </div>
 
-                        <div className="overflow-x-auto">
-                            <table className="w-full">
-                                <thead className="bg-emerald-50">
-                                    <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-emerald-700 uppercase tracking-wider">
-                                            Produto
-                                        </th>
+                        <div className="overflow-x-auto">                            (
+                                <table className="w-full">
+                                    <thead className="bg-emerald-50">
+                                        <tr>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-emerald-700 uppercase tracking-wider">
+                                                Produto
+                                            </th>
 
-                                        <th className="px-6 py-3 text-center text-xs font-medium text-emerald-700 uppercase tracking-wider">
-                                            Quantidade
-                                        </th>
+                                            <th className="px-6 py-3 text-center text-xs font-medium text-emerald-700 uppercase tracking-wider">
+                                                Quantidade
+                                            </th>
 
-                                        <th className="px-6 py-3 text-center text-xs font-medium text-emerald-700 uppercase tracking-wider">
-                                            Preço Unit.
-                                        </th>
+                                            <th className="px-6 py-3 text-center text-xs font-medium text-emerald-700 uppercase tracking-wider">
+                                                Preço Unit.
+                                            </th>
 
-                                        <th className="px-6 py-3 text-right text-xs font-medium text-emerald-700 uppercase tracking-wider">
-                                            Subtotal
-                                        </th>
-                                    </tr>
-                                </thead>
-
-                                <tbody className="divide-y divide-emerald-100">
-                                    {(lastSale.items || []).map((item, index) => (
-                                        <tr key={index} className="hover:bg-emerald-50/50 transition-colors">
-                                            <td className="px-6 py-4">
-                                                <div className="flex items-center">
-                                                    <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center mr-3">
-                                                        <span className="text-emerald-600 text-sm font-semibold">
-                                                            {index + 1}
-                                                        </span>
-                                                    </div>
-
-                                                    <span className="text-gray-900 font-medium">{item.productName}</span>
-                                                </div>
-                                            </td>
-
-                                            <td className="px-6 py-4 text-center">
-                                                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-emerald-100 text-emerald-800">
-                                                    {item.quantity}x
-                                                </span>
-                                            </td>
-
-                                            <td className="px-6 py-4 text-center">
-                                                <span className="text-gray-700 font-medium">
-                                                    {Number(item.price).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-                                                </span>
-                                            </td>
-
-                                            <td className="px-6 py-4 text-right">
-                                                <span className="text-emerald-700 font-bold">
-                                                    {(Number(item.price) * item.quantity).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-                                                </span>
-                                            </td>
+                                            <th className="px-6 py-3 text-right text-xs font-medium text-emerald-700 uppercase tracking-wider">
+                                                Subtotal
+                                            </th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                    </thead>
+
+                                    <tbody className="divide-y divide-emerald-100">
+                                        {(lastSale.items || []).map((item, index) => (
+                                            <tr key={index} className="hover:bg-emerald-50/50 transition-colors">
+                                                <td className="px-6 py-4">
+                                                    <div className="flex items-center">
+                                                        <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center mr-3">
+                                                            <span className="text-emerald-600 text-sm font-semibold">
+                                                                {index + 1}
+                                                            </span>
+                                                        </div>
+
+                                                        <span className="text-gray-900 font-medium">{item.productName}</span>
+                                                    </div>
+                                                </td>
+
+                                                <td className="px-6 py-4 text-center">
+                                                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-emerald-100 text-emerald-800">
+                                                        {item.quantity}x
+                                                    </span>
+                                                </td>
+
+                                                <td className="px-6 py-4 text-center">
+                                                    <span className="text-gray-700 font-medium">
+                                                        {Number(item.price).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                                                    </span>
+                                                </td>
+
+                                                <td className="px-6 py-4 text-right">
+                                                    <span className="text-emerald-700 font-bold">
+                                                        {(Number(item.price) * item.quantity).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            }
                         </div>
 
                         {/* Total */}

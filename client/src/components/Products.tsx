@@ -6,6 +6,7 @@ import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
 import ProductsContext from "../Context/ProductsContext"
 import type { Product } from "../types/types"
 import { logError } from "../utils/logger"
+import { TableSkeleton } from "./TableSkeleton"
 
 
 export const Products: React.FC = () => {
@@ -31,6 +32,30 @@ export const Products: React.FC = () => {
     const formRef = useRef<HTMLElement>(null)
     const [currentPage, setCurrentPage] = useState(1)
     const pageSize = 20
+    const [isLoading, setIsLoading] = useState(true)  // ← Novo estado
+
+    // Fetch paralelo - dados carregam em background
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const response = await axiosPrivate.get('/products')
+                if (response.status !== 204) {
+                    const normalizedProducts = response.data.map((product: any) => ({
+                        ...product,
+                        id: product._id
+                    }))
+                    setProducts(normalizedProducts)
+                }
+            } catch (error) {
+                logError("Products", error)
+            } finally {
+                setIsLoading(false)  // ← Para o loading
+            }
+        }
+
+        // Inicia fetch IMEDIATAMENTE
+        fetchData()
+    }, [axiosPrivate, setProducts])
 
     // Filtrar produtos baseado no termo de busca e grupo
     const filteredProducts = products.filter(product => {
@@ -424,7 +449,9 @@ export const Products: React.FC = () => {
 
             {products.length > 0 && (
                 <>
-                    <h2 className="text-2xl font-bold text-emerald-800 text-center mb-6">📋 Lista de Produtos</h2>
+                    <h2 className="text-2xl font-bold text-emerald-800 text-center mb-6">
+                        📋 Lista de Produtos
+                    </h2>
 
                     {/* Filtros de Busca */}
                     <aside className="mb-6">
@@ -476,73 +503,70 @@ export const Products: React.FC = () => {
                     </aside>
 
                     <section className="overflow-auto border-2 border-emerald-200/50 rounded-2xl shadow-xl mb-10 max-h-[70vh] bg-white/90 backdrop-blur-sm">
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gradient-to-r from-emerald-600 to-green-600 text-white sticky top-0 z-10">
-                                <tr>
-                                    <th className="px-6 py-4 text-sm font-semibold text-center">Nome</th>
-                                    <th className="px-6 py-4 text-sm font-semibold text-center">Grupo</th>
-                                    <th className="px-6 py-4 text-sm font-semibold text-center">Preço de Venda</th>
-                                    <th className="px-6 py-4 text-sm font-semibold text-center">Preço de Compra</th>
-                                    <th className="px-6 py-4 text-sm font-semibold text-center">Estoque</th>
-                                    <th className="px-6 py-4 text-sm font-semibold text-center">Unidade</th>
-                                    <th className="px-6 py-4 text-sm font-semibold text-center">Ações</th>
-                                </tr>
-                            </thead>
-
-                            <tbody className="bg-white divide-y divide-gray-100">
-                                {currentItems.map(product => (
-                                    <tr key={product.id} className="hover:bg-emerald-50/50 transition-colors duration-200">
-                                        <td className="px-6 py-4 text-sm font-medium whitespace-nowrap text-center">{product.name}</td>
-
-                                        <td className="px-6 py-4 text-sm text-center">
-                                            <span className={`px-2 py-1 rounded-full text-xs font-semibold ${product.group === 'Temperos' ? 'bg-orange-100 text-orange-800' :
-                                                product.group === 'Vegetais' ? 'bg-green-100 text-green-800' :
-                                                    product.group === 'Frutas' ? 'bg-yellow-100 text-yellow-800' :
-                                                        'bg-gray-100 text-gray-800'
-                                                }`}>
-                                                {product.group}
-                                            </span>
-                                        </td>
-
-                                        <td className="px-6 py-4 text-sm font-bold text-emerald-700 text-center">
-                                            {Number(product.salePrice).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-                                        </td>
-
-                                        <td className="px-6 py-4 text-sm font-bold text-blue-700 text-center">
-                                            {Number(product.purchasePrice).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-                                        </td>
-
-                                        <td className="px-6 py-4 text-sm font-bold text-center">
-                                            <span className={`px-2 py-1 rounded-full text-xs font-semibold ${Number(product.stock) > 10 ? "bg-green-100 text-green-800" : Number(product.stock) > 0 ? "bg-yellow-100 text-yellow-800" : "bg-red-100 text-red-800"}`}>
-                                                {product.stock}
-                                            </span>
-                                        </td>
-
-                                        <td className="px-6 py-4 text-sm text-center">{product.description}</td>
-
-                                        <td className="px-6 py-4 text-sm flex gap-3 justify-center">
-                                            <button
-                                                type="button"
-                                                onClick={() => handleEditProduct(product)}
-                                                className="text-emerald-600 cursor-pointer hover:text-emerald-800 p-2 rounded-lg hover:bg-emerald-50/50 transition-all duration-200"
-                                                aria-label="Editar produto."
-                                            >
-                                                <FaEdit size={18} />
-                                            </button>
-
-                                            <button
-                                                type="button"
-                                                onClick={() => handleDeleteProduct(product.id!)}
-                                                className="text-red-600 cursor-pointer hover:text-red-800 p-2 rounded-lg hover:bg-red-50 transition-all duration-200"
-                                                aria-label="Excluir produto"
-                                            >
-                                                <FaTrash size={18} />
-                                            </button>
-                                        </td>
+                        {isLoading ? (
+                            <TableSkeleton />
+                        ) : (
+                            <table className="min-w-full divide-y divide-gray-200">
+                                <thead className="bg-gradient-to-r from-emerald-600 to-green-600 text-white sticky top-0 z-10">
+                                    <tr>
+                                        <th className="px-6 py-4 text-sm font-semibold text-center">Nome</th>
+                                        <th className="px-6 py-4 text-sm font-semibold text-center">Descrição</th>
+                                        <th className="px-6 py-4 text-sm font-semibold text-center">Preço de Venda</th>
+                                        <th className="px-6 py-4 text-sm font-semibold text-center">Preço de Compra</th>
+                                        <th className="px-6 py-4 text-sm font-semibold text-center">Estoque</th>
+                                        <th className="px-6 py-4 text-sm font-semibold text-center">Ações</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+
+                                <tbody className="bg-white divide-y divide-gray-100">
+                                    {currentItems.map(product => (
+                                        <tr key={product.id} className="hover:bg-emerald-50/50 transition-colors duration-200">
+                                            <td className="px-6 py-4 text-sm font-medium whitespace-nowrap text-center">{product.name}</td>
+
+                                            <td className="px-6 py-4 text-sm break-words text-gray-600 text-center max-w-xs">
+                                                {product.description || "-"}
+                                            </td>
+
+                                            <td className="px-6 py-4 text-sm font-bold text-emerald-700 text-center">
+                                                {Number(product.salePrice).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                                            </td>
+
+                                            <td className="px-6 py-4 text-sm font-bold text-blue-700 text-center">
+                                                {Number(product.purchasePrice).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                                            </td>
+
+                                            <td className="px-6 py-4 text-sm font-bold text-center">
+                                                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${Number(product.stock) > 10 ? "bg-green-100 text-green-800" : Number(product.stock) > 0 ? "bg-yellow-100 text-yellow-800" : "bg-red-100 text-red-800"}`}>
+                                                    {Number(product.stock).toLocaleString("pt-BR")}
+                                                </span>
+                                            </td>
+
+                                            <td className="px-6 py-4 text-sm flex justify-center">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleEditProduct(product)}
+                                                    className="text-emerald-600 cursor-pointer hover:text-emerald-800 p-2 rounded-lg hover:bg-emerald-50/50 transition-all duration-200"
+                                                    aria-label="Editar produto"
+                                                    title="Editar produto"
+                                                >
+                                                    <FaEdit size={18} />
+                                                </button>
+
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleDeleteProduct(product.id!)}
+                                                    className="text-red-600 cursor-pointer hover:text-red-800 p-2 rounded-lg hover:bg-red-50 transition-all duration-200"
+                                                    aria-label="Excluir produto"
+                                                    title="Excluir produto"
+                                                >
+                                                    <FaTrash size={18} />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        )}
                     </section>
 
                     {/* Controles de Paginação */}
