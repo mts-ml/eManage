@@ -11,7 +11,7 @@ import ErrorPage from "./pages/ErrorPage"
 import { RouteAuthentication } from "./components/RouteAuthentication"
 import { ROLES_LIST } from "./config/roles_list"
 
-// Lazy load dos contexts pesados
+// Lazy loading paralelo para melhor performance
 const AuthProvider = lazy(() => import('./Context/AuthContext').then((module) => ({ default: module.AuthProvider })))
 const ClientsProvider = lazy(() => import('./Context/ClientContext').then(module => ({ default: module.ClientsProvider })))
 const SupplierProvider = lazy(() => import('./Context/SupplierContext').then(module => ({ default: module.SupplierProvider })))
@@ -19,32 +19,21 @@ const ProductsProvider = lazy(() => import('./Context/ProductsContext').then(mod
 const SaleProvider = lazy(() => import('./Context/SaleContext').then(module => ({ default: module.SaleProvider })))
 const ExpensesProvider = lazy(() => import('./Context/ExpensesContext').then(module => ({ default: module.ExpensesProvider })))
 
-
 function withProviders(children: React.ReactNode) {
    return (
       <Suspense fallback={<Loading />}>
          <AuthProvider>
-            <Suspense fallback={<Loading />}>
-               <ClientsProvider>
-                  <Suspense fallback={<Loading />}>
-                     <SupplierProvider>
-                        <Suspense fallback={<Loading />}>
-                           <ProductsProvider>
-                              <Suspense fallback={<Loading />}>
-                                 <SaleProvider>
-                                    <Suspense fallback={<Loading />}>
-                                       <ExpensesProvider>
-                                          {children}
-                                       </ExpensesProvider>
-                                    </Suspense>
-                                 </SaleProvider>
-                              </Suspense>
-                           </ProductsProvider>
-                        </Suspense>
-                     </SupplierProvider>
-                  </Suspense>
-               </ClientsProvider>
-            </Suspense>
+            <ClientsProvider>
+               <SupplierProvider>
+                  <ProductsProvider>
+                     <SaleProvider>
+                        <ExpensesProvider>
+                           {children}
+                        </ExpensesProvider>
+                     </SaleProvider>
+                  </ProductsProvider>
+               </SupplierProvider>
+            </ClientsProvider>
          </AuthProvider>
       </Suspense>
    )
