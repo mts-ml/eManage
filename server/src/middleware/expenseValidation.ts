@@ -44,10 +44,18 @@ export function handleExpenseValidation(
 
     if (dueDate != null) {
         const isoDateRegex = /^\d{4}-\d{2}-\d{2}$/;
-        const parsedDate = new Date(dueDate);
+        
+        if (!isoDateRegex.test(dueDate)) {
+            errors.dueDate = "Data inválida, informe no formato: 'AAAA-MM-DD'.";
+            return;
+        }
 
-        if (!isoDateRegex.test(dueDate) || isNaN(parsedDate.getTime())) {
-            errors.dueDate = "Data inválida, informe no formato ISO: 'AAAA-MM-DD'.";
+        // Validar se a data é válida sem usar new Date() para evitar problemas de timezone
+        const [year, month, day] = dueDate.split('-').map(Number);
+        const isValidDate = year >= 1900 && year <= 2100 && month >= 1 && month <= 12 && day >= 1 && day <= 31;
+        
+        if (!isValidDate) {
+            errors.dueDate = "Data inválida, informe uma data válida no formato 'AAAA-MM-DD'.";
         }
     }
 

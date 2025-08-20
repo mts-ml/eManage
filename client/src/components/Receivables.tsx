@@ -156,7 +156,13 @@ export const Receivables: React.FC = () => {
             try {
                 const response = await axiosPrivate.get<Receivable[]>("/sales")
 
-                const salesWithReceivableInfo: Receivable[] = response.data.map((sale: Receivable) => ({
+                const data = Array.isArray(response.data) ? response.data : []
+                if (response.status === 204 || data.length === 0) {
+                    setReceivables([])
+                    return
+                }
+
+                const salesWithReceivableInfo: Receivable[] = data.map((sale: Receivable) => ({
                     ...sale,
                     status: sale.status || "Pendente",
                     paymentDate: sale.paymentDate || null,

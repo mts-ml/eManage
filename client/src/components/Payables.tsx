@@ -155,8 +155,14 @@ export const Payables: React.FC = () => {
         async function fetchPurchases() {
             try {
                 const response = await axiosPrivate.get<Payable[]>("/purchases")
+                
+                const data = Array.isArray(response.data) ? response.data : []
+                if (response.status === 204 || data.length === 0) {
+                    setPayables([])
+                    return
+                }
 
-                const purchasesWithPayableInfo: Payable[] = response.data.map((purchase: Payable) => ({
+                const purchasesWithPayableInfo: Payable[] = data.map((purchase: Payable) => ({
                     ...purchase,
                     status: purchase.status || "Pendente",
                     totalPaid: purchase.totalPaid || 0,
