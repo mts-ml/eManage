@@ -1,19 +1,21 @@
-import { useEffect, useState } from "react"
-import { Users, Truck, Package, ShoppingCart, ShoppingBag, X, ArrowDownCircle, ArrowUpCircle, BarChart3, History, Building2, FileText, AlertTriangle } from "lucide-react"
+import { useEffect, useState, Suspense, lazy } from "react"
 
-import { Clients } from "../components/Clients"
-import { Suppliers } from "../components/Suppliers"
-import { Products } from "../components/Products"
-import { Sales } from "../components/Sales"
-import { SalesHistory } from "../components/SalesHistory"
-import { Purchases } from "../components/Purchases"
-import { PurchasesHistory } from "../components/PurchasesHistory"
-import { Receivables } from "../components/Receivables"
-import { Expenses } from "../components/Expenses"
-import { Payables } from "../components/Payables"
-import { Cashflow } from "../components/CashFlow"
-import { Reports } from "../components/Reports"
-import { OverduePayments } from "../components/OverduePayments"
+import { Users, Truck, Package, ShoppingCart, ShoppingBag, X, ArrowDownCircle, ArrowUpCircle, BarChart3, History, Building2, FileText, AlertTriangle } from "lucide-react"
+import { Loading } from "../components/ReactLoader"
+
+const Clients = lazy(() => import("../components/Clients").then(module => ({ default: module.Clients })))
+const Suppliers = lazy(() => import("../components/Suppliers").then(module => ({ default: module.Suppliers })))
+const Products = lazy(() => import("../components/Products").then(module => ({ default: module.Products })))
+const Sales = lazy(() => import("../components/Sales").then(module => ({ default: module.Sales })))
+const SalesHistory = lazy(() => import("../components/SalesHistory").then(module => ({ default: module.SalesHistory })))
+const Purchases = lazy(() => import("../components/Purchases").then(module => ({ default: module.Purchases })))
+const PurchasesHistory = lazy(() => import("../components/PurchasesHistory").then(module => ({ default: module.PurchasesHistory })))
+const Receivables = lazy(() => import("../components/Receivables").then(module => ({ default: module.Receivables })))
+const Expenses = lazy(() => import("../components/Expenses").then(module => ({ default: module.Expenses })))
+const Payables = lazy(() => import("../components/Payables").then(module => ({ default: module.Payables })))
+const Cashflow = lazy(() => import("../components/CashFlow").then(module => ({ default: module.Cashflow })))
+const Reports = lazy(() => import("../components/Reports").then(module => ({ default: module.Reports })))
+const OverduePayments = lazy(() => import("../components/OverduePayments").then(module => ({ default: module.OverduePayments })))
 
 
 type SectionKey = "clients" | "suppliers" | "products" | "sales" | "purchases" | "receivables" | "payables" | "expenses" | "salesHistory" | "purchasesHistory" | "caixa" | "relatorios" | "overduePayments"
@@ -189,7 +191,9 @@ export const Home: React.FC = () => {
                             <X className="w-6 h-6 cursor-pointer" />
                         </button>
 
-                        {component}
+                        <Suspense fallback={<Loading />}>
+                            {component}
+                        </Suspense>
                     </section>
                 )
             ))}

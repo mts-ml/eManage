@@ -3,12 +3,21 @@ import axios from "axios"
 
 import { FaTrash, FaEdit, FaSearch } from 'react-icons/fa'
 import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
-import ProductsContext from "../Context/ProductsContext"
+import ProductsContext, { ProductsProvider } from "../Context/ProductsContext"
 import type { Product } from "../types/types"
 import { logError } from "../utils/logger"
 
-
+// Wrapper com provider
 export const Products: React.FC = () => {
+   return (
+      <ProductsProvider>
+         <ProductsContent />
+      </ProductsProvider>
+   )
+}
+
+// Conteúdo do componente
+const ProductsContent: React.FC = () => {
     const defaultValues: Product = {
         name: "",
         description: "",
