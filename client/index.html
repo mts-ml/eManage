@@ -74,32 +74,6 @@
     font-src 'self' data:;
   " />
 
-  <style>
-    /* CSS crítico para evitar tela preta/sem estilo antes do bundle */
-    html, body, #root {
-      min-height: 100vh;
-      width: 100%;
-      background: linear-gradient(135deg, #fafdf9 0%, #f8fdfa 50%, #f0fdf4 100%);
-    }
-
-    .loading-critical {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 16px;
-      background: linear-gradient(135deg, #fafdf9 0%, #f8fdfa 50%, #f0fdf4 100%);
-      z-index: 9999;
-    }
-
-    .loading-text {
-      color: #10b981 !important;
-      font-weight: 500;
-      font-size: 18px;
-      letter-spacing: 0.025em;
-    }
-  </style>
 </head>
 
 <body>
