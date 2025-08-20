@@ -3,7 +3,6 @@ import { jwtDecode } from "jwt-decode"
 
 import { axiosInstance } from "../api/axios"
 import type { CustomJwtPayload } from "../types/types"
-import { CircleLoader } from "react-spinners"
 import { logInfo, logError } from "../utils/logger"
 
 
@@ -102,16 +101,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             loading
         }}
         >
-            {
-                loading ? (
-                    <div className="min-h-screen flex flex-col gap-2 items-center justify-center">
-                        <CircleLoader />
-                        <p className="font-medium">Loading...</p>
-                    </div>
-                ) : (
-                    children
-                )
-            }
+            {children}
         </AuthContext.Provider>
     )
 }
