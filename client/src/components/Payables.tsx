@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react"
-import { FaEdit, FaSave, FaTimes, FaTrash } from 'react-icons/fa'
-import { FaSearch } from 'react-icons/fa'
+import { FaEdit, FaTrash } from 'react-icons/fa'
 import { X } from "lucide-react"
 
-import type { Payable, PaymentRecord, UpdatePayableRequest } from "../types/types"
+import type { Payable, UpdatePayableRequest } from "../types/types"
 import { PaymentStatus } from "../types/types"
 import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
 import { logError } from "../utils/logger"
@@ -23,7 +22,6 @@ export const Payables: React.FC = () => {
         payments: []
     })
     const [editErrors, setEditErrors] = useState<Partial<Record<keyof UpdatePayableRequest, string>>>({})
-    const [showModal, setShowModal] = useState(false)
     const [currentPage, setCurrentPage] = useState(1)
     const [pageSize] = useState(20)
     const [sortConfig, setSortConfig] = useState<{ field: keyof Payable, order: 'asc' | 'desc' }>({ field: 'date', order: 'desc' })
@@ -501,7 +499,7 @@ export const Payables: React.FC = () => {
                                                     <button
                                                         type="button"
                                                         onClick={() => handleStartEdit(purchase)}
-                                                        className="text-emerald-600 hover:text-emerald-800 p-2 rounded-lg hover:bg-emerald-50/50 transition-all duration-200"
+                                                        className="text-emerald-600 hover:text-emerald-800 p-2 rounded-lg hover:bg-emerald-50/50 transition-all duration-200 cursor-pointer"
                                                         aria-label="Editar compra"
                                                     >
                                                         <FaEdit size={18} />
@@ -512,7 +510,7 @@ export const Payables: React.FC = () => {
                                                         <button
                                                             type="button"
                                                             onClick={() => handleDeletePurchase(purchase._id)}
-                                                            className="text-red-600 hover:text-red-800 p-2 rounded-lg hover:bg-red-50 transition-all duration-200"
+                                                            className="text-red-600 hover:text-red-800 p-2 rounded-lg hover:bg-red-50 transition-all duration-200 cursor-pointer"
                                                             aria-label="Excluir compra"
                                                         >
                                                             <FaTrash size={18} />

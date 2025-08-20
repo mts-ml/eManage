@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react"
-import { FaEdit, FaSave, FaTimes, FaTrash } from 'react-icons/fa'
-import { FaSearch } from 'react-icons/fa'
+import { FaEdit, FaTrash } from 'react-icons/fa'
 import { X } from "lucide-react"
 
-import type { Receivable, PaymentRecord, UpdateReceivableRequest } from "../types/types"
+import type { Receivable, UpdateReceivableRequest } from "../types/types"
 import { PaymentStatus } from "../types/types"
 import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
 import { logError } from "../utils/logger"
@@ -23,7 +22,6 @@ export const Receivables: React.FC = () => {
         payments: []
     })
     const [editErrors, setEditErrors] = useState<Partial<Record<keyof UpdateReceivableRequest, string>>>({})
-    const [showModal, setShowModal] = useState(false)
     const [currentPage, setCurrentPage] = useState(1)
     const [pageSize] = useState(20)
     const [sortConfig, setSortConfig] = useState<{ field: keyof Receivable, order: 'asc' | 'desc' }>({ field: 'date', order: 'desc' })
