@@ -154,7 +154,7 @@ export const Register: React.FC = () => {
 
 
     return (
-        <main className="h-[calc(100vh-72px)] bg-gradient-to-br from-emerald-50/30 via-green-50/30 to-emerald-100/30 flex items-center justify-center px-4 relative overflow-hidden">
+        <main className="h-[calc(100dvh-89px)] bg-gradient-to-br from-emerald-50/30 via-green-50/30 to-emerald-100/30 flex items-center justify-center px-4 relative overflow-hidden">
             {/* Background decoration */}
             <div className="absolute inset-0 bg-gradient-to-br from-emerald-100/10 to-green-100/10"></div>
             <div className="absolute top-10 left-10 w-32 h-32 bg-emerald-200/20 rounded-full blur-3xl"></div>
