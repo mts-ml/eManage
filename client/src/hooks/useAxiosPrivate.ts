@@ -1,4 +1,5 @@
 import { useContext, useEffect } from "react"
+import { AxiosError, type AxiosResponse } from "axios"
 
 import { useRefreshToken } from "./useRefreshToken"
 import AuthContext from "../Context/AuthContext"
@@ -6,6 +7,24 @@ import { axiosPrivate } from "../api/axios"
 import { logError, logInfo } from '../utils/logger';
 import { useNavigate } from "react-router-dom"
 
+// Variáveis globais para controlar race conditions
+let isRefreshing = false
+let failedQueue: Array<{
+    resolve: (value: string) => void
+    reject: (error: AxiosError) => void
+}> = []
+
+const processQueue = (error: AxiosError | null, token: string | null = null) => {
+    failedQueue.forEach(({ resolve, reject }) => {
+        if (error) {
+            reject(error)
+        } else {
+            resolve(token!)
+        }
+    })
+    
+    failedQueue = []
+}
 
 export function useAxiosPrivate() {
     const refresh = useRefreshToken()
@@ -14,6 +33,7 @@ export function useAxiosPrivate() {
 
     useEffect(() => {
         if (!auth?.accessToken) return
+        
         // Interceptor de request → antes de enviar requisição
         const requestIntercept = axiosPrivate.interceptors.request.use(
             config => {
@@ -22,35 +42,47 @@ export function useAxiosPrivate() {
                 }
                 return config
             },
-            error => Promise.reject(error) // Se ocorrer algum erro
+            (error: AxiosError) => Promise.reject(error)
         )
 
         // Interceptor de response → após receber resposta
         const responseIntercept = axiosPrivate.interceptors.response.use(
-            response => response, // Se a resposta for sucesso, retorna ela
-
-            // Se der erro, retorna uma callback assíncrona de error handler
-            // exemplo, se o token tiver expirado, problema de configuração da requisição
-            // que falhou (url, método, headers, body, etc...)
-            async (error) => {
+            (response: AxiosResponse) => response,
+            async (error: AxiosError) => {
                 const previousRequest = error?.config
 
-                // Se deu erro 401 (não autorizado) e ainda não tentamos renovar
-                if (error.response?.status === 401) {
+                if (error.response?.status === 401 && previousRequest) {
+                    // Se já está fazendo refresh, adiciona à fila
+                    if (isRefreshing) {
+                        return new Promise<string>((resolve, reject) => {
+                            failedQueue.push({ resolve, reject })
+                        }).then(token => {
+                            previousRequest.headers!['Authorization'] = `Bearer ${token}`
+                            return axiosPrivate(previousRequest)
+                        }).catch(err => {
+                            return Promise.reject(err)
+                        })
+                    }
+
                     logInfo("Axios Interceptor", "Token expired, attempting refresh...")
-                    
+                    isRefreshing = true
+
                     try {
-                        const response = await refresh()
-                        const accessToken = response
-                        
+                        const newToken = await refresh()
                         logInfo("Axios Interceptor", "Token refreshed successfully")
                         
-                        // Atualiza o token no header
-                        previousRequest.headers.Authorization = `Bearer ${accessToken}`
+                        // Processa todas as requisições na fila
+                        processQueue(null, newToken)
+                        
+                        // Atualiza o token no header da requisição atual
+                        previousRequest.headers!['Authorization'] = `Bearer ${newToken}`
                         
                         return axiosPrivate(previousRequest)
                     } catch (refreshError) {
                         logError("Axios Interceptor", "Refresh failed, redirecting to login")
+                        
+                        // Rejeita todas as requisições na fila
+                        processQueue(refreshError as AxiosError, null)
                         
                         setAuth({
                             name: "",
@@ -62,14 +94,15 @@ export function useAxiosPrivate() {
                         navigate('/')
                         
                         return Promise.reject(refreshError)
+                    } finally {
+                        isRefreshing = false
                     }
                 }
-                // Se não for erro 403, ou já tentou renovar, retorna erro normalmente
+                
                 return Promise.reject(error)
             }
         )
 
-        // Remove os interceptors quando desmontar o componente
         return () => {
             axiosPrivate.interceptors.request.eject(requestIntercept)
             axiosPrivate.interceptors.response.eject(responseIntercept)
