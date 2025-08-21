@@ -34,7 +34,7 @@ export async function handleRefreshToken(req: Request, res: Response) {
                 }
             },
             process.env.ACCESS_TOKEN_SECRET!,
-            { expiresIn: "300s" }
+            { expiresIn: "10s" }
         )
 
         res.json({ accessToken: newAccessToken })
