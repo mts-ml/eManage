@@ -4,11 +4,13 @@ import { useRefreshToken } from "./useRefreshToken"
 import AuthContext from "../Context/AuthContext"
 import { axiosPrivate } from "../api/axios"
 import { logError, logInfo } from '../utils/logger';
+import { useNavigate } from "react-router-dom"
 
 
 export function useAxiosPrivate() {
     const refresh = useRefreshToken()
-    const { auth } = useContext(AuthContext)
+    const { auth, setAuth } = useContext(AuthContext)
+    const navigate = useNavigate()
 
     useEffect(() => {
         if (!auth?.accessToken) return
@@ -35,21 +37,31 @@ export function useAxiosPrivate() {
 
                 // Se deu erro 401 (não autorizado) e ainda não tentamos renovar
                 if (error.response?.status === 401) {
-                    logInfo("Axios Interceptor", "Token expired, attempting refresh...");
+                    logInfo("Axios Interceptor", "Token expired, attempting refresh...")
                     
                     try {
-                        const response = await refresh();
-                        const { accessToken } = response.data;
+                        const response = await refresh()
+                        const accessToken = response
                         
-                        logInfo("Axios Interceptor", "Token refreshed successfully");
+                        logInfo("Axios Interceptor", "Token refreshed successfully")
                         
                         // Atualiza o token no header
-                        previousRequest.headers.Authorization = `Bearer ${accessToken}`;
+                        previousRequest.headers.Authorization = `Bearer ${accessToken}`
                         
-                        return axiosPrivate(previousRequest);
+                        return axiosPrivate(previousRequest)
                     } catch (refreshError) {
-                        logError("Axios Interceptor", refreshError);
-                        return Promise.reject(refreshError);
+                        logError("Axios Interceptor", "Refresh failed, redirecting to login")
+                        
+                        setAuth({
+                            name: "",
+                            email: "",
+                            roles: [],
+                            accessToken: ""
+                        })
+                        
+                        navigate('/')
+                        
+                        return Promise.reject(refreshError)
                     }
                 }
                 // Se não for erro 403, ou já tentou renovar, retorna erro normalmente
@@ -62,7 +74,7 @@ export function useAxiosPrivate() {
             axiosPrivate.interceptors.request.eject(requestIntercept)
             axiosPrivate.interceptors.response.eject(responseIntercept)
         }
-    }, [auth, refresh]) // Dispara sempre que auth ou refresh mudar
+    }, [auth, refresh])
 
-    return axiosPrivate // Retorna a instância pronta
+    return axiosPrivate
 }
