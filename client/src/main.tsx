@@ -4,6 +4,7 @@ import { RouterProvider } from "react-router-dom"
 
 import { router } from './Router.tsx'
 
+import './index.css'
 
 
 createRoot(document.getElementById('root')!).render(

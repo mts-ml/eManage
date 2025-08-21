@@ -33,7 +33,7 @@ export async function loginController(req: Request<{}, {}, UserProps>, res: Resp
                 },
             },
             process.env.ACCESS_TOKEN_SECRET!,
-            { expiresIn: '10s' }
+            { expiresIn: '300s' }
         )
 
         const refreshToken = jwt.sign(
