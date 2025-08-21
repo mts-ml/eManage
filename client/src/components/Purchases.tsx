@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react"
+import { useContext, useState } from "react"
 import { X } from "lucide-react"
 import { FaSearch } from 'react-icons/fa'
 import type { AxiosResponse } from "axios"
@@ -9,6 +9,7 @@ import SupplierContext from "../Context/SupplierContext"
 import type { Product, PurchasePayload, PurchaseResponse } from "../types/types"
 import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
 import { logError } from "../utils/logger"
+import PurchaseContext from "../Context/PurchaseContext"
 
 
 interface CartItem extends Product {
@@ -18,9 +19,8 @@ interface CartItem extends Product {
 export const Purchases: React.FC = () => {
     const { suppliers } = useContext(SupplierContext)
     const { products, setProducts } = useContext(ProductsContext)
-
+    const { lastPurchase, setLastPurchase } = useContext(PurchaseContext)
     const [cart, setCart] = useState<CartItem[]>([])
-    const [lastPurchase, setLastPurchase] = useState<PurchaseResponse["purchase"] | null>(null)
     const [selectedSupplierId, setSelectedSupplierId] = useState<string>("")
     const [selectedProductId, setSelectedProductId] = useState<string>("")
     const [quantity, setQuantity] = useState<number>(1)
@@ -46,20 +46,6 @@ export const Purchases: React.FC = () => {
     const selectedProduct = products.find(p => p.id === selectedProductId)
     const selectedSupplier = suppliers.find(sup => sup.id === selectedSupplierId)
     const total = cart.reduce((sum, item) => sum + Number(item.purchasePrice) * item.quantity, 0)
-
-    useEffect(() => {
-        async function getLastPurchase() {
-            try {
-                const response = await axiosPrivate.get('/purchases/last')
-                setLastPurchase(response.data.purchase)
-            } catch (error) {
-                logError("Purchases", error)
-                return
-            }
-        }
-
-        getLastPurchase()
-    }, [])
 
     function handleAddToCart(product: Product, quantity: number) {
         setCart(prev => {

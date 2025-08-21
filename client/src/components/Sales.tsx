@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react"
+import { useContext, useState } from "react"
 import { X } from "lucide-react"
 import { FaSearch } from 'react-icons/fa'
 import type { AxiosResponse } from "axios"
@@ -8,6 +8,7 @@ import ClientContext from "../Context/ClientContext"
 import type { Product, SalePayload, SaleResponse } from "../types/types"
 import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
 import { logError } from "../utils/logger"
+import SaleContext from "../Context/SaleContext"
 
 interface CartItem extends Product {
     quantity: number
@@ -16,9 +17,8 @@ interface CartItem extends Product {
 export const Sales: React.FC = () => {
     const { clients } = useContext(ClientContext)
     const { products, setProducts } = useContext(ProductsContext)
-
     const [cart, setCart] = useState<CartItem[]>([])
-    const [lastSale, setLastSale] = useState<SaleResponse["sale"] | null>(null)
+    const { lastSale, setLastSale } = useContext(SaleContext)
     const [selectedClientId, setSelectedClientId] = useState<string>("")
     const [selectedProductId, setSelectedProductId] = useState<string>("")
     const [quantity, setQuantity] = useState<number>(0)
@@ -44,19 +44,7 @@ export const Sales: React.FC = () => {
     const selectedClient = clients.find(c => c.id === selectedClientId)
     const total = cart.reduce((sum, item) => sum + Number(item.salePrice) * item.quantity, 0)
 
-    useEffect(() => {
-        async function getLastSale() {
-            try {
-                const response = await axiosPrivate.get('/sales/last')
-                setLastSale(response.status === 204 ? null : response.data.sale)
-            } catch (error) {
-                logError("Sales", error)
-                return
-            }
-        }
-
-        getLastSale()
-    }, [])
+    
 
     function handleAddToCart(product: Product, quantity: number) {
         setCart(prev => {

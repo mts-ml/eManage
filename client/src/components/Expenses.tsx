@@ -1,4 +1,4 @@
-import { useContext, useState, useEffect } from "react"
+import { useContext, useState, useEffect, useRef } from "react"
 import axios from "axios"
 import { FaTrash, FaEdit } from 'react-icons/fa'
 
@@ -39,9 +39,10 @@ export const Expenses: React.FC = () => {
     const [currentPage, setCurrentPage] = useState(1)
     const pageSize = 20
     const [sortConfig, setSortConfig] = useState<SortConfig>({ field: 'expenseNumber', order: 'desc' })
-
     const { expenses, setExpenses, lastExpense, getLastExpense } = useContext(ExpenseContext)
     const axiosPrivate = useAxiosPrivate()
+    const modalRef = useRef<HTMLElement>(null)
+
 
     // Função para ordenar as despesas
     const sortExpenses = (data: Expense[], config: SortConfig): Expense[] => {
@@ -391,6 +392,20 @@ export const Expenses: React.FC = () => {
         { key: "bank", label: "Banco", placeholder: "Ex: Banco do Brasil", required: false }
     ]
 
+    // Efeito para rolagem suave quando o modal for aberto
+    useEffect(() => {
+        if (showForm && modalRef.current) {
+            // Aguarda um pequeno delay para garantir que o modal esteja renderizado
+            setTimeout(() => {
+                modalRef.current?.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                })
+            }, 100)
+        }
+    }, [showForm, editingExpenseId])
+
+    
     return (
         <main className="p-8 max-w-6xl mx-auto">
             <header className="text-center mb-8">
@@ -412,6 +427,16 @@ export const Expenses: React.FC = () => {
                     setIsReadyToSubmit(false)
                     setRepeatMonths(1)
                     getLastExpense()
+                    
+                    // Rolagem suave para o modal
+                    setTimeout(() => {
+                        if (modalRef.current) {
+                            modalRef.current.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'start'
+                            })
+                        }
+                    }, 100)
                 }}
                 className="block mb-8 cursor-pointer bg-gradient-to-r from-emerald-600 to-green-600 text-white px-8 py-3 rounded-xl font-semibold hover:from-emerald-700 hover:to-green-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 mx-auto"
             >
@@ -419,7 +444,10 @@ export const Expenses: React.FC = () => {
             </button>
 
             {showForm && (
-                <section className="border-2 border-emerald-200/50 rounded-2xl p-8 bg-white/90 backdrop-blur-sm shadow-xl mb-8">
+                <section 
+                    ref={modalRef}
+                    className="border-2 border-emerald-200/50 rounded-2xl p-8 bg-white/90 backdrop-blur-sm shadow-xl mb-8"
+                >
                     <header className="text-center mb-6">
                         <h2 className="text-2xl font-bold text-emerald-800">
                             {editingExpenseId ? "✏️ Editar Despesa" : "➕ Nova Despesa"}
