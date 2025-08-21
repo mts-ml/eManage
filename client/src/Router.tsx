@@ -4,20 +4,23 @@ import { Suspense, lazy } from 'react'
 import { Layout } from "./pages/Layout"
 import { Login } from "./pages/Login"
 import { Register } from "./pages/Register"
-import { Home } from "./pages/Home"
 import { Unauthorized } from "./pages/Unauthorized"
 import { Loading } from "./components/ReactLoader"
-import ErrorPage from "./pages/ErrorPage"
 import { RouteAuthentication } from "./components/RouteAuthentication"
 import { ROLES_LIST } from "./config/roles_list"
+import { PayablesProvider } from "./Context/PayablesContext"
+import { ReceivablesProvider } from "./Context/ReceivablesContext"
+import { PurchaseProvider } from "./Context/PurchaseContext"
+import { AuthProvider } from "./Context/AuthContext"
+import { ClientsProvider } from "./Context/ClientContext"
+import { SupplierProvider } from "./Context/SupplierContext"
+import { ProductsProvider } from "./Context/ProductsContext"
+import { SaleProvider } from "./Context/SaleContext"
+import { ExpensesProvider } from "./Context/ExpensesContext"
+import ErrorPage from "./pages/ErrorPage"
 
-// Lazy loading paralelo para melhor performance
-const AuthProvider = lazy(() => import('./Context/AuthContext').then((module) => ({ default: module.AuthProvider })))
-const ClientsProvider = lazy(() => import('./Context/ClientContext').then(module => ({ default: module.ClientsProvider })))
-const SupplierProvider = lazy(() => import('./Context/SupplierContext').then(module => ({ default: module.SupplierProvider })))
-const ProductsProvider = lazy(() => import('./Context/ProductsContext').then(module => ({ default: module.ProductsProvider })))
-const SaleProvider = lazy(() => import('./Context/SaleContext').then(module => ({ default: module.SaleProvider })))
-const ExpensesProvider = lazy(() => import('./Context/ExpensesContext').then(module => ({ default: module.ExpensesProvider })))
+const Home = lazy(() => import('./pages/Home').then(module => ({ default: module.Home })))
+
 
 function withProviders(children: React.ReactNode) {
    return (
@@ -28,7 +31,13 @@ function withProviders(children: React.ReactNode) {
                   <ProductsProvider>
                      <SaleProvider>
                         <ExpensesProvider>
-                           {children}
+                           <PayablesProvider>
+                              <ReceivablesProvider>
+                                 <PurchaseProvider>
+                                    {children}
+                                 </PurchaseProvider>
+                              </ReceivablesProvider>
+                           </PayablesProvider>
                         </ExpensesProvider>
                      </SaleProvider>
                   </ProductsProvider>
