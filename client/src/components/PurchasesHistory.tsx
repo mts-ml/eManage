@@ -359,10 +359,10 @@ export const PurchasesHistory: React.FC = () => {
             </header>
 
             {loading ? (
-               <div className="p-8 text-center">
+               <div className="flex items-center justify-center p-8 text-center">
                   <div className="inline-flex items-center justify-center w-8 h-8 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mr-2"></div>
                   
-                  <span className="text-gray-600">Carregando histórico...</span>
+                  <span className="text-gray-600 font-medium">Carregando histórico...</span>
                </div>
             ) :
                sortedPurchases.length === 0 ? (
