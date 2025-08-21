@@ -1,10 +1,16 @@
 import { CircleLoader } from "react-spinners";
 
-
 export function Loading() {
-
+  
   return (
-    <div className="flex flex-col items-center justify-center h-screen">
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      height: '100vh',
+      background: 'linear-gradient(135deg, #fafdf9 0%, #f8fdfa 50%, #f0fdf4 100%)'
+    }}>
       <CircleLoader
         color="#10b981"
         loading={true}        
@@ -13,7 +19,12 @@ export function Loading() {
         data-testid="loader"
       />
 
-      <p className="font-medium text-[#10b981] mt-2">
+      <p style={{
+        fontWeight: '500',
+        color: '#10b981',
+        marginTop: '8px',
+        fontSize: '16px'
+      }}>
         Loading...
       </p>
     </div>
