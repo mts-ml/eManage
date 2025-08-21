@@ -89,4 +89,3 @@ export const ExpensesProvider = ({ children }: ExpensesProviderProps) => {
     )
 }
 export default ExpensesContext
-

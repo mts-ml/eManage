@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useContext, useEffect, useState } from "react"
 import { X } from "lucide-react"
 import { FaTrash, FaEdit } from 'react-icons/fa'
 
@@ -16,6 +16,7 @@ import type {
 } from "../types/types"
 
 import { PaymentStatus } from "../types/types"
+import PayablesContext from "../Context/PayablesContext"
 
 
 type SortField = 'date' | 'purchaseNumber' | 'supplierName' | 'total' | 'status' | 'firstPaymentDate' | 'finalPaymentDate'
@@ -40,7 +41,7 @@ interface EditFormData {
 
 
 export const Payables: React.FC = () => {
-    const [payables, setPayables] = useState<Payable[]>([])
+    const { payables, setPayables } = useContext(PayablesContext)
     const [sortConfig, setSortConfig] = useState<SortConfig>({ field: 'date', order: 'desc' })
     const [editingPurchase, setEditingPurchase] = useState<Payable | null>(null)
     const [editFormData, setEditFormData] = useState<EditFormData>({
@@ -149,38 +150,7 @@ export const Payables: React.FC = () => {
             const pages = Math.max(1, Math.ceil(totalItems / pageSize))
             return Math.min(prev, pages)
         })
-    }, [totalItems])
-
-    useEffect(() => {
-        async function fetchPurchases() {
-            try {
-                const response = await axiosPrivate.get<Payable[]>("/purchases")
-                
-                const data = Array.isArray(response.data) ? response.data : []
-                if (response.status === 204 || data.length === 0) {
-                    setPayables([])
-                    return
-                }
-
-                const purchasesWithPayableInfo: Payable[] = data.map((purchase: Payable) => ({
-                    ...purchase,
-                    status: purchase.status || "Pendente",
-                    totalPaid: purchase.totalPaid || 0,
-                    remainingAmount: purchase.remainingAmount || purchase.total,
-                    firstPaymentDate: purchase.firstPaymentDate || null,
-                    finalPaymentDate: purchase.finalPaymentDate || null,
-                    bank: purchase.bank || "",
-                    observations: purchase.observations || ""
-                }))
-
-                setPayables(purchasesWithPayableInfo)
-            } catch (error) {
-                logError("Payables", error);
-            }
-        }
-
-        fetchPurchases()
-    }, [axiosPrivate])
+    }, [totalItems])    
 
     // Função para iniciar edição no modal
     const handleStartEdit = (purchase: Payable) => {

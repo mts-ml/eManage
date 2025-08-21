@@ -1,4 +1,4 @@
-import { useContext, useState, useEffect } from "react"
+import { useContext, useState, useEffect, useRef } from "react"
 import { FaTrash, FaEdit, FaSearch } from 'react-icons/fa'
 
 import type { Supplier, SupplierErrors, SupplierFromBackend } from "../types/types"
@@ -36,6 +36,7 @@ export const Suppliers: React.FC = () => {
     const axiosPrivate = useAxiosPrivate()
     const [currentPage, setCurrentPage] = useState(1)
     const pageSize = 20
+    const formRef = useRef<HTMLElement>(null)
 
     // Filtrar fornecedores baseado no termo de busca (nome ou CPF/CNPJ)
     const filteredSuppliers = suppliers.filter(supplier => {
@@ -182,6 +183,16 @@ export const Suppliers: React.FC = () => {
         setForm({ ...supplier })
         setEditingSupplierId(supplier.id!)
         setShowForm(true)
+        
+        setTimeout(() => {
+            if (formRef.current) {
+                formRef.current.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'start',
+                    inline: 'nearest'
+                })
+            }
+        }, 100)
     }
 
     async function handleDelete(id: string) {
@@ -279,6 +290,17 @@ export const Suppliers: React.FC = () => {
                     setEditingSupplierId(null)
                     setShowForm(true)
                     setFormErrors({})
+                    
+                    // Rolagem suave para o modal
+                    setTimeout(() => {
+                        if (formRef.current) {
+                            formRef.current.scrollIntoView({ 
+                                behavior: 'smooth', 
+                                block: 'start',
+                                inline: 'nearest'
+                            })
+                        }
+                    }, 100)
                 }}
                 className="block mx-auto text-center mb-8 bg-gradient-to-r from-emerald-600 to-green-600 cursor-pointer text-white px-8 py-3 rounded-xl font-semibold hover:from-emerald-700 hover:to-green-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
             >
@@ -286,7 +308,10 @@ export const Suppliers: React.FC = () => {
             </button>
 
             {showForm && (
-                <section className="border-2 border-emerald-200/50 rounded-2xl p-8 bg-white/90 backdrop-blur-sm shadow-xl mb-8">
+                <section 
+                    ref={formRef}
+                    className="border-2 border-emerald-200/50 rounded-2xl p-8 bg-white/90 backdrop-blur-sm shadow-xl mb-8"
+                >
                     <header className="text-center mb-6">
                         <h2 className="text-2xl font-bold text-emerald-800">
                             {editingSupplierId ? "✏️ Editar Fornecedor" : "➕ Novo Fornecedor"}

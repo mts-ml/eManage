@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useContext, useEffect, useState } from "react"
 import { X } from "lucide-react"
 import { FaTrash, FaEdit } from 'react-icons/fa'
 
@@ -16,6 +16,7 @@ import type {
 } from "../types/types"
 
 import { PaymentStatus } from "../types/types"
+import ReceivablesContext from "../Context/ReceivablesContext"
 
 
 type SortField = 'date' | 'saleNumber' | 'clientName' | 'total' | 'status' | 'firstPaymentDate' | 'finalPaymentDate'
@@ -40,7 +41,7 @@ interface EditFormData {
 
 
 export const Receivables: React.FC = () => {
-    const [receivables, setReceivables] = useState<Receivable[]>([])
+    const { receivables, setReceivables } = useContext(ReceivablesContext)
     const [sortConfig, setSortConfig] = useState<SortConfig>({ field: 'date', order: 'desc' })
     const [editingSale, setEditingSale] = useState<Receivable | null>(null)
     const [editFormData, setEditFormData] = useState<EditFormData>({
@@ -70,7 +71,7 @@ export const Receivables: React.FC = () => {
     const sortReceivables = (data: Receivable[], config: SortConfig): Receivable[] => {
         // Ordem lógica para status: Pendente → Parcialmente pago → Pago
         const statusOrder = { 'Pendente': 1, 'Parcialmente pago': 2, 'Pago': 3 }
-        
+
         return [...data].sort((a, b) => {
             let aValue: string | number | Date
             let bValue: string | number | Date
@@ -150,32 +151,6 @@ export const Receivables: React.FC = () => {
             return Math.min(prev, pages)
         })
     }, [totalItems])
-
-    useEffect(() => {
-        async function fetchSales() {
-            try {
-                const response = await axiosPrivate.get<Receivable[]>("/sales")
-
-                const data = Array.isArray(response.data) ? response.data : []
-                if (response.status === 204 || data.length === 0) {
-                    setReceivables([])
-                    return
-                }
-
-                const salesWithReceivableInfo: Receivable[] = data.map((sale: Receivable) => ({
-                    ...sale,
-                    status: sale.status || "Pendente",
-                    paymentDate: sale.paymentDate || null,
-                    bank: sale.bank || ""
-                }))
-
-                setReceivables(salesWithReceivableInfo)
-            } catch (error) {
-                logError("Receivables", error);
-            }
-        }
-        fetchSales()
-    }, [axiosPrivate])
 
     // Função para iniciar edição no modal
     const handleStartEdit = (sale: Receivable) => {
@@ -339,7 +314,7 @@ export const Receivables: React.FC = () => {
                 payments: []
             }
 
-            await axiosPrivate.patch<ApiResponse<Receivable>>(`/receivables/${editingSale._id}`,updateData)
+            await axiosPrivate.patch<ApiResponse<Receivable>>(`/receivables/${editingSale._id}`, updateData)
 
             const updatedSale = { ...editingSale, ...updateData }
             setReceivables(prev =>
@@ -476,7 +451,7 @@ export const Receivables: React.FC = () => {
 
                                     <th className="px-4 py-3 text-xs font-semibold text-center">Valor Pago</th>
 
-                                    <th 
+                                    <th
                                         className="px-4 py-3 text-xs font-semibold text-center cursor-pointer hover:bg-emerald-700 transition-colors duration-200 select-none"
                                         onClick={() => handleSort('status')}
                                         title="Clique para ordenar por status"
