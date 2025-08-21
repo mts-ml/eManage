@@ -1,4 +1,4 @@
-import { CircleLoader } from "react-spinners";
+import { CircleLoader } from "react-spinners"
 
 export function Loading() {
   

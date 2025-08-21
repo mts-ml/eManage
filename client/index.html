@@ -51,6 +51,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
+  <link rel="stylesheet" href="/src/index.css">
+
   <!-- Meta tags para dispositivos móveis -->
   <meta name="msapplication-TileColor" content="#10b981" />
   <meta name="mobile-web-app-capable" content="yes" />
@@ -71,31 +73,6 @@
     font-src 'self' data:;
   " />
 
-  <!-- CSS crítico inline apenas para o loader -->
-  <style>
-    html, body, #root {
-      margin: 0;
-      padding: 0;
-      min-height: 100vh;
-      background: linear-gradient(135deg, #fafdf9 0%, #f8fdfa 50%, #f0fdf4 100%);
-    }
-    
-    /* Estilos críticos para o loader inicial */
-    .loading-fallback {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-    }
-    
-    .loading-text {
-      font-weight: 500;
-      color: #10b981;
-      margin-top: 8px;
-      fontSize: 16px;
-    }
-  </style>
 </head>
 
 <body>
