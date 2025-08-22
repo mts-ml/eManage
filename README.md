@@ -2,6 +2,8 @@
 
 <div align="center">
   <img src="client/public/assets/images/eManage.png" alt="eManage Logo" width="120" height="120">
+
+  Acessar site: [eManage](https://emanageapp.netlify.app)
   
   <h3>Sistema completo de gestão para empresas do setor alimentício</h3>
   
@@ -33,6 +35,8 @@
 ## 🏢 Sobre o Projeto
 
 O **eManage** é um sistema de gestão empresarial completo desenvolvido especificamente para empresas do setor alimentício. O projeto combina uma aplicação web moderna com uma versão desktop usando Electron, oferecendo flexibilidade total para os usuários.
+
+Acessar site: [eManage](https://emanageapp.netlify.app)
 
 ### 🎯 Objetivos do Sistema
 
