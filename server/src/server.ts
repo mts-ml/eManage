@@ -7,7 +7,6 @@ import cookieParser from 'cookie-parser'
 import { errorHandler } from './middleware/errorHandler.js'
 import { connectDB } from './config/dbConnection.js'
 import { verifyJWT } from './middleware/verifyJWT.js'
-import { logSuccess } from "./utils/logger.js"
 
 import login from './routes/login.js'
 import register from './routes/register.js'
@@ -72,5 +71,6 @@ app.use('/expenses', expenses)
 app.use(errorHandler)
 
 mongoose.connection.once("open", () => {
-    logSuccess("Server", `Server running on PORT ${PORT}`)
+    console.log("Connected to MongoDB")
+    app.listen(PORT, () => console.log(`Server running on PORT ${PORT}`))
 })
