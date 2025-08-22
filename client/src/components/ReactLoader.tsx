@@ -13,7 +13,7 @@ export function Loading() {
       />
 
       <p className="loading-text">
-        Loading...
+        Carregando...
       </p>
     </div>
   )
