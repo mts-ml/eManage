@@ -36,6 +36,7 @@ export const Login: React.FC = () => {
     const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false)
     const navigate = useNavigate()
     const { setAuth } = useContext(AuthContext)
+    const [isLoading, setIsLoading] = useState(false)
 
 
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -89,29 +90,29 @@ export const Login: React.FC = () => {
         try {
             const response = await axiosInstance.post('/login', form, { withCredentials: true })
 
-            // Getting access token, decoding it and saving info on global state
             const accessToken = response.data.accessToken
             const decodedToken: CustomJwtPayload = jwtDecode(accessToken)
             const { name, email, roles } = decodedToken.UserInfo
             setAuth({ name, email, roles, accessToken })
 
             setIsLoggedIn(true)
+            
+            setTimeout(() => {
+                navigate('home')
+            }, 1000)
+
             setForm(defaultValues)
             setErrors({
                 email: null,
                 password: null,
                 geral: null
             })
-
-            navigate('home')
         } catch (error) {
             if (axios.isAxiosError(error)) {
                 if (!error.response) {
-                    // Falha de rede, API fora do ar, timeout, etc.
                     logError("Login", error);
                     setErrors(prev => ({ ...prev, geral: "Serviço indisponível. Tente novamente mais tarde." }))
                 } else {
-                    // API respondeu com erro
                     const status = error.response.status
                     const data = error.response.data
 
@@ -138,17 +139,17 @@ export const Login: React.FC = () => {
                     }
                 }
             } else {
-                // Erro desconhecido, que não veio do axios
                 logError("Login", error);
                 setErrors(prev => ({ ...prev, geral: "Erro inesperado. Tente novamente." }))
             }
+        } finally {
+            setIsLoading(false)
         }
     }
 
 
     return (
         <main className="h-[calc(100dvh-89px)] bg-gradient-to-br from-emerald-50/30 via-green-50/30 to-emerald-100/30 flex items-center justify-center px-4 relative overflow-hidden">
-            {/* Background decoration */}
             <div className="absolute inset-0 bg-gradient-to-br from-emerald-100/10 to-green-100/10"></div>
             <div className="absolute top-10 left-10 w-32 h-32 bg-emerald-200/20 rounded-full blur-3xl"></div>
             <div className="absolute bottom-10 right-10 w-40 h-40 bg-green-200/20 rounded-full blur-3xl"></div>
@@ -221,10 +222,16 @@ export const Login: React.FC = () => {
 
                     <button
                         type="submit"
-                        disabled={!isReadyToSubmit}
-                        className="w-full cursor-pointer bg-gradient-to-r from-emerald-600 to-green-600 text-white py-3 rounded-xl font-semibold hover:from-emerald-700 hover:to-green-700 transition-all duration-300 disabled:from-gray-400 disabled:to-gray-500 disabled:text-gray-300 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                        disabled={!isReadyToSubmit || isLoading}
+                        className="w-full cursor-pointer bg-gradient-to-r from-emerald-600 to-green-600 text-white py-3 rounded-xl font-semibold hover:from-emerald-700 hover:to-green-700 transition-all duration-300 disabled:from-gray-400 disabled:to-gray-500 disabled:text-gray-300 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
                     >
-                        {isLoggedIn ? "Entrando..." : "Entrar"}
+                        {isLoading && (
+                            <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
+                                <path className="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                            </svg>
+                        )}
+                        {isLoading ? "Entrando..." : isLoggedIn ? "Sucesso!" : "Entrar"}
                     </button>
 
                     {errors.geral && (
@@ -237,11 +244,14 @@ export const Login: React.FC = () => {
                     )}
 
                     {isLoggedIn && (
-                        <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl">
+                        <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl animate-in slide-in-from-bottom duration-300">
                             <p className="text-emerald-600 font-medium text-sm flex items-center">
-                                <span className="mr-2">✅</span>
-                                Login efetuado com sucesso!
+                                <span className="mr-2 animate-bounce">✅</span>
+                                Login efetuado com sucesso! Redirecionando...
                             </p>
+                            <div className="w-full bg-emerald-200 rounded-full h-1 mt-2">
+                                <div className="bg-emerald-600 h-1 rounded-full animate-pulse" style={{width: '100%'}}></div>
+                            </div>
                         </div>
                     )}
                 </form>

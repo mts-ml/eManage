@@ -74,7 +74,6 @@ export function useAxiosPrivate() {
                         // Processa todas as requisições na fila
                         processQueue(null, newToken)
                         
-                        // Atualiza o token no header da requisição atual
                         previousRequest.headers!['Authorization'] = `Bearer ${newToken}`
                         
                         return axiosPrivate(previousRequest)

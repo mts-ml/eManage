@@ -114,11 +114,9 @@ export const Register: React.FC = () => {
         } catch (error) {
             if (axios.isAxiosError(error)) {
                 if (!error.response) {
-                    // Falha de rede, API fora do ar, timeout, etc.
                     logError("Register", error);
                     setErrors(prev => ({ ...prev, general: "Serviço indisponível. Tente novamente mais tarde." }))
                 } else {
-                    // API respondeu com erro
                     const status = error.response.status
                     const data = error.response.data
 
@@ -145,7 +143,6 @@ export const Register: React.FC = () => {
                     }
                 }
             } else {
-                // Erro desconhecido, que não veio do axios
                 logError("Register", error);
                 setErrors(prev => ({ ...prev, general: "Erro inesperado. Tente novamente." }))
             }
@@ -155,7 +152,6 @@ export const Register: React.FC = () => {
 
     return (
         <main className="h-[calc(100dvh-89px)] bg-gradient-to-br from-emerald-50/30 via-green-50/30 to-emerald-100/30 flex items-center justify-center px-4 relative overflow-hidden">
-            {/* Background decoration */}
             <div className="absolute inset-0 bg-gradient-to-br from-emerald-100/10 to-green-100/10"></div>
             <div className="absolute top-10 left-10 w-32 h-32 bg-emerald-200/20 rounded-full blur-3xl"></div>
             <div className="absolute bottom-10 right-10 w-40 h-40 bg-green-200/20 rounded-full blur-3xl"></div>
