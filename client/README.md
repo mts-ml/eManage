@@ -18,24 +18,18 @@
 
 ## 📋 Índice
 
-- [ Sobre o Projeto](#-sobre-o-projeto)
+- [🏢 Sobre o Projeto](#-sobre-o-projeto)
 - [✨ Funcionalidades](#-funcionalidades)
 - [🛠️ Tecnologias Utilizadas](#️-tecnologias-utilizadas)
 - [🏗️ Arquitetura](#️-arquitetura)
 - [🔐 Segurança](#-segurança)
-- [ Interface e UX](#-interface-e-ux)
+- [📱 Interface e UX](#-interface-e-ux)
 - [🚀 Como Executar](#-como-executar)
-- [ Build e Deploy](#-build-e-deploy)
-- [📊 Estrutura do Projeto](#-estrutura-do-projeto)
-- [🔧 Configuração](#-configuração)
-- [📈 Funcionalidades Detalhadas](#-funcionalidades-detalhadas)
-- [🎨 Screenshots](#-screenshots)
-- [🤝 Contribuição](#-contribuição)
-- [ Licença](#-licença)
+- [📄 Licença](#-licença)
 
 ---
 
-##  Sobre o Projeto
+## 🏢 Sobre o Projeto
 
 O **eManage** é um sistema de gestão empresarial completo desenvolvido especificamente para empresas do setor alimentício. O projeto combina uma aplicação web moderna com uma versão desktop usando Electron, oferecendo flexibilidade total para os usuários.
 
@@ -158,7 +152,7 @@ Frontend ↔ Context API ↔ Axios ↔ Express ↔ Mongoose ↔ MongoDB
 
 ## 📱 Interface e UX
 
-###  **Design System**
+### 🎨 **Design System**
 - **Paleta de cores**: Esquema emerald (verde) consistente
 - **Tipografia**: Hierarquia clara e legível
 - **Componentes**: Design system unificado
@@ -168,7 +162,7 @@ Frontend ↔ Context API ↔ Axios ↔ Express ↔ Mongoose ↔ MongoDB
 - **Navegação intuitiva**: Cards organizados por funcionalidade
 - **Feedback visual**: Estados de loading e confirmações
 - **Acessibilidade**: Semântica HTML e ARIA labels
-- **Performance**: Lazy loading de componentes
+- **Performance**: Lazy loading na Home para carregamento otimizado
 
 ### 📱 **Responsividade**
 - **Mobile-first**: Design otimizado para dispositivos móveis
@@ -176,7 +170,7 @@ Frontend ↔ Context API ↔ Axios ↔ Express ↔ Mongoose ↔ MongoDB
 - **Touch-friendly**: Interface otimizada para toque
 ---
 
-##  Como Executar
+## 🚀 Como Executar
 
 ### 📋 **Pré-requisitos**
 - Node.js 18+ 
@@ -188,7 +182,7 @@ Frontend ↔ Context API ↔ Axios ↔ Express ↔ Mongoose ↔ MongoDB
 
 #### **1. Clone o repositório**
 ```bash
-git clone https://github.com/seu-usuario/emanage.git
+git clone https://github.com/mts-ml/eManage
 cd emanage
 ```
 
@@ -236,52 +230,6 @@ npm run dist:mac
 npm run dist:linux
 ```
 
-### 🚀 **Deploy**
-
-#### **Backend**
-```bash
-cd server
-npm run build
-npm start
-```
-
-## 🔧 Configuração
-
-### 🗄️ **Banco de Dados**
-- **MongoDB**: Banco principal
-- **Coleções**: users, clients, suppliers, products, sales, purchases, expenses
-- **Índices**: Otimizados para consultas frequentes
-
----
-
-## 📈 Funcionalidades Detalhadas
-
-### 💼 **Sistema de Vendas**
-- **Registro completo**: Cliente, produtos, valores, parcelas
-- **Parcelamento**: Configuração de número de parcelas
-- **Histórico**: Rastreamento completo de transações
-- **Status**: Controle de pagamento (Pendente, Parcial, Pago)
-
-###  **Sistema de Compras**
-- **Fornecedores**: Gestão de parceiros comerciais
-- **Itens**: Produtos, quantidades e preços
-- **Controle**: Pagamentos e parcelamento
-- **Integração**: Atualização automática de estoque
-
-### 💰 **Gestão Financeira**
-- **Contas a Receber**: Acompanhamento de vendas a prazo
-- **Contas a Pagar**: Controle de obrigações com fornecedores
-- **Despesas**: Gestão de gastos operacionais
-- **Caixa**: Visão consolidada do fluxo financeiro
-
-### 📊 **Relatórios e Análises**
-- **PDF**: Geração de relatórios em formato PDF
-- **Métricas**: Indicadores de performance
-- **Histórico**: Análise temporal de operações
-- **Exportação**: Dados para análise externa
-
----
-
 ## 📄 Licença
 
 Este projeto está sob a licença **MIT**. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
@@ -290,5 +238,4 @@ Este projeto está sob a licença **MIT**. Veja o arquivo [LICENSE](LICENSE) par
 
 <div align="center">
   <p>⭐ <strong>Se este projeto te ajudou, considere dar uma estrela!</strong> ⭐</p>
-  <p>🏢 <em>Desenvolvido com ❤️ para o setor alimentício</em> 🏢</p>
 </div>
