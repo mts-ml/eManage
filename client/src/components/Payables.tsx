@@ -10,13 +10,14 @@ import type {
     Payable,
     UpdatePayableRequest,
     ApiResponse,
-    DeleteResponse,
     AxiosErrorResponse,
-    PaymentRecord
+    PaymentRecord,
+    Product
 } from "../types/types"
 
 import { PaymentStatus } from "../types/types"
 import PayablesContext from "../Context/PayablesContext"
+import ProductsContext from "../Context/ProductsContext"
 
 
 type SortField = 'date' | 'purchaseNumber' | 'supplierName' | 'total' | 'status' | 'firstPaymentDate' | 'finalPaymentDate'
@@ -42,6 +43,7 @@ interface EditFormData {
 
 export const Payables: React.FC = () => {
     const { payables, setPayables } = useContext(PayablesContext)
+    const { setProducts } = useContext(ProductsContext)
     const [sortConfig, setSortConfig] = useState<SortConfig>({ field: 'date', order: 'desc' })
     const [editingPurchase, setEditingPurchase] = useState<Payable | null>(null)
     const [editFormData, setEditFormData] = useState<EditFormData>({
@@ -353,8 +355,21 @@ export const Payables: React.FC = () => {
         if (!confirmed) return
 
         try {
-            const response = await axiosPrivate.delete<DeleteResponse>(`/purchases/${id}`)
+            const response = await axiosPrivate.delete(`/purchases/${id}`)
+            
             setPayables(prev => prev.filter(purchase => purchase._id !== id))
+            
+            // Atualizar produtos com estoque ajustado
+            const { updatedProducts } = response.data
+            if (updatedProducts) {
+                setProducts((prev: Product[]) =>
+                    prev.map(product => {
+                        const updatedProduct = updatedProducts.find((p: { id: string, stock: number }) => p.id === product.id)
+                        return updatedProduct ? { ...product, stock: updatedProduct.stock } : product
+                    })
+                )
+            }
+            
             logInfo("Payables", "Compra excluída com sucesso", response.data.message)
         } catch (error: unknown) {
             logError("Payables", error);

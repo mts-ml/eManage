@@ -137,11 +137,13 @@ export interface PurchaseResponse {
 }
 
 
-export interface Receivable extends PurchasePayload {
+export interface Receivable {
     _id: string;
     saleNumber: string;
+    clientId: string;
     clientName: string;
     date: string;
+    items: Item[];
     total: number;
     status: PaymentStatus;
     totalPaid: number;
@@ -210,11 +212,6 @@ export interface UpdatePayableRequest {
 export interface ApiResponse<T> {
     data: T
     message?: string
-    success: boolean
-}
-
-export interface DeleteResponse {
-    message: string
     success: boolean
 }
 

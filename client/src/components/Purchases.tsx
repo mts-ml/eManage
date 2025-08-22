@@ -6,7 +6,8 @@ import type { AxiosResponse } from "axios"
 
 import ProductsContext from "../Context/ProductsContext"
 import SupplierContext from "../Context/SupplierContext"
-import type { Product, PurchasePayload, PurchaseResponse } from "../types/types"
+import PayablesContext from "../Context/PayablesContext"
+import type { Payable, Product, PurchasePayload, PurchaseResponse } from "../types/types"
 import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
 import { logError } from "../utils/logger"
 import PurchaseContext from "../Context/PurchaseContext"
@@ -19,6 +20,7 @@ interface CartItem extends Product {
 export const Purchases: React.FC = () => {
     const { suppliers } = useContext(SupplierContext)
     const { products, setProducts } = useContext(ProductsContext)
+    const { setPayables } = useContext(PayablesContext)
     const { lastPurchase, setLastPurchase } = useContext(PurchaseContext)
     const [cart, setCart] = useState<CartItem[]>([])
     const [selectedSupplierId, setSelectedSupplierId] = useState<string>("")
@@ -125,6 +127,20 @@ export const Purchases: React.FC = () => {
                     return updatedProduct ? { ...product, stock: updatedProduct.stock } : product
                 })
             )
+
+            const payable: Payable = {
+                ...purchase,
+                invoiceNumber: purchase.invoiceNumber!,
+                status: purchase.status || "Pendente",
+                totalPaid: purchase.totalPaid || 0,
+                remainingAmount: purchase.remainingAmount || purchase.total,
+                firstPaymentDate: null,
+                finalPaymentDate: null,
+                bank: "",
+                observations: "",
+                payments: []
+            }
+            setPayables(prev => [payable, ...prev])
 
             setLastPurchase(purchase)
         } catch (error) {

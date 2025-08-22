@@ -5,10 +5,11 @@ import type { AxiosResponse } from "axios"
 
 import ProductsContext from "../Context/ProductsContext"
 import ClientContext from "../Context/ClientContext"
-import type { Product, SalePayload, SaleResponse } from "../types/types"
+import type { Product, Receivable, SalePayload, SaleResponse } from "../types/types"
 import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
 import { logError } from "../utils/logger"
 import SaleContext from "../Context/SaleContext"
+import ReceivablesContext from "../Context/ReceivablesContext"
 
 interface CartItem extends Product {
     quantity: number
@@ -19,6 +20,7 @@ export const Sales: React.FC = () => {
     const { products, setProducts } = useContext(ProductsContext)
     const [cart, setCart] = useState<CartItem[]>([])
     const { lastSale, setLastSale } = useContext(SaleContext)
+    const { setReceivables } = useContext(ReceivablesContext)
     const [selectedClientId, setSelectedClientId] = useState<string>("")
     const [selectedProductId, setSelectedProductId] = useState<string>("")
     const [quantity, setQuantity] = useState<number>(0)
@@ -44,7 +46,7 @@ export const Sales: React.FC = () => {
     const selectedClient = clients.find(c => c.id === selectedClientId)
     const total = cart.reduce((sum, item) => sum + Number(item.salePrice) * item.quantity, 0)
 
-    
+
 
     function handleAddToCart(product: Product, quantity: number) {
         setCart(prev => {
@@ -130,16 +132,29 @@ export const Sales: React.FC = () => {
 
         try {
             const response: AxiosResponse<SaleResponse> = await axiosPrivate.post('/sales', salePayload)
-
             const { sale, updatedProducts } = response.data
 
+            // Atualizar produtos
             setProducts((prev: Product[]) =>
                 prev.map(product => {
                     const updatedProduct = updatedProducts.find(p => p.id === product.id)
-
                     return updatedProduct ? { ...product, stock: updatedProduct.stock } : product
                 })
             )
+
+            const receivable: Receivable = {
+                ...sale,
+                saleNumber: sale.saleNumber.toString(),
+                status: sale.status || "Pendente",
+                totalPaid: sale.totalPaid || 0,
+                remainingAmount: sale.remainingAmount || sale.total,
+                firstPaymentDate: null,
+                finalPaymentDate: null,
+                bank: "",
+                observations: "",
+                payments: []
+            }
+            setReceivables(prev => [receivable, ...prev])
 
             setLastSale(sale)
         } catch (error) {

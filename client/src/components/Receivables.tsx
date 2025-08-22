@@ -5,18 +5,18 @@ import { FaTrash, FaEdit } from 'react-icons/fa'
 import { useAxiosPrivate } from "../hooks/useAxiosPrivate"
 import { logInfo, logError } from "../utils/logger"
 
-
 import type {
     Receivable,
     UpdateReceivableRequest,
     ApiResponse,
-    DeleteResponse,
     AxiosErrorResponse,
-    PaymentRecord
+    PaymentRecord,
+    Product
 } from "../types/types"
 
 import { PaymentStatus } from "../types/types"
 import ReceivablesContext from "../Context/ReceivablesContext"
+import ProductsContext from "../Context/ProductsContext"
 
 
 type SortField = 'date' | 'saleNumber' | 'clientName' | 'total' | 'status' | 'firstPaymentDate' | 'finalPaymentDate'
@@ -42,6 +42,7 @@ interface EditFormData {
 
 export const Receivables: React.FC = () => {
     const { receivables, setReceivables } = useContext(ReceivablesContext)
+    const { setProducts } = useContext(ProductsContext)
     const [sortConfig, setSortConfig] = useState<SortConfig>({ field: 'date', order: 'desc' })
     const [editingSale, setEditingSale] = useState<Receivable | null>(null)
     const [editFormData, setEditFormData] = useState<EditFormData>({
@@ -354,8 +355,21 @@ export const Receivables: React.FC = () => {
         if (!confirmed) return
 
         try {
-            const response = await axiosPrivate.delete<DeleteResponse>(`/sales/${id}`)
+            const response = await axiosPrivate.delete(`/sales/${id}`)
+
             setReceivables(prev => prev.filter(sale => sale._id !== id))
+
+            // Atualizar produtos com estoque restaurado
+            const { updatedProducts } = response.data
+            if (updatedProducts) {
+                setProducts((prev: Product[]) =>
+                    prev.map(product => {
+                        const updatedProduct = updatedProducts.find((p: { id: string, stock: number }) => p.id === product.id)
+                        return updatedProduct ? { ...product, stock: updatedProduct.stock } : product
+                    })
+                )
+            }
+
             logInfo("Receivables", "Venda excluída com sucesso", response.data.message)
         } catch (error: unknown) {
             logError("Receivables", error);

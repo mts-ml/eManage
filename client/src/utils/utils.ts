@@ -49,8 +49,6 @@ export function isValidCNPJ(cnpj: string): boolean {
     return digit1 === parseInt(cnpj[12]) && digit2 === parseInt(cnpj[13])
 }
 
-// PHone validator
-
 export function formatPhoneForDisplay(phone: string): string {
     // Se o telefone tiver 11 dígitos (DD + 9 dígitos), formata assim
     if (phone.length === 11) {
@@ -64,7 +62,6 @@ export function formatPhoneForDisplay(phone: string): string {
     return phone;
 }
 
-// Função para converter data sem problemas de fuso horário
 export const formatDateForAPI = (dateString: string): string | null => {
     if (!dateString) return null
     // Criar data no fuso horário local para evitar mudanças
