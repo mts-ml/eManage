@@ -1,6 +1,7 @@
 import { Request, Response } from "express"
 
 import { User } from "../model/Users.js"
+import { logError } from "../utils/logger.js"
 
 
 export async function handleLogout(req: Request, res: Response) {
@@ -39,7 +40,7 @@ export async function handleLogout(req: Request, res: Response) {
 
         res.sendStatus(204)
     } catch (error) {
-        console.error("Erro no logout:", error)
+        logError("LogoutController", error)
         res.status(500).json({ message: "Erro interno ao tentar fazer logout." })
         return
     }

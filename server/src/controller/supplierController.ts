@@ -3,6 +3,7 @@ import mongoose from "mongoose"
 
 import { Supplier } from "../model/Suppliers.js"
 import { SupplierProps } from "../types/types.js"
+import { logError } from "../utils/logger.js"
 
 
 export async function getAllSuppliers(req: Request, res: Response, next: NextFunction) {
@@ -15,7 +16,7 @@ export async function getAllSuppliers(req: Request, res: Response, next: NextFun
 
         res.json(suppliers)
     } catch (error) {
-        console.error(`suppliersController - ${JSON.stringify(error)}`)
+        logError("SupplierController", error)
         next(error)
     }
 }
@@ -50,7 +51,7 @@ export async function createNewSupplier(req: Request<{}, {}, SupplierProps>, res
             res.status(409).json({ message: "Registro já existe." })
             return
         }
-        console.error(`createNewSupplier error: ${JSON.stringify(error)}`)
+        logError("SupplierController", error)
         next(error)
     }
 }
@@ -95,7 +96,7 @@ export async function updateSupplier(req: Request<{ id: string }, {}, SupplierPr
 
         res.json(updatedSupplier)
     } catch (error) {
-        console.error(`Erro ao editar fornecedor ${JSON.stringify(error)}`)
+        logError("SupplierController", error)
         next(error)
     }
 }
@@ -116,7 +117,7 @@ export async function deleteSupplier(req: Request<{ id: string }>, res: Response
 
         res.json({ message: `Fornecedor ${deletedSupplier.name} deletado com sucesso.` })
     } catch (error) {
-        console.error("Erro ao deletar fornecedor", error)
+        logError("SupplierController", error)
         next(error)
     }
 }

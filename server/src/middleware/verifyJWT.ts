@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express"
 import jwt from 'jsonwebtoken'
 
 import { CustomJwtPayload } from "../types/types.js"
+import { logError } from "../utils/logger.js"
 
 
 export function verifyJWT(req: Request, res: Response, next: NextFunction) {
@@ -28,7 +29,7 @@ export function verifyJWT(req: Request, res: Response, next: NextFunction) {
         req.roles = decodedToken.UserInfo.roles
         next()
     } catch (error) {
-        console.log(`verifyJWT - ${JSON.stringify(error)}`)
+        logError("VerifyJWT", error)
         res.status(401).json({ message: "Token expirado ou inválido." })
     } 
 }

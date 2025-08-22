@@ -1,5 +1,7 @@
 import { NextFunction, Request, Response } from "express"
 
+import { logError } from "../utils/logger.js"
+
 
 export function errorHandler(error: Error, req: Request, res: Response, next: NextFunction) {
     if (error instanceof SyntaxError && 'body' in error) {
@@ -7,7 +9,7 @@ export function errorHandler(error: Error, req: Request, res: Response, next: Ne
         return
     }
 
-    console.error(error.stack)
+    logError("ErrorHandler", error.stack)
 
     res.status(500).json({ error: "Erro interno do servidor." })
 }

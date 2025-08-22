@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken'
 
 import { User } from "../model/Users.js"
 import { CustomJwtPayload } from "../types/types.js"
+import { logError } from "../utils/logger.js"
 
 
 export async function handleRefreshToken(req: Request, res: Response) {
@@ -45,7 +46,7 @@ export async function handleRefreshToken(req: Request, res: Response) {
             })
             return
         }
-        console.log(error)
+        logError("RefreshTokenController", error)
         res.sendStatus(500).json({ message: "Erro interno do servidor." })
     }
 }

@@ -5,6 +5,7 @@ import { Sale } from "../model/Sales.js"
 import { SalePayload, PaymentStatus } from "../types/types.js"
 import { getNextSaleNumber } from "../utils/utils.js"
 import { Product } from "../model/Products.js"
+import { logError } from "../utils/logger.js"
 
 
 export async function getAllSales(req: Request, res: Response, next: NextFunction) {
@@ -18,7 +19,7 @@ export async function getAllSales(req: Request, res: Response, next: NextFunctio
 
         res.json(sales)
     } catch (error) {
-        console.error(`saleController - ${JSON.stringify(error)}`)
+        logError("SaleController", `getAllSales error: ${JSON.stringify(error)}`)
         next(error)
     }
 }
@@ -27,11 +28,9 @@ export async function createNewSale(req: Request<{}, {}, Omit<SalePayload, "sale
     try {
         const saleProps = req.body
 
-        // Buscar produtos para obter nomes
         const productIds = saleProps.items.map(item => item.productId)
         const products = await Product.find({ _id: { $in: productIds } })
 
-        // Verificar se há estoque suficiente
         const insufficientStock = saleProps.items.some(item => {
             const product = products.find(p => p._id.toString() === item.productId)
 
@@ -47,7 +46,6 @@ export async function createNewSale(req: Request<{}, {}, Omit<SalePayload, "sale
 
         const saleNumber = await getNextSaleNumber()
 
-        // Criar nova venda
         const newSale = new Sale({
             saleNumber: saleNumber,
             clientName: saleProps.clientName,
@@ -109,7 +107,7 @@ export async function createNewSale(req: Request<{}, {}, Omit<SalePayload, "sale
             res.status(409).json({ message: "Registro já existe." })
             return
         }
-        console.error(`createNewSale error: ${JSON.stringify(error)}`)
+        logError("SaleController", `createNewSale error: ${JSON.stringify(error)}`)
         next(error)
     }
 }
@@ -136,7 +134,7 @@ export async function updateSale(req: Request<{ id: string }, {}, Omit<SalePaylo
 
         res.json(updatedSale)
     } catch (error) {
-        console.error(`Erro ao editar venda ${JSON.stringify(error)}`)
+        logError("SaleController", `updateSale error: ${JSON.stringify(error)}`)
         next(error)
     }
 }
@@ -149,14 +147,40 @@ export async function deleteSale(req: Request<{ id: string }>, res: Response, ne
     }
 
     try {
-        const deletedSale = await Sale.findByIdAndDelete(id)
-        if (!deletedSale) {
+        const saleToDelete = await Sale.findById(id)
+        if (!saleToDelete) {
             res.status(404).json({ message: "Venda não encontrada." })
             return
         }
-        res.json({ message: `Venda deletada com sucesso.` })
+
+        const productIds = saleToDelete.items.map(item => item.productId)
+
+        // Restaurar estoque dos produtos
+        await Promise.all(
+            saleToDelete.items.map(async item => {
+                await Product.updateOne(
+                    { _id: item.productId },
+                    { $inc: { stock: item.quantity } }
+                )
+            })
+        )
+
+        await Sale.findByIdAndDelete(id)
+        
+        const updatedProducts = await Product.find({ _id: { $in: productIds } })
+        
+        res.json({ 
+            message: `Venda cancelada e estoque restaurado com sucesso.`,
+            updatedProducts: updatedProducts.map(product => ({
+                id: product._id,
+                name: product.name,
+                stock: product.stock,
+                salePrice: product.salePrice,
+                purchasePrice: product.purchasePrice
+            }))
+        })
     } catch (error) {
-        console.error("Erro ao deletar venda", error)
+        logError("SaleController - deleteSale error", error)
         next(error)
     }
 }
@@ -174,7 +198,7 @@ export async function getSalesHistory(req: Request, res: Response, next: NextFun
 
         res.json(sales)
     } catch (error) {
-        console.error(`getSalesHistory error: ${JSON.stringify(error)}`)
+        logError("SaleController", `getSalesHistory error: ${JSON.stringify(error)}`)
         next(error)
     }
 }

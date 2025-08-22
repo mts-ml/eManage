@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express"
 
 import { Purchase } from "../model/Purchases.js"
+import { logError } from "../utils/logger.js"
 
 
 export async function getPurchase(req: Request, res: Response, next: NextFunction) {
@@ -13,7 +14,7 @@ export async function getPurchase(req: Request, res: Response, next: NextFunctio
 
         res.json({ purchase: lastPurchase })
     } catch (error) {
-        console.error(`getPurchase error: ${JSON.stringify(error)}`)
+        logError("GetLastPurchaseController", error)
         next(error)
     }
 }

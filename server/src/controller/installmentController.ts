@@ -3,6 +3,7 @@ import mongoose from "mongoose"
 
 import { Sale } from "../model/Sales.js"
 import { PaymentStatus } from "../types/types.js"
+import { logError } from "../utils/logger.js"
 
 export async function processPayment(
     req: Request<{ saleId: string }, {}, any>,
@@ -61,7 +62,7 @@ export async function processPayment(
 
         res.json(sale)
     } catch (error) {
-        console.error(`processPayment error: ${JSON.stringify(error)}`)
+        logError("InstallmentController", error)
         next(error)
     }
 }

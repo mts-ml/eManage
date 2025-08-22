@@ -6,6 +6,7 @@ import { PurchasePayload } from "../types/types.js"
 import { getNextPurchaseNumber } from "../utils/utils.js"
 import { Supplier } from "../model/Suppliers.js"
 import { Product } from "../model/Products.js"
+import { logError } from "../utils/logger.js"
 
 
 export async function getAllPurchases(req: Request, res: Response, next: NextFunction) {
@@ -19,7 +20,7 @@ export async function getAllPurchases(req: Request, res: Response, next: NextFun
 
         res.json(purchases)
     } catch (error) {
-        console.error(`purchaseController - ${JSON.stringify(error)}`)
+        logError("PurchaseController", `getAllPurchases error: ${JSON.stringify(error)}`)
         next(error)
     }
 }
@@ -91,7 +92,7 @@ export async function createNewPurchase(req: Request<{}, {}, Omit<PurchasePayloa
             res.status(409).json({ message: "Registro já existe." })
             return
         }
-        console.error(`createNewPurchase error: ${JSON.stringify(error)}`)
+        logError("PurchaseController", `createNewPurchase error: ${JSON.stringify(error)}`)
         next(error)
     }
 }
@@ -118,7 +119,7 @@ export async function updatePurchase(req: Request<{ id: string }, {}, Omit<Purch
 
         res.json(updatedPurchase)
     } catch (error) {
-        console.error(`Erro ao editar compra ${JSON.stringify(error)}`)
+        logError("PurchaseController", `updatePurchase error: ${JSON.stringify(error)}`)
         next(error)
     }
 }
@@ -131,14 +132,40 @@ export async function deletePurchase(req: Request<{ id: string }>, res: Response
     }
 
     try {
-        const deletedPurchase = await Purchase.findByIdAndDelete(id)
-        if (!deletedPurchase) {
+        const purchaseToDelete = await Purchase.findById(id)
+        if (!purchaseToDelete) {
             res.status(404).json({ message: "Compra não encontrada." })
             return
         }
-        res.json({ message: `Compra deletada com sucesso.` })
+
+        const productIds = purchaseToDelete.items.map(item => item.productId)
+
+        // Decrementar estoque dos produtos (reverter o incremento da compra)
+        await Promise.all(
+            purchaseToDelete.items.map(async item => {
+                await Product.updateOne(
+                    { _id: item.productId },
+                    { $inc: { stock: -item.quantity } }
+                )
+            })
+        )
+
+        await Purchase.findByIdAndDelete(id)
+        
+        const updatedProducts = await Product.find({ _id: { $in: productIds } })
+        
+        res.json({ 
+            message: `Compra cancelada e estoque ajustado com sucesso.`,
+            updatedProducts: updatedProducts.map(product => ({
+                id: product._id,
+                name: product.name,
+                stock: product.stock,
+                salePrice: product.salePrice,
+                purchasePrice: product.purchasePrice
+            }))
+        })
     } catch (error) {
-        console.error("Erro ao deletar compra", error)
+        logError("PurchaseController - deletePurchase error", error)
         next(error)
     }
 }
@@ -156,7 +183,7 @@ export async function getPurchasesHistory(req: Request, res: Response, next: Nex
 
         res.json(purchases)
     } catch (error) {
-        console.error(`getPurchasesHistory error: ${JSON.stringify(error)}`)
+        logError("PurchaseController", `getPurchasesHistory error: ${JSON.stringify(error)}`)
         next(error)
     }
 }

@@ -2,6 +2,7 @@ import { Request, Response } from 'express'
 
 import { Purchase } from '../model/Purchases.js'
 import { PurchasePayload } from '../types/types.js'
+import { logError } from "../utils/logger.js"
 
 
 export const updatePayable = async (req: Request, res: Response): Promise<void> => {
@@ -46,7 +47,7 @@ export const updatePayable = async (req: Request, res: Response): Promise<void> 
         })
 
     } catch (error) {
-        console.error('Erro ao atualizar compra:', error)
+        logError("PayableController", error)
         res.status(500).json({ message: 'Erro interno do servidor' })
     }
 }

@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken'
 
 import { UserProps } from "../types/types.js"
 import { User } from "../model/Users.js"
+import { logError } from "../utils/logger.js"
 
 
 export async function loginController(req: Request<{}, {}, UserProps>, res: Response): Promise<void> {
@@ -65,14 +66,10 @@ export async function loginController(req: Request<{}, {}, UserProps>, res: Resp
         res.json({ accessToken })
     } catch (error) {
         if (error instanceof Error) {
-            console.error("Erro no login:", error.message)
-            console.error("Stack trace:", error.stack)
+            logError("LoginController - Login error", error.message)
+            logError("LoginController - Stack trace", error.stack)
         } else {
-            console.error("Erro desconhecido:", error)
+            logError("LoginController", error)
         }
-
-        res.status(500).json({
-            message: "Erro interno no servidor"
-        })
     }
 }

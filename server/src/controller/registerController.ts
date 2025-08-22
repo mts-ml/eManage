@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt'
 
 import { RegisterProps } from "../types/types.js"
 import { User } from "../model/Users.js"
+import { logSuccess, logError } from "../utils/logger.js"
 
 
 export async function registerController(req: Request<{}, {}, RegisterProps>, res: Response) {
@@ -22,11 +23,11 @@ export async function registerController(req: Request<{}, {}, RegisterProps>, re
             email,
             password: hasPassword
         })
-        console.log(`registerController - Usuário criado - ${newUser}`)   
+        logSuccess("RegisterController", `Usuário criado - ${newUser}`)
         
         res.status(201).json({ message: `Usuário ${newUser.name} criado com sucesso` })
     } catch (error) {
-        console.log(error)        
+        logError("RegisterController", error)
         res.status(500).json({ message: "Erro interno no servidor." })
     }
 }

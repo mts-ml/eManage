@@ -2,6 +2,7 @@ import { Request, Response } from 'express'
 
 import { Sale } from '../model/Sales.js'
 import { SalePayload } from '../types/types.js'
+import { logError } from "../utils/logger.js"
 
 
 export const updateReceivable = async (req: Request, res: Response): Promise<void> => {
@@ -46,7 +47,7 @@ export const updateReceivable = async (req: Request, res: Response): Promise<voi
         })
 
     } catch (error) {
-        console.error('Erro ao atualizar recebível:', error)
+        logError("ReceivableController", error)
         res.status(500).json({ message: 'Erro interno do servidor' })
     }
 }
