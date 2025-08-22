@@ -1,7 +1,8 @@
 # 🏢 eManage - Sistema de Gestão Empresarial
 
 <div align="center">
-  <img src="public/assets/images/eManage.png" alt="eManage Logo" width="120" height="120">
+  <img src="assets/images/eManage.png" alt="eManage Logo" width="120" height="120">
+  
   <h3>Sistema completo de gestão para empresas do setor alimentício</h3>
   
   <!-- Badges -->
