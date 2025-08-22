@@ -107,12 +107,11 @@ export const Cashflow: React.FC = () => {
             const matchesBank = sale.bank === selectedBank
             const matchesStatus = sale.status === "Pago" || sale.status === "Parcialmente pago"
             const hasPayments = sale.payments && sale.payments.length > 0
-            const hasPaymentDate = sale.paymentDate || sale.finalPaymentDate          
+            const hasPaymentDate = sale.firstPaymentDate || sale.finalPaymentDate      
 
             return matchesBank && matchesStatus && (hasPayments || hasPaymentDate)
           })
           .flatMap(sale => {
-            // Se tem payments, usar payments
             if (sale.payments && sale.payments.length > 0) {
               return sale.payments
                 .filter(payment => {
@@ -137,8 +136,8 @@ export const Cashflow: React.FC = () => {
                 }))
             }
 
-            // Se não tem payments, usar paymentDate ou finalPaymentDate
-            const paymentDate = sale.paymentDate || sale.finalPaymentDate
+            // Se não tem payments, usa finalPaymentDate
+            const paymentDate = sale.finalPaymentDate || sale.firstPaymentDate
             if (paymentDate) {
               const date = new Date(paymentDate)
               const start = new Date(startDate + 'T00:00:00')

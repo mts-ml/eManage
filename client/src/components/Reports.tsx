@@ -196,16 +196,16 @@ export const Reports: React.FC = () => {
             ...(salesResponse.data || [])
                .filter(sale => {
                   const matchesStatus = sale.status === "Pago"
-                  const hasPaymentDate = sale.paymentDate || sale.date
+                  const hasPaymentDate = sale.finalPaymentDate || sale.date
                   const matchesBank = !filters.selectedBank || sale.bank === filters.selectedBank
-                  const paymentDate = sale.paymentDate || sale.date
+                  const paymentDate = sale.finalPaymentDate || sale.date
                   const matchesDate = isDateInRange(paymentDate, filters.startDate, filters.endDate)
 
                   return matchesStatus && hasPaymentDate && matchesBank && matchesDate
                })
                .map(sale => {
                   // Garantir que a data seja exibida no formato DD/MM/YYYY
-                  const rawDate = sale.paymentDate || sale.date
+                  const rawDate = sale.finalPaymentDate || sale.date
                   let formattedDate: string
                   
                   if (rawDate.includes('/')) {
@@ -251,6 +251,7 @@ export const Reports: React.FC = () => {
                   return payments
                      .filter(payment => {
                         // Comparar datas no formato DD/MM/YYYY
+                        if (!payment.paymentDate) return false
                         const matchesDate = isDateInRange(payment.paymentDate, filters.startDate, filters.endDate)
                         return matchesDate
                      })
