@@ -66,6 +66,10 @@ app.use('/purchases', purchases)
 app.use('/payables', payables)
 app.use('/expenses', expenses)
 
+app.get("/healthz", (req: Request, res: Response) => {
+    res.sendStatus(200)
+    return
+})
 
 // Tratamento de erros
 app.use(errorHandler)
