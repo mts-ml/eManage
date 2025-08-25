@@ -52,6 +52,10 @@ app.use("/login", login)
 app.use('/register', register)
 app.use('/refresh', refresh)
 
+app.get("/healthz", (req: Request, res: Response) => {
+    res.status(200).json({ status: "OK" })
+})
+
 app.use(verifyJWT)
 app.use('/logout', logout)
 app.use('/clients', clients)
@@ -66,12 +70,6 @@ app.use('/purchases', purchases)
 app.use('/payables', payables)
 app.use('/expenses', expenses)
 
-app.get("/healthz", (req: Request, res: Response) => {
-    res.sendStatus(200)
-    return
-})
-
-// Tratamento de erros
 app.use(errorHandler)
 
 mongoose.connection.once("open", () => {
