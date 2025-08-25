@@ -242,5 +242,5 @@ Este projeto está sob a licença **MIT**. Veja o arquivo [LICENSE](LICENSE) par
 ---
 
 <div align="center">
-  <p>⭐ <strong>Se este projeto te ajudou, considere dar uma estrela!</strong> ⭐</p>
+  <p>⭐ <strong>Se gostou do projeto, considere dar uma estrela!</strong> ⭐</p>
 </div>
