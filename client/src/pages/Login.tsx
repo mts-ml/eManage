@@ -87,6 +87,7 @@ export const Login: React.FC = () => {
 
         if (!isReadyToSubmit) return
 
+        setIsLoading(true)
         try {
             const response = await axiosInstance.post('/login', form, { withCredentials: true })
 
