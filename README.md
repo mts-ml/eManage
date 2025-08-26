@@ -3,8 +3,8 @@
 <div align="center">
   <img src="client/public/assets/images/eManage.png" alt="eManage Logo" width="120" height="120">
 
-  Acessar site: [eManage](https://emanageapp.netlify.app)
-  
+Acessar site: [eManage](https://emanageapp.netlify.app)
+
   <h3>Sistema completo de gestão para empresas do setor alimentício</h3>
   
   <!-- Badges -->
@@ -38,6 +38,8 @@ O **eManage** é um sistema de gestão empresarial completo desenvolvido especif
 
 Acessar site: [eManage](https://emanageapp.netlify.app)
 
+### **🚀 Primeira visita**: O servidor pode levar até 30 segundos para responder no primeiro acesso, pois utiliza hospedagem gratuita com "cold start". Este comportamento é comum em ambientes de demonstração e seria eliminado em produção com hospedagem dedicada.
+
 ### 🎯 Objetivos do Sistema
 
 - **Gestão completa** de clientes, fornecedores e produtos
@@ -52,6 +54,7 @@ Acessar site: [eManage](https://emanageapp.netlify.app)
 ## ✨ Funcionalidades
 
 ### 🔐 **Sistema de Autenticação**
+
 - ✅ Login e registro de usuários
 - ✅ Autenticação JWT com refresh tokens
 - ✅ Controle de acesso baseado em roles (Admin, Editor, User)
@@ -59,11 +62,13 @@ Acessar site: [eManage](https://emanageapp.netlify.app)
 - ✅ Cookies HTTP-only para máxima segurança
 
 ### 👥 **Gestão de Pessoas**
+
 - ✅ **Clientes**: Cadastro completo com CPF/CNPJ, endereço, contatos
 - ✅ **Fornecedores**: Gestão de parceiros comerciais
 - ✅ **Usuários**: Sistema de roles e permissões
 
 ### 📦 **Gestão de Produtos**
+
 - ✅ Catálogo completo de produtos
 - ✅ Controle de preços (compra e venda)
 - ✅ Gestão de estoque
@@ -71,6 +76,7 @@ Acessar site: [eManage](https://emanageapp.netlify.app)
 - ✅ Atualização automática de estoque
 
 ### 💰 **Sistema Financeiro**
+
 - ✅ **Vendas**: Registro com parcelamento e histórico
 - ✅ **Compras**: Gestão de fornecedores e pagamentos
 - ✅ **Contas a Receber**: Acompanhamento de recebimentos
@@ -79,6 +85,7 @@ Acessar site: [eManage](https://emanageapp.netlify.app)
 - ✅ **Caixa**: Visão consolidada do fluxo financeiro
 
 ### 📊 **Relatórios e Análises**
+
 - ✅ Geração de relatórios em PDF
 - ✅ Histórico completo de vendas e compras
 - ✅ Controle de pagamentos em atraso
@@ -89,6 +96,7 @@ Acessar site: [eManage](https://emanageapp.netlify.app)
 ## 🛠️ Tecnologias Utilizadas
 
 ### 🎨 **Frontend**
+
 - **React 19** - Biblioteca para interfaces de usuário
 - **TypeScript 5.8** - Tipagem estática para JavaScript
 - **Vite 7** - Build tool e dev server ultra-rápido
@@ -97,6 +105,7 @@ Acessar site: [eManage](https://emanageapp.netlify.app)
 - **Lucide React** - Ícones modernos e consistentes
 
 ### ⚡ **Backend**
+
 - **Node.js** - Runtime JavaScript server-side
 - **Express 5** - Framework web minimalista
 - **TypeScript 5.8** - Tipagem estática
@@ -105,10 +114,12 @@ Acessar site: [eManage](https://emanageapp.netlify.app)
 - **JWT** - Autenticação stateless
 
 ### ️ **Desktop App**
+
 - **Electron 37** - Framework para apps desktop
 - **Electron Builder** - Empacotamento multiplataforma
 
 ### 🔧 **Ferramentas e Bibliotecas**
+
 - **Axios** - Cliente HTTP com interceptors
 - **jsPDF** - Geração de relatórios PDF
 - **bcrypt** - Hash de senhas seguro
@@ -120,6 +131,7 @@ Acessar site: [eManage](https://emanageapp.netlify.app)
 ## 🏗️ Arquitetura
 
 ### 🎯 **Padrão de Arquitetura**
+
 - **Frontend**: Componentes funcionais com hooks React
 - **Backend**: API REST com controllers, models e middleware
 - **Banco**: MongoDB com Mongoose para modelagem
@@ -127,14 +139,17 @@ Acessar site: [eManage](https://emanageapp.netlify.app)
 - **Roteamento**: React Router com proteção de rotas
 
 ### 🔄 **Fluxo de Dados**
+
 ```
 Frontend ↔ Context API ↔ Axios ↔ Express ↔ Mongoose ↔ MongoDB
 ```
+
 ## 🔐 Segurança
 
 ### 🛡️ **Medidas Implementadas**
 
 #### **Autenticação e Autorização**
+
 - ✅ **JWT Tokens**: Access e refresh tokens separados
 - ✅ **Cookies HTTP-only**: Proteção contra XSS
 - ✅ **Verificação de roles**: Controle granular de acesso
@@ -142,6 +157,7 @@ Frontend ↔ Context API ↔ Axios ↔ Express ↔ Mongoose ↔ MongoDB
 - ✅ **Hash de senhas**: bcrypt com salt
 
 #### **Proteção de Dados**
+
 - ✅ **Variáveis de ambiente**: Configurações sensíveis protegidas
 - ✅ **CORS configurado**: Origem restrita
 - ✅ **Validação de campos**: Middleware de validação
@@ -149,6 +165,7 @@ Frontend ↔ Context API ↔ Axios ↔ Express ↔ Mongoose ↔ MongoDB
 - ✅ **Rate limiting**: Proteção contra ataques
 
 #### **Segurança do Cliente**
+
 - ✅ **Context isolation**: Electron configurado
 - ✅ **Node integration**: Desabilitado
 - ✅ **HTTPS em produção**: Comunicação criptografada
@@ -158,27 +175,32 @@ Frontend ↔ Context API ↔ Axios ↔ Express ↔ Mongoose ↔ MongoDB
 ## 📱 Interface e UX
 
 ### 🎨 **Design System**
+
 - **Paleta de cores**: Esquema emerald (verde) consistente
 - **Tipografia**: Hierarquia clara e legível
 - **Componentes**: Design system unificado
 - **Responsividade**: Adaptação para diferentes telas
 
 ### 🚀 **Experiência do Usuário**
+
 - **Navegação intuitiva**: Cards organizados por funcionalidade
 - **Feedback visual**: Estados de loading e confirmações
 - **Acessibilidade**: Semântica HTML e ARIA labels
 - **Performance**: Lazy loading na Home para carregamento otimizado
 
 ### 📱 **Responsividade**
+
 - **Mobile-first**: Design otimizado para dispositivos móveis
 - **Breakpoints**: Adaptação para tablets e desktops
 - **Touch-friendly**: Interface otimizada para toque
+
 ---
 
 ## 🚀 Como Executar
 
 ### 📋 **Pré-requisitos**
-- Node.js 18+ 
+
+- Node.js 18+
 - npm ou yarn
 - MongoDB rodando localmente ou Atlas
 - Git
@@ -186,12 +208,14 @@ Frontend ↔ Context API ↔ Axios ↔ Express ↔ Mongoose ↔ MongoDB
 ### 🔧 **Instalação e Configuração**
 
 #### **1. Clone o repositório**
+
 ```bash
 git clone https://github.com/mts-ml/eManage
 cd emanage
 ```
 
 #### **2. Configure o servidor**
+
 ```bash
 cd server
 npm install
@@ -202,6 +226,7 @@ cp .env.example .env
 ```
 
 #### **3. Configure o cliente**
+
 ```bash
 cd ../client
 npm install
@@ -212,6 +237,7 @@ cp .env.example .env
 ```
 
 #### **4. Execute o projeto**
+
 ```bash
 # Terminal 1 - Servidor
 cd server
@@ -221,9 +247,11 @@ npm run dev
 cd client
 npm run dev
 ```
+
 ---
 
 #### **Desktop App**
+
 ```bash
 # Windows
 npm run dist:win
