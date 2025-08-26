@@ -26,6 +26,7 @@ export const Register: React.FC = () => {
     const [errors, setErrors] = useState<RegisterErrors & { general?: string }>({})
     const [isReadyToSubmit, setIsReadyToSubmit] = useState(false)
     const [apiMessage, setApiMessage] = useState<string>("")
+    const [isLoading, setIsLoading] = useState(false)
     const navigate = useNavigate()
 
 
@@ -97,6 +98,7 @@ export const Register: React.FC = () => {
 
         if (!isReadyToSubmit) return
 
+        setIsLoading(true)
         try {
             const response = await axiosInstance.post('/register', form)
             setApiMessage(response.data.message)
@@ -146,6 +148,8 @@ export const Register: React.FC = () => {
                 logError("Register", error);
                 setErrors(prev => ({ ...prev, general: "Erro inesperado. Tente novamente." }))
             }
+        } finally {
+            setIsLoading(false)
         }
     }
 
@@ -250,10 +254,16 @@ export const Register: React.FC = () => {
 
                     <button
                         type="submit"
-                        disabled={!isReadyToSubmit}
-                        className="w-full cursor-pointer bg-gradient-to-r from-emerald-600 to-green-600 text-white py-3 rounded-xl font-semibold hover:from-emerald-700 hover:to-green-700 transition-all duration-300 disabled:from-gray-400 disabled:to-gray-500 disabled:text-gray-300 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                        disabled={!isReadyToSubmit || isLoading}
+                        className="w-full cursor-pointer bg-gradient-to-r from-emerald-600 to-green-600 text-white py-3 rounded-xl font-semibold hover:from-emerald-700 hover:to-green-700 transition-all duration-300 disabled:from-gray-400 disabled:to-gray-500 disabled:text-gray-300 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
                     >
-                        {apiMessage ? "Registrando..." : "Criar Conta"}
+                        {isLoading && (
+                            <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
+                                <path className="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                            </svg>
+                        )}
+                        {isLoading ? "Criando conta..." : apiMessage ? "Conta criada!" : "Criar Conta"}
                     </button>
 
                     {apiMessage && (
