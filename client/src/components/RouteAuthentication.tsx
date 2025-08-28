@@ -2,7 +2,7 @@ import { useContext } from "react"
 import { Navigate, Outlet, useLocation } from "react-router-dom"
 
 import AuthContext from "../Context/AuthContext.js"
-import { CircleLoader } from "react-spinners"
+import { Loading } from "./ReactLoader.js"
 
 
 type RouteAuthenticationProps = {
@@ -15,7 +15,7 @@ export const RouteAuthentication: React.FC<RouteAuthenticationProps> = ({ allowe
     const location = useLocation()
 
 
-    if (loading) return <CircleLoader />
+    if (loading) return <Loading />
 
     return (
         auth.roles.some(role => allowedRoles.includes(role)) ?
