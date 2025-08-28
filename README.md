@@ -38,8 +38,6 @@ O **eManage** é um sistema de gestão empresarial completo desenvolvido especif
 
 Acessar site: [eManage](https://emanageapp.netlify.app)
 
-### **🚀 Primeira visita**: O servidor pode levar até 30 segundos para responder no primeiro acesso, pois utiliza hospedagem gratuita com "cold start". Este comportamento é comum em ambientes de demonstração e seria eliminado em produção com hospedagem dedicada.
-
 ### 🎯 Objetivos do Sistema
 
 - **Gestão completa** de clientes, fornecedores e produtos
