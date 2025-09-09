@@ -160,7 +160,6 @@ Frontend ↔ Context API ↔ Axios ↔ Express ↔ Mongoose ↔ MongoDB
 - ✅ **CORS configurado**: Origem restrita
 - ✅ **Validação de campos**: Middleware de validação
 - ✅ **Sanitização**: Filtros de entrada
-- ✅ **Rate limiting**: Proteção contra ataques
 
 #### **Segurança do Cliente**
 
